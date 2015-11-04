@@ -170,10 +170,13 @@ mod tests {
 
     #[test]
     fn test_roundtrip_entry() {
-        let mut fs = BTreeMap::new();
-        fs.insert("password".to_owned(), Field::Derived { counter: 4, site_name: Some("twitter.com".to_owned()), usage: DerivedUsage::Password(PasswordTemplate::Maximum) });
-        fs.insert("old_password".to_owned(), Field::Stored { data: SecStr::from("h0rse"), usage: StoredUsage::Password });
-        let twitter = Entry { fields: fs };
+        let mut twitter = Entry::new();
+        twitter.fields.insert("password".to_owned(), Field::Derived {
+            counter: 4, site_name: Some("twitter.com".to_owned()), usage: DerivedUsage::Password(PasswordTemplate::Maximum)
+        });
+        twitter.fields.insert("old_password".to_owned(), Field::Stored {
+            data: SecStr::from("h0rse"), usage: StoredUsage::Password
+        });
         let mut metadata = EntryMetadata::new();
         let mut vault = Vault { version: 0, padding: b"".to_vec(), entries: BTreeMap::new() };
         let master_key = gen_master_key(SecStr::from("Correct Horse Battery Staple"), "Clarke Griffin").unwrap();
