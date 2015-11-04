@@ -18,28 +18,45 @@ use sodiumoxide::crypto::secretbox::xsalsa20poly1305 as secbox;
 
 #[derive(Debug, RustcDecodable, RustcEncodable)]
 pub struct Vault {
-    version: u16,
-    padding: Vec<u8>,
-    entries: BTreeMap<String, EncryptedEntry>
+    pub version: u16,
+    pub padding: Vec<u8>,
+    pub entries: BTreeMap<String, EncryptedEntry>,
 }
 
 #[derive(PartialEq, Debug, RustcDecodable, RustcEncodable)]
 pub struct EncryptedEntry {
-    nonce: Vec<u8>,
-    counter: u32,
-    ciphertext: Vec<u8>,
-    metadata: EntryMetadata
+    pub nonce: Vec<u8>,
+    pub counter: u32,
+    pub ciphertext: Vec<u8>,
+    pub metadata: EntryMetadata,
 }
 
 #[derive(PartialEq, Clone, Debug, RustcDecodable, RustcEncodable)]
 pub struct EntryMetadata {
-    created_at: DateTime<UTC>,
-    updated_at: DateTime<UTC>
+    pub created_at: DateTime<UTC>,
+    pub updated_at: DateTime<UTC>,
+    pub tags: Vec<String>,
+}
+
+impl EntryMetadata {
+    pub fn new() -> EntryMetadata {
+        EntryMetadata {
+            created_at: UTC::now(),
+            updated_at: UTC::now(),
+            tags: Vec::new(),
+        }
+    }
 }
 
 #[derive(PartialEq, Debug, RustcDecodable, RustcEncodable)]
 pub struct Entry {
-    fields: BTreeMap<String, Field>
+    pub fields: BTreeMap<String, Field>
+}
+
+impl Entry {
+    pub fn new() -> Entry {
+        Entry { fields: BTreeMap::new() }
+    }
 }
 
 #[derive(PartialEq, Debug, RustcDecodable, RustcEncodable)]
@@ -60,7 +77,13 @@ pub enum StoredUsage {
 
 #[derive(PartialEq, Debug, RustcDecodable, RustcEncodable)]
 pub enum PasswordTemplate {
-    Maximum, Long, Medium, Short, Basic, Pin
+    // Same numbers as in the rusterpassword C API
+    Maximum = 60,
+    Long    = 50,
+    Medium  = 40,
+    Short   = 30,
+    Basic   = 20,
+    Pin     = 10,
 }
 
 #[derive(Debug)]
@@ -71,7 +94,7 @@ pub enum EntryError {
     DecryptionError,
     CodecError(CborError),
     DataError,
-    EntryNotFound
+    EntryNotFound,
 }
 
 impl From<CborError> for EntryError {
@@ -101,7 +124,6 @@ impl Vault {
     }
 
     pub fn put_entry(&mut self, entries_key: &SecStr, name: &str, entry: &Entry, metadata: &mut EntryMetadata) -> EntryResult<()> {
-        metadata.updated_at = UTC::now();
         let counter = self.entries.get(name).map(|ee| ee.counter + 1).unwrap_or(1);
         let nonce_wrapped = secbox::gen_nonce();
         let secbox::Nonce(nonce) = nonce_wrapped;
@@ -110,6 +132,7 @@ impl Vault {
         try!(e.encode(&[&*entry]));
         let plaintext = SecStr::new(e.into_bytes());
         let ciphertext = secbox::seal(plaintext.unsecure(), &nonce_wrapped, &entry_key_wrapped);
+        metadata.updated_at = UTC::now();
         self.entries.insert(name.to_owned(), EncryptedEntry {
             nonce: nonce.to_vec(), counter: counter, ciphertext: ciphertext, metadata: metadata.clone()
         });
@@ -144,7 +167,6 @@ mod tests {
     use secstr::*;
     use rusterpassword::*;
     use std::collections::btree_map::BTreeMap;
-    use chrono::*;
 
     #[test]
     fn test_roundtrip_entry() {
@@ -152,7 +174,7 @@ mod tests {
         fs.insert("password".to_owned(), Field::Derived { counter: 4, site_name: Some("twitter.com".to_owned()), usage: DerivedUsage::Password(PasswordTemplate::Maximum) });
         fs.insert("old_password".to_owned(), Field::Stored { data: SecStr::from("h0rse"), usage: StoredUsage::Password });
         let twitter = Entry { fields: fs };
-        let mut metadata = EntryMetadata { created_at: UTC::now(), updated_at: UTC::now() };
+        let mut metadata = EntryMetadata::new();
         let mut vault = Vault { version: 0, padding: b"".to_vec(), entries: BTreeMap::new() };
         let master_key = gen_master_key(SecStr::from("Correct Horse Battery Staple"), "Clarke Griffin").unwrap();
         let entries_key = gen_entries_key(&master_key);
