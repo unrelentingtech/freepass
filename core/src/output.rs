@@ -7,13 +7,6 @@ pub enum OutputFormat {
     Binary
 }
 
-#[derive(Debug)]
-pub enum OutputError {
-    SeedGenerationError,
-}
-
-pub type OutputResult<T> = Result<T, OutputError>;
-
 fn pick_tpl(tpl: &PasswordTemplate) -> &'static [&'static str] {
     match *tpl {
        PasswordTemplate::Maximum  => TEMPLATES_MAXIMUM,
@@ -25,11 +18,11 @@ fn pick_tpl(tpl: &PasswordTemplate) -> &'static [&'static str] {
     }
 }
 
-pub fn process_output(entry_name: &str, master_key: &SecStr, field: &Field) -> OutputResult<(SecStr, OutputFormat)> {
+pub fn process_output(entry_name: &str, master_key: &SecStr, field: &Field) -> Result<(SecStr, OutputFormat)> {
     match *field {
         Field::Derived { counter, ref site_name, ref usage } => {
             let site_seed = try!(gen_site_seed(master_key, &site_name.clone().unwrap_or(entry_name.to_string()), counter)
-                                 .map_err(|_| OutputError::SeedGenerationError));
+                                 .map_err(|_| Error::SeedGenerationError));
             match *usage {
                 DerivedUsage::Password(ref tpl) => Ok((gen_site_password(&site_seed, pick_tpl(tpl)), OutputFormat::Text)),
                 DerivedUsage::RawKey => Ok((site_seed, OutputFormat::Binary)),

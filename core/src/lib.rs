@@ -6,6 +6,7 @@ extern crate cbor;
 extern crate secstr;
 extern crate rusterpassword;
 extern crate sodiumoxide;
+extern crate rand;
 
 extern crate chrono;
 
