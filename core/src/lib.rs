@@ -27,14 +27,19 @@ pub struct Vault {
 pub struct EncryptedEntry {
     nonce: Vec<u8>,
     counter: u32,
-    ciphertext: Vec<u8>
+    ciphertext: Vec<u8>,
+    metadata: EntryMetadata
+}
+
+#[derive(PartialEq, Clone, Debug, RustcDecodable, RustcEncodable)]
+pub struct EntryMetadata {
+    created_at: DateTime<UTC>,
+    updated_at: DateTime<UTC>
 }
 
 #[derive(PartialEq, Debug, RustcDecodable, RustcEncodable)]
 pub struct Entry {
-    fields: BTreeMap<String, Field>,
-    created_at: DateTime<UTC>,
-    updated_at: DateTime<UTC>
+    fields: BTreeMap<String, Field>
 }
 
 #[derive(PartialEq, Debug, RustcDecodable, RustcEncodable)]
@@ -83,19 +88,20 @@ impl Vault {
         self.entries.keys()
     }
 
-    pub fn get_entry(&self, entries_key: &SecStr, name: &str) -> EntryResult<Entry> {
+    pub fn get_entry(&self, entries_key: &SecStr, name: &str) -> EntryResult<(Entry, EntryMetadata)> {
         if let Some(ee) = self.entries.get(name) {
             let nonce_wrapped = try!(secbox::Nonce::from_slice(&ee.nonce).ok_or(EntryError::WrongNonceLength));
             let entry_key_wrapped = try!(gen_entry_key(entries_key, name, ee.counter));
             let plaintext = SecStr::new(try!(secbox::open(&ee.ciphertext, &nonce_wrapped, &entry_key_wrapped).map_err(|_| EntryError::DecryptionError)));
-            Ok(try!(try!(Decoder::from_bytes(plaintext.unsecure()).decode::<Entry>().next().ok_or(EntryError::DataError))))
+            let entry = try!(try!(Decoder::from_bytes(plaintext.unsecure()).decode::<Entry>().next().ok_or(EntryError::DataError)));
+            Ok((entry, ee.metadata.clone()))
         } else {
             Err(EntryError::EntryNotFound)
         }
     }
 
-    pub fn put_entry(&mut self, entries_key: &SecStr, name: &str, entry: &mut Entry) -> EntryResult<()> {
-        entry.updated_at = UTC::now();
+    pub fn put_entry(&mut self, entries_key: &SecStr, name: &str, entry: &Entry, metadata: &mut EntryMetadata) -> EntryResult<()> {
+        metadata.updated_at = UTC::now();
         let counter = self.entries.get(name).map(|ee| ee.counter + 1).unwrap_or(1);
         let nonce_wrapped = secbox::gen_nonce();
         let secbox::Nonce(nonce) = nonce_wrapped;
@@ -104,7 +110,9 @@ impl Vault {
         try!(e.encode(&[&*entry]));
         let plaintext = SecStr::new(e.into_bytes());
         let ciphertext = secbox::seal(plaintext.unsecure(), &nonce_wrapped, &entry_key_wrapped);
-        self.entries.insert(name.to_owned(), EncryptedEntry { nonce: nonce.to_vec(), counter: counter, ciphertext: ciphertext });
+        self.entries.insert(name.to_owned(), EncryptedEntry {
+            nonce: nonce.to_vec(), counter: counter, ciphertext: ciphertext, metadata: metadata.clone()
+        });
         Ok(())
     }
 
@@ -143,11 +151,12 @@ mod tests {
         let mut fs = BTreeMap::new();
         fs.insert("password".to_owned(), Field::Derived { counter: 4, site_name: Some("twitter.com".to_owned()), usage: DerivedUsage::Password(PasswordTemplate::Maximum) });
         fs.insert("old_password".to_owned(), Field::Stored { data: SecStr::from("h0rse"), usage: StoredUsage::Password });
-        let mut twitter = Entry { fields: fs, created_at: UTC::now(), updated_at: UTC::now() };
+        let twitter = Entry { fields: fs };
+        let mut metadata = EntryMetadata { created_at: UTC::now(), updated_at: UTC::now() };
         let mut vault = Vault { version: 0, padding: b"".to_vec(), entries: BTreeMap::new() };
         let master_key = gen_master_key(SecStr::from("Correct Horse Battery Staple"), "Clarke Griffin").unwrap();
         let entries_key = gen_entries_key(&master_key);
-        vault.put_entry(&entries_key, "twitter", &mut twitter).unwrap();
-        assert!(vault.get_entry(&entries_key, "twitter").unwrap() == twitter);
+        vault.put_entry(&entries_key, "twitter", &twitter, &mut metadata).unwrap();
+        assert!(vault.get_entry(&entries_key, "twitter").unwrap() == (twitter, metadata));
     }
 }
