@@ -6,20 +6,12 @@ extern crate libc;
 extern crate libsodium_sys as sodium;
 extern crate sodiumoxide;
 
-use secstr::*;
-use rusterpassword::*;
-use cbor::{Encoder, Decoder};
+use secstr::SecStr;
+use rusterpassword::gen_site_seed;
+use cbor::{Encoder, Decoder, CborError};
 use libc::size_t;
 use std::collections::btree_map::{BTreeMap, Keys};
 use sodiumoxide::crypto::secretbox::xsalsa20poly1305 as secbox;
-
-macro_rules! try_custom {
-    ($e:expr, $err:expr) => (match $e { Ok(e) => e, Err(_) => return Err($err) })
-}
-
-macro_rules! try_custom_option {
-    ($e:expr, $err:expr) => (match $e { Some(e) => e, None => return Err($err) })
-}
 
 
 #[derive(Debug, RustcDecodable, RustcEncodable)]
@@ -61,28 +53,37 @@ pub enum EntryError {
     WrongNonceLength,
     SeedGenerationError,
     DecryptionError,
-    EncodingError,
-    DecodingError,
+    CodecError(CborError),
+    DataError,
     EntryNotFound
 }
 
+impl From<CborError> for EntryError {
+    fn from(err: CborError) -> EntryError {
+        EntryError::CodecError(err)
+    }
+}
+
+pub type EntryResult<T> = Result<T, EntryError>;
+
 impl Vault {
+
     pub fn entry_names(&self) -> Keys<String, (Vec<u8>, u32, Vec<u8>)> {
         self.entries.keys()
     }
 
-    pub fn get_entry(&self, entries_key: &SecStr, name: &str) -> Result<Entry, EntryError> {
+    pub fn get_entry(&self, entries_key: &SecStr, name: &str) -> EntryResult<Entry> {
         if let Some(&(ref nonce, counter, ref ciphertext)) = self.entries.get(name) {
-            let nonce_wrapped = try_custom_option!(secbox::Nonce::from_slice(&nonce), EntryError::WrongNonceLength);
+            let nonce_wrapped = try!(secbox::Nonce::from_slice(&nonce).ok_or(EntryError::WrongNonceLength));
             let entry_key_wrapped = try!(gen_entry_key(entries_key, name, counter));
-            let plaintext = SecStr::new(try_custom!(secbox::open(&ciphertext, &nonce_wrapped, &entry_key_wrapped), EntryError::DecryptionError));
-            Ok(try_custom!(try_custom_option!(Decoder::from_bytes(plaintext.unsecure()).decode::<Entry>().next(), EntryError::DecodingError), EntryError::DecodingError))
+            let plaintext = SecStr::new(try!(secbox::open(&ciphertext, &nonce_wrapped, &entry_key_wrapped).map_err(|_| EntryError::DecryptionError)));
+            Ok(try!(try!(Decoder::from_bytes(plaintext.unsecure()).decode::<Entry>().next().ok_or(EntryError::DataError))))
         } else {
             Err(EntryError::EntryNotFound)
         }
     }
 
-    pub fn put_entry(&mut self, entries_key: &SecStr, name: &str, entry: &Entry) -> Result<(), EntryError> {
+    pub fn put_entry(&mut self, entries_key: &SecStr, name: &str, entry: &Entry) -> EntryResult<()> {
         let counter = match self.entries.get(name) {
             Some(&(_, counter, _)) => counter + 1,
             _ => 1
@@ -91,7 +92,7 @@ impl Vault {
         let secbox::Nonce(nonce) = nonce_wrapped;
         let entry_key_wrapped = try!(gen_entry_key(entries_key, name, counter));
         let mut e = Encoder::from_memory();
-        try_custom!(e.encode(&[entry]), EntryError::EncodingError);
+        try!(e.encode(&[entry]));
         let plaintext = SecStr::new(e.into_bytes());
         let ciphertext = secbox::seal(plaintext.unsecure(), &nonce_wrapped, &entry_key_wrapped);
         self.entries.insert(String::from(name), (nonce.to_vec(), counter, ciphertext));
@@ -100,9 +101,9 @@ impl Vault {
 
 }
 
-fn gen_entry_key(entries_key: &SecStr, name: &str, counter: u32) -> Result<secbox::Key, EntryError> {
-    let entry_key = try_custom!(gen_site_seed(entries_key, name, counter), EntryError::SeedGenerationError);
-    Ok(try_custom_option!(secbox::Key::from_slice(entry_key.unsecure()), EntryError::WrongEntriesKeyLength))
+fn gen_entry_key(entries_key: &SecStr, name: &str, counter: u32) -> EntryResult<secbox::Key> {
+    let entry_key = try!(gen_site_seed(entries_key, name, counter).map_err(|_| EntryError::SeedGenerationError));
+    Ok(try!(secbox::Key::from_slice(entry_key.unsecure()).ok_or(EntryError::WrongEntriesKeyLength)))
 }
 
 pub fn gen_entries_key(master_key: &SecStr) -> SecStr {
@@ -112,7 +113,7 @@ pub fn gen_entries_key(master_key: &SecStr) -> SecStr {
     unsafe {
         sodium::crypto_generichash_blake2b(
             dst.as_mut_ptr() as *mut u8, 64,
-            msg.as_ptr(), msg.len() as size_t,
+            msg.as_ptr(), msg.len() as u64,
             master_key.unsecure().as_ptr() as *const u8,
             master_key.unsecure().len() as size_t);
         dst.set_len(64);
@@ -128,7 +129,7 @@ mod tests {
     use std::collections::btree_map::BTreeMap;
 
     #[test]
-    fn test_roundtrip() {
+    fn test_roundtrip_entry() {
         let mut fs = BTreeMap::new();
         fs.insert(String::from("password"), Field::Derived { counter: 4, site_name: Some(String::from("twitter.com")), usage: DerivedUsage::Password(PasswordTemplate::Maximum) });
         fs.insert(String::from("old_password"), Field::Stored { data: SecStr::from("h0rse"), usage: StoredUsage::Password });
