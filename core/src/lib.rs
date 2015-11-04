@@ -3,7 +3,7 @@ extern crate rustc_serialize;
 extern crate secstr;
 extern crate rusterpassword;
 extern crate libc;
-extern crate libsodium_sys as ffi;
+extern crate libsodium_sys as sodium;
 extern crate sodiumoxide;
 
 use secstr::*;
@@ -11,13 +11,22 @@ use rusterpassword::*;
 use cbor::{Encoder, Decoder};
 use libc::size_t;
 use std::collections::btree_map::{BTreeMap, Keys};
-use sodiumoxide::crypto::secretbox::xsalsa20poly1305;
+use sodiumoxide::crypto::secretbox::xsalsa20poly1305 as secbox;
+
+macro_rules! try_custom {
+    ($e:expr, $err:expr) => (match $e { Ok(e) => e, Err(_) => return Err($err) })
+}
+
+macro_rules! try_custom_option {
+    ($e:expr, $err:expr) => (match $e { Some(e) => e, None => return Err($err) })
+}
+
 
 #[derive(Debug, RustcDecodable, RustcEncodable)]
 pub struct Vault {
     version: u16,
     padding: Vec<u8>,
-    entries: BTreeMap<String, (Vec<u8>, Vec<u8>)> // mapping: name → encrypted Entry
+    entries: BTreeMap<String, (Vec<u8>, u32, Vec<u8>)> // mapping: name → nonce, counter, encrypted Entry
 }
 
 #[derive(PartialEq, Debug, RustcDecodable, RustcEncodable)]
@@ -46,34 +55,54 @@ pub enum PasswordTemplate {
     Maximum, Long, Medium, Short, Basic, Pin
 }
 
+#[derive(Debug)]
+pub enum EntryError {
+    WrongEntriesKeyLength,
+    WrongNonceLength,
+    SeedGenerationError,
+    DecryptionError,
+    EncodingError,
+    DecodingError,
+    EntryNotFound
+}
+
 impl Vault {
-    pub fn entry_names(&self) -> Keys<String, (Vec<u8>, Vec<u8>)> {
+    pub fn entry_names(&self) -> Keys<String, (Vec<u8>, u32, Vec<u8>)> {
         self.entries.keys()
     }
 
-    pub fn get_entry(&self, entries_key: &SecStr, name: &str) -> Option<Entry> {
-        if let Some(&(ref nonce, ref ciphertext)) = self.entries.get(name) {
-            let nonce_wrapped = xsalsa20poly1305::Nonce::from_slice(&nonce).unwrap();
-            let entry_key = gen_site_seed(entries_key, name, 1).unwrap();
-            let entry_key_wrapped = xsalsa20poly1305::Key::from_slice(entry_key.unsecure()).unwrap();
-            let plaintext = SecStr::new(xsalsa20poly1305::open(&ciphertext, &nonce_wrapped, &entry_key_wrapped).unwrap());
-            Some(Decoder::from_bytes(plaintext.unsecure()).decode::<Entry>().next().unwrap().unwrap())
+    pub fn get_entry(&self, entries_key: &SecStr, name: &str) -> Result<Entry, EntryError> {
+        if let Some(&(ref nonce, counter, ref ciphertext)) = self.entries.get(name) {
+            let nonce_wrapped = try_custom_option!(secbox::Nonce::from_slice(&nonce), EntryError::WrongNonceLength);
+            let entry_key_wrapped = try!(gen_entry_key(entries_key, name, counter));
+            let plaintext = SecStr::new(try_custom!(secbox::open(&ciphertext, &nonce_wrapped, &entry_key_wrapped), EntryError::DecryptionError));
+            Ok(try_custom!(try_custom_option!(Decoder::from_bytes(plaintext.unsecure()).decode::<Entry>().next(), EntryError::DecodingError), EntryError::DecodingError))
         } else {
-            None
+            Err(EntryError::EntryNotFound)
         }
     }
 
-    pub fn put_entry(&mut self, entries_key: &SecStr, name: &str, entry: &Entry) {
-        let nonce_wrapped = xsalsa20poly1305::gen_nonce();
-        let xsalsa20poly1305::Nonce(nonce) = nonce_wrapped;
-        let entry_key = gen_site_seed(entries_key, name, 1).unwrap();
-        let entry_key_wrapped = xsalsa20poly1305::Key::from_slice(entry_key.unsecure()).unwrap();
+    pub fn put_entry(&mut self, entries_key: &SecStr, name: &str, entry: &Entry) -> Result<(), EntryError> {
+        let counter = match self.entries.get(name) {
+            Some(&(_, counter, _)) => counter + 1,
+            _ => 1
+        };
+        let nonce_wrapped = secbox::gen_nonce();
+        let secbox::Nonce(nonce) = nonce_wrapped;
+        let entry_key_wrapped = try!(gen_entry_key(entries_key, name, counter));
         let mut e = Encoder::from_memory();
-        e.encode(&[entry]).unwrap();
-        let ciphertext = xsalsa20poly1305::seal(e.as_bytes(), &nonce_wrapped, &entry_key_wrapped);
-        self.entries.insert(String::from(name), (nonce.to_vec(), ciphertext));
+        try_custom!(e.encode(&[entry]), EntryError::EncodingError);
+        let plaintext = SecStr::new(e.into_bytes());
+        let ciphertext = secbox::seal(plaintext.unsecure(), &nonce_wrapped, &entry_key_wrapped);
+        self.entries.insert(String::from(name), (nonce.to_vec(), counter, ciphertext));
+        Ok(())
     }
 
+}
+
+fn gen_entry_key(entries_key: &SecStr, name: &str, counter: u32) -> Result<secbox::Key, EntryError> {
+    let entry_key = try_custom!(gen_site_seed(entries_key, name, counter), EntryError::SeedGenerationError);
+    Ok(try_custom_option!(secbox::Key::from_slice(entry_key.unsecure()), EntryError::WrongEntriesKeyLength))
 }
 
 pub fn gen_entries_key(master_key: &SecStr) -> SecStr {
@@ -81,7 +110,7 @@ pub fn gen_entries_key(master_key: &SecStr) -> SecStr {
     msg.extend(b"technology.unrelenting.freepass");
     let mut dst = Vec::<u8>::with_capacity(64);
     unsafe {
-        ffi::crypto_generichash_blake2b(
+        sodium::crypto_generichash_blake2b(
             dst.as_mut_ptr() as *mut u8, 64,
             msg.as_ptr(), msg.len() as size_t,
             master_key.unsecure().as_ptr() as *const u8,
@@ -107,7 +136,7 @@ mod tests {
         let mut vault = Vault { version: 0, padding: b"".to_vec(), entries: BTreeMap::new() };
         let master_key = gen_master_key(SecStr::from("Correct Horse Battery Staple"), "Clarke Griffin").unwrap();
         let entries_key = gen_entries_key(&master_key);
-        vault.put_entry(&entries_key, "twitter", &twitter);
-        assert!(vault.get_entry(&entries_key, "twitter") == Some(twitter));
+        vault.put_entry(&entries_key, "twitter", &twitter).unwrap();
+        assert!(vault.get_entry(&entries_key, "twitter").unwrap() == twitter);
     }
 }
