@@ -60,12 +60,13 @@ pub enum Field {
 
 #[derive(PartialEq, Debug, RustcDecodable, RustcEncodable)]
 pub enum DerivedUsage {
-    Password(PasswordTemplate)
+    Password(PasswordTemplate),
+    RawKey,
 }
 
 #[derive(PartialEq, Debug, RustcDecodable, RustcEncodable)]
 pub enum StoredUsage {
-    Password
+    Password,
 }
 
 #[derive(PartialEq, Debug, RustcDecodable, RustcEncodable)]
