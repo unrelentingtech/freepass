@@ -69,10 +69,51 @@ fn main() {
         gen_master_key(SecStr::new(read_result), &user_name).unwrap()
     };
     let outer_key = gen_outer_key(&master_key);
-    let entries_key = gen_entries_key(&master_key);
 
-    let vault = match file {
+    let mut vault = match file {
         Some(f) => Vault::open(&outer_key, f).unwrap(),
         None => Vault::new(),
     };
+
+    
+    {// XXX: TEST ENTRY
+        let entries_key = gen_entries_key(&master_key);
+        let mut twitter = Entry::new();
+            twitter.fields.insert("password".to_owned(), Field::Derived {
+                counter: 4, site_name: Some("twitter.com".to_owned()), usage: DerivedUsage::Password(PasswordTemplate::Maximum)
+            });
+            twitter.fields.insert("old_password".to_owned(), Field::Stored {
+                data: SecStr::from("h0rse"), usage: StoredUsage::Password
+            });
+        let mut metadata = EntryMetadata::new();
+        vault.put_entry(&entries_key, "twitter", &twitter, &mut metadata).unwrap();
+    }
+
+    interact_entries(&mut vault, &master_key);
+}
+
+macro_rules! interaction {
+    ( { $($action_name:expr => $action_fn:expr),+ }, $data:expr, $data_fn:expr ) => {
+        {
+            let mut items = vec![$(">> ".to_string() + $action_name),+];
+            let data_items : Vec<String> = $data.clone().map(|x| " | ".to_string() + x).collect();
+            items.extend(data_items.iter().cloned());
+            match pick_from_list(default_menu_cmd().as_mut(), &items[..], "Selection: ").unwrap() {
+                $(ref x if *x == ">> ".to_string() + $action_name => $action_fn),+
+                ref x if data_items.contains(x) => ($data_fn)(&x[3..]),
+                ref x => panic!("Unknown selection: {}", x),
+            }
+        }
+    }
+}
+
+fn interact_entries(vault: &mut Vault, master_key: &SecStr) {
+    let entries_key = gen_entries_key(&master_key);
+    interaction!({
+        "Add new entry" => {
+            println!("YO");
+        }
+    }, vault.entry_names(), { |x|
+        println!("pick {}", x)
+    })
 }
