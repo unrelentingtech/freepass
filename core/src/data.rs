@@ -9,9 +9,11 @@ use rand::Rng;
 use rand::os::OsRng;
 use std::io;
 use std::result;
+use std::string;
 use std::collections::btree_map::{BTreeMap, Keys};
 use sodiumoxide::crypto::secretbox::xsalsa20poly1305 as secbox;
 use sodiumoxide::crypto::stream::aes128ctr as outerstream;
+use byteorder;
 
 #[derive(Debug, RustcDecodable, RustcEncodable)]
 pub struct EncryptedVault {
@@ -68,18 +70,27 @@ pub enum Field {
     Stored { data: SecStr, usage: StoredUsage }
 }
 
-#[derive(PartialEq, Debug, RustcDecodable, RustcEncodable)]
+#[derive(PartialEq, Clone, Copy, Debug, RustcDecodable, RustcEncodable)]
 pub enum DerivedUsage {
     Password(PasswordTemplate),
+    Ed25519Key(Ed25519Usage),
     RawKey,
 }
 
-#[derive(PartialEq, Debug, RustcDecodable, RustcEncodable)]
+#[derive(PartialEq, Clone, Copy, Debug, RustcDecodable, RustcEncodable)]
+pub enum Ed25519Usage {
+    SSH,
+    Signify,
+    SQRL,
+}
+
+#[derive(PartialEq, Clone, Copy, Debug, RustcDecodable, RustcEncodable)]
 pub enum StoredUsage {
+    Text,
     Password,
 }
 
-#[derive(PartialEq, Debug, RustcDecodable, RustcEncodable)]
+#[derive(PartialEq, Clone, Copy, Debug, RustcDecodable, RustcEncodable)]
 pub enum PasswordTemplate {
     // Same numbers as in the rusterpassword C API
     Maximum = 60,
@@ -96,17 +107,36 @@ pub enum Error {
     WrongEntryNonceLength,
     WrongOuterNonceLength,
     WrongOuterKeyLength,
+    WrongDerivedKeyLength,
+    InappropriateFormat,
     SeedGenerationError,
     DecryptionError,
     CodecError(CborError),
+    ByteCodecError(byteorder::Error),
+    StringCodecError(string::FromUtf8Error),
     OtherError(io::Error),
     DataError,
     EntryNotFound,
+    NotImplemented,
+    NotAvailableOnPlatform,
+    SSHAgentSocketNotFound,
 }
 
 impl From<CborError> for Error {
     fn from(err: CborError) -> Error {
         Error::CodecError(err)
+    }
+}
+
+impl From<byteorder::Error> for Error {
+    fn from(err: byteorder::Error) -> Error {
+        Error::ByteCodecError(err)
+    }
+}
+
+impl From<string::FromUtf8Error> for Error {
+    fn from(err: string::FromUtf8Error) -> Error {
+        Error::StringCodecError(err)
     }
 }
 
