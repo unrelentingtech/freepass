@@ -9,6 +9,7 @@ extern crate freepass_core;
 
 use std::{fs,env,io};
 use std::io::prelude::*;
+use std::collections::btree_map::BTreeMap;
 use ansi_term::Colour::Fixed;
 use ansi_term::ANSIStrings;
 use secstr::*;
@@ -115,43 +116,69 @@ fn interact_entries(vault: &mut Vault, file_path: &str, outer_key: &SecStr, mast
     loop {
         interaction!({
             "Add new entry" => {
-                interact_entry(vault, file_path, outer_key, master_key, &entries_key, &read_text("Entry name"), Entry::new(), EntryMetadata::new());
+                interact_entry_edit(vault, file_path, outer_key, master_key, &entries_key, &read_text("Entry name"), Entry::new(), EntryMetadata::new());
             }
         }, vault.entry_names(), |name| {
             let (entry, meta) = vault.get_entry(&entries_key, name).unwrap();
-            interact_entry(vault, file_path, outer_key, master_key, &entries_key, name, entry, meta);
+            interact_entry_edit(vault, file_path, outer_key, master_key, &entries_key, name, entry, meta);
+            // TODO interact_entry
         });
     }
 }
 
-fn interact_entry(vault: &mut Vault, file_path: &str, outer_key: &SecStr, master_key: &SecStr, entries_key: &SecStr, entry_name: &str, mut entry: Entry, mut meta: EntryMetadata) {
+fn interact_entry_edit(vault: &mut Vault, file_path: &str, outer_key: &SecStr, master_key: &SecStr, entries_key: &SecStr, entry_name: &str, mut entry: Entry, mut meta: EntryMetadata) {
     interaction!({
-        "Go back" => {
+        "Save" => {
             return ();
         },
         "Add field" => {
             entry = interact_field_edit(vault, entry, read_text("Field name"));
             save_field(vault, file_path, outer_key, entries_key, entry_name, &entry, &mut meta);
-            return interact_entry(vault, file_path, outer_key, master_key, entries_key, entry_name, entry, meta);
+            return interact_entry_edit(vault, file_path, outer_key, master_key, entries_key, entry_name, entry, meta);
         }
     }, entry.fields.keys(), |name: &str| {
         entry = interact_field_edit(vault, entry, name.to_string());
         save_field(vault, file_path, outer_key, entries_key, entry_name, &entry, &mut meta);
-        return interact_entry(vault, file_path, outer_key, master_key, entries_key, entry_name, entry, meta);
+        return interact_entry_edit(vault, file_path, outer_key, master_key, entries_key, entry_name, entry, meta);
     });
 }
 
 fn save_field(vault: &mut Vault, file_path: &str, outer_key: &SecStr, entries_key: &SecStr, entry_name: &str, entry: &Entry, meta: &mut EntryMetadata) {
     vault.put_entry(entries_key, entry_name, entry, meta).unwrap();
+    // Atomic save!
     vault.save(outer_key, fs::File::create(format!("{}.tmp", file_path)).unwrap()).unwrap();
     fs::rename(format!("{}.tmp", file_path), file_path).unwrap();
 }
 
 fn interact_field_edit(vault: &mut Vault, mut entry: Entry, field_name: String) -> Entry {
-    let field = entry.fields.remove(&field_name).unwrap_or(
+    let mut field = entry.fields.remove(&field_name).unwrap_or(
         Field::Derived { counter: 0, site_name: None, usage: DerivedUsage::Password(PasswordTemplate::Maximum) });
+    let mut field_actions : BTreeMap<String, Box<Fn(Field) -> Field>> = BTreeMap::new();
+    match field.clone() {
+        Field::Derived { counter, site_name, .. } => {
+            field_actions.insert(format!("Counter: {}", counter), Box::new(|f| {
+                if let Field::Derived { counter, site_name, usage } = f {
+                    let new_counter = read_text(&format!("Counter [{}]", counter)).parse::<u32>().ok().unwrap_or(counter);
+                    Field::Derived { counter: new_counter, site_name: site_name, usage: usage }
+                } else { unreachable!(); }
+            }));
+            field_actions.insert(match site_name {
+                Some(ref sn) => format!("Site name: {}", sn),
+                None => format!("Site name: <same as entry name>"),
+            }, Box::new(|f| {
+                if let Field::Derived { counter, usage, .. } = f {
+                    let new_site_name = read_text("Site name");
+                    Field::Derived { counter: counter, site_name: if new_site_name.len() == 0 { None } else { Some(new_site_name) }, usage: usage }
+                } else { unreachable!(); }
+            }));
+            // TODO usage
+        },
+        Field::Stored { .. } => {
+            // TODO
+        }
+    };
     interaction!({
-        "Save and go back" => {
+        "Go back (save)" => {
             entry.fields.insert(field_name, field);
             return entry;
         },
@@ -163,7 +190,9 @@ fn interact_field_edit(vault: &mut Vault, mut entry: Entry, field_name: String) 
             entry.fields.insert(new_field_name.clone(), field);
             return interact_field_edit(vault, entry, new_field_name);
         }
-    }, &vec!["x".to_string()].iter(), |x| {
+    }, field_actions.keys(), |key| {
+        field = field_actions.get(key).unwrap()(field);
+        entry.fields.insert(field_name.clone(), field);
         return interact_field_edit(vault, entry, field_name);
     })
 }
