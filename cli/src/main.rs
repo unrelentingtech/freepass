@@ -5,17 +5,21 @@ extern crate interactor;
 extern crate rusterpassword;
 extern crate sodiumoxide;
 extern crate ansi_term;
+extern crate rustc_serialize;
 extern crate freepass_core;
 
 use std::{fs,env,io};
 use std::io::prelude::*;
 use std::collections::btree_map::BTreeMap;
+use rustc_serialize::base64::{ToBase64, STANDARD};
+use rustc_serialize::hex::ToHex;
 use ansi_term::Colour::Fixed;
 use ansi_term::ANSIStrings;
 use secstr::*;
 use interactor::*;
 use rusterpassword::*;
 use freepass_core::data::*;
+use freepass_core::output::*;
 
 fn opt_or_env(matches: &clap::ArgMatches, opt_name: &str, env_name: &str) -> String {
     match matches.value_of(opt_name).map(|x| x.to_owned()).or(env::var_os(env_name).and_then(|s| s.into_string().ok())) {
@@ -80,19 +84,6 @@ fn main() {
         None => Vault::new(),
     };
 
-    {// XXX: TEST ENTRY
-        let entries_key = gen_entries_key(&master_key);
-        let mut twitter = Entry::new();
-            twitter.fields.insert("password".to_owned(), Field::Derived {
-                counter: 4, site_name: Some("twitter.com".to_owned()), usage: DerivedUsage::Password(PasswordTemplate::Maximum)
-            });
-            twitter.fields.insert("old_password".to_owned(), Field::Stored {
-                data: SecStr::from("h0rse"), usage: StoredUsage::Password
-            });
-        let mut metadata = EntryMetadata::new();
-        vault.put_entry(&entries_key, "twitter", &twitter, &mut metadata).unwrap();
-    }
-
     interact_entries(&mut vault, &file_path, &outer_key, &master_key);
 }
 
@@ -108,6 +99,15 @@ macro_rules! interaction {
                 ref x => panic!("Unknown selection: {}", x),
             }
         }
+    };
+    ( { $($action_name:expr => $action_fn:expr),+ }) => {
+        {
+            let items = vec![$(">> ".to_string() + $action_name),+];
+            match pick_from_list(default_menu_cmd().as_mut(), &items[..], "Selection: ").unwrap() {
+                $(ref x if *x == ">> ".to_string() + $action_name => $action_fn),+
+                ref x => panic!("Unknown selection: {}", x),
+            }
+        }
     }
 }
 
@@ -120,8 +120,47 @@ fn interact_entries(vault: &mut Vault, file_path: &str, outer_key: &SecStr, mast
             }
         }, vault.entry_names(), |name| {
             let (entry, meta) = vault.get_entry(&entries_key, name).unwrap();
-            interact_entry_edit(vault, file_path, outer_key, master_key, &entries_key, name, entry, meta);
-            // TODO interact_entry
+            interact_entry(vault, file_path, outer_key, master_key, &entries_key, name, entry, meta);
+        });
+    }
+}
+
+fn interact_entry(vault: &mut Vault, file_path: &str, outer_key: &SecStr, master_key: &SecStr, entries_key: &SecStr, entry_name: &str, entry: Entry, meta: EntryMetadata) {
+    loop {
+        interaction!({
+            "Go back" => {
+                return ();
+            },
+            "Edit" => {
+                return interact_entry_edit(vault, file_path, outer_key, master_key, entries_key, entry_name, entry, meta);
+            },
+            &format!("Last modified: {}", meta.updated_at.to_rfc2822()) => {},
+            &format!("Created:       {}", meta.created_at.to_rfc2822()) => {}
+        }, entry.fields.keys(), |name: &str| {
+            let output = process_output(entry_name, master_key, entry.fields.get(name).unwrap()).unwrap();
+            match output {
+                Output::PrivateText(s) => println!("{}", String::from_utf8(Vec::from(s.unsecure())).unwrap()),
+                Output::OpenText(s) => println!("{}", s),
+                Output::PrivateBinary(s) => {
+                    interaction!({
+                        "Go back" => {},
+                        "Print as Base64" => { println!("{}", s.unsecure().to_base64(STANDARD)) },
+                        "Print as hex" => { println!("{}", s.unsecure().to_hex()) }
+                    })
+                },
+                Output::Ed25519Keypair(usage, ref pubkey, ref seckey) => match usage {
+                    Ed25519Usage::SSH => {
+                        interaction!({
+                            "Go back" => {},
+                            "Print public key" => { println!("{}", ssh_public_key_output(&output, entry_name).unwrap()) },
+                            "Add private key to ssh-agent" => {
+                                ssh_agent_send_message(ssh_private_key_agent_message(&output, entry_name).unwrap()).unwrap()
+                            }
+                        })
+                    }
+                    _ => panic!("Unsupported key usage"),
+                }
+            }
         });
     }
 }
@@ -129,7 +168,7 @@ fn interact_entries(vault: &mut Vault, file_path: &str, outer_key: &SecStr, mast
 fn interact_entry_edit(vault: &mut Vault, file_path: &str, outer_key: &SecStr, master_key: &SecStr, entries_key: &SecStr, entry_name: &str, mut entry: Entry, mut meta: EntryMetadata) {
     interaction!({
         "Save" => {
-            return ();
+            return interact_entry(vault, file_path, outer_key, master_key, entries_key, entry_name, entry, meta);
         },
         "Add field" => {
             entry = interact_field_edit(vault, entry, read_text("Field name"));
@@ -143,19 +182,12 @@ fn interact_entry_edit(vault: &mut Vault, file_path: &str, outer_key: &SecStr, m
     });
 }
 
-fn save_field(vault: &mut Vault, file_path: &str, outer_key: &SecStr, entries_key: &SecStr, entry_name: &str, entry: &Entry, meta: &mut EntryMetadata) {
-    vault.put_entry(entries_key, entry_name, entry, meta).unwrap();
-    // Atomic save!
-    vault.save(outer_key, fs::File::create(format!("{}.tmp", file_path)).unwrap()).unwrap();
-    fs::rename(format!("{}.tmp", file_path), file_path).unwrap();
-}
-
 fn interact_field_edit(vault: &mut Vault, mut entry: Entry, field_name: String) -> Entry {
     let mut field = entry.fields.remove(&field_name).unwrap_or(
         Field::Derived { counter: 0, site_name: None, usage: DerivedUsage::Password(PasswordTemplate::Maximum) });
     let mut field_actions : BTreeMap<String, Box<Fn(Field) -> Field>> = BTreeMap::new();
     match field.clone() {
-        Field::Derived { counter, site_name, .. } => {
+        Field::Derived { counter, site_name, usage } => {
             field_actions.insert(format!("Counter: {}", counter), Box::new(|f| {
                 if let Field::Derived { counter, site_name, usage } = f {
                     let new_counter = read_text(&format!("Counter [{}]", counter)).parse::<u32>().ok().unwrap_or(counter);
@@ -171,14 +203,30 @@ fn interact_field_edit(vault: &mut Vault, mut entry: Entry, field_name: String) 
                     Field::Derived { counter: counter, site_name: if new_site_name.len() == 0 { None } else { Some(new_site_name) }, usage: usage }
                 } else { unreachable!(); }
             }));
-            // TODO usage
+            field_actions.insert(format!("Usage: {:?}", usage), Box::new(|f| {
+                if let Field::Derived { counter, site_name, .. } = f {
+                    let new_usage = interaction!({
+                        "Password(Maximum)"   => { DerivedUsage::Password(PasswordTemplate::Maximum) },
+                        "Password(Long)"      => { DerivedUsage::Password(PasswordTemplate::Long) },
+                        "Password(Medium)"    => { DerivedUsage::Password(PasswordTemplate::Medium) },
+                        "Password(Short)"     => { DerivedUsage::Password(PasswordTemplate::Short) },
+                        "Password(Basic)"     => { DerivedUsage::Password(PasswordTemplate::Basic) },
+                        "Password(Pin)"       => { DerivedUsage::Password(PasswordTemplate::Pin) },
+                        "Ed25519Key(SSH)"     => { DerivedUsage::Ed25519Key(Ed25519Usage::SSH) },
+                        "Ed25519Key(Signify)" => { DerivedUsage::Ed25519Key(Ed25519Usage::Signify) },
+                        "Ed25519Key(SQRL)"    => { DerivedUsage::Ed25519Key(Ed25519Usage::SQRL) },
+                        "RawKey"              => { DerivedUsage::RawKey }
+                    });
+                    Field::Derived { counter: counter, site_name: site_name, usage: new_usage }
+                } else { unreachable!(); }
+            }));
         },
         Field::Stored { .. } => {
             // TODO
         }
     };
     interaction!({
-        "Go back (save)" => {
+        "Go back" => {
             entry.fields.insert(field_name, field);
             return entry;
         },
@@ -195,6 +243,13 @@ fn interact_field_edit(vault: &mut Vault, mut entry: Entry, field_name: String) 
         entry.fields.insert(field_name.clone(), field);
         return interact_field_edit(vault, entry, field_name);
     })
+}
+
+fn save_field(vault: &mut Vault, file_path: &str, outer_key: &SecStr, entries_key: &SecStr, entry_name: &str, entry: &Entry, meta: &mut EntryMetadata) {
+    vault.put_entry(entries_key, entry_name, entry, meta).unwrap();
+    // Atomic save!
+    vault.save(outer_key, fs::File::create(format!("{}.tmp", file_path)).unwrap()).unwrap();
+    fs::rename(format!("{}.tmp", file_path), file_path).unwrap();
 }
 
 fn read_text(prompt: &str) -> String {

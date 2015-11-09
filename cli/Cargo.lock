@@ -7,6 +7,7 @@ dependencies = [
  "colorhash256 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "freepass-core 0.0.0",
  "interactor 0.1.0",
+ "rustc-serialize 0.3.16 (registry+https://github.com/rust-lang/crates.io-index)",
  "rusterpassword 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "secstr 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "sodiumoxide 0.0.9 (registry+https://github.com/rust-lang/crates.io-index)",

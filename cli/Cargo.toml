@@ -19,5 +19,6 @@ sodiumoxide = "0"
 rusterpassword = "0"
 colorhash256 = "0"
 interactor = { version = "0", path = "../../interactor" }
+rustc-serialize = "0"
 ansi_term = "0"
 clap = "1"
