@@ -64,7 +64,7 @@ impl Entry {
     }
 }
 
-#[derive(PartialEq, Debug, RustcDecodable, RustcEncodable)]
+#[derive(PartialEq, Clone, Debug, RustcDecodable, RustcEncodable)]
 pub enum Field {
     Derived { counter: u32, site_name: Option<String>, usage: DerivedUsage },
     Stored { data: SecStr, usage: StoredUsage }

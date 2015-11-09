@@ -50,7 +50,11 @@ fn main() {
     };
 
     let master_key = {
-        let read_result = read_from_tty(|buf, _, tty| {
+        let read_result = read_from_tty(|buf, b, tty| {
+            if b == 4 {
+                tty.write(b"\r                \r").unwrap();
+                return;
+            }
             let color_string = if buf.len() < 8 {
                 // Make it a bit harder to recover the password by e.g. someone filming how you're entering your password
                 // Although if you're entering your password on camera, you're kinda screwed anyway
@@ -65,7 +69,7 @@ fn main() {
                     ])).into_bytes()
             };
             tty.write(&color_string).unwrap();
-        }, true).unwrap();
+        }, true, true).unwrap();
         gen_master_key(SecStr::new(read_result), &user_name).unwrap()
     };
     let outer_key = gen_outer_key(&master_key);
@@ -75,7 +79,6 @@ fn main() {
         None => Vault::new(),
     };
 
-    
     {// XXX: TEST ENTRY
         let entries_key = gen_entries_key(&master_key);
         let mut twitter = Entry::new();
@@ -89,7 +92,7 @@ fn main() {
         vault.put_entry(&entries_key, "twitter", &twitter, &mut metadata).unwrap();
     }
 
-    interact_entries(&mut vault, &master_key);
+    interact_entries(&mut vault, &file_path, &outer_key, &master_key);
 }
 
 macro_rules! interaction {
@@ -107,13 +110,69 @@ macro_rules! interaction {
     }
 }
 
-fn interact_entries(vault: &mut Vault, master_key: &SecStr) {
+fn interact_entries(vault: &mut Vault, file_path: &str, outer_key: &SecStr, master_key: &SecStr) {
     let entries_key = gen_entries_key(&master_key);
+    loop {
+        interaction!({
+            "Add new entry" => {
+                interact_entry(vault, file_path, outer_key, master_key, &entries_key, &read_text("Entry name"), Entry::new(), EntryMetadata::new());
+            }
+        }, vault.entry_names(), |name| {
+            let (entry, meta) = vault.get_entry(&entries_key, name).unwrap();
+            interact_entry(vault, file_path, outer_key, master_key, &entries_key, name, entry, meta);
+        });
+    }
+}
+
+fn interact_entry(vault: &mut Vault, file_path: &str, outer_key: &SecStr, master_key: &SecStr, entries_key: &SecStr, entry_name: &str, mut entry: Entry, mut meta: EntryMetadata) {
     interaction!({
-        "Add new entry" => {
-            println!("YO");
+        "Go back" => {
+            return ();
+        },
+        "Add field" => {
+            entry = interact_field_edit(vault, entry, read_text("Field name"));
+            save_field(vault, file_path, outer_key, entries_key, entry_name, &entry, &mut meta);
+            return interact_entry(vault, file_path, outer_key, master_key, entries_key, entry_name, entry, meta);
         }
-    }, vault.entry_names(), { |x|
-        println!("pick {}", x)
+    }, entry.fields.keys(), |name: &str| {
+        entry = interact_field_edit(vault, entry, name.to_string());
+        save_field(vault, file_path, outer_key, entries_key, entry_name, &entry, &mut meta);
+        return interact_entry(vault, file_path, outer_key, master_key, entries_key, entry_name, entry, meta);
+    });
+}
+
+fn save_field(vault: &mut Vault, file_path: &str, outer_key: &SecStr, entries_key: &SecStr, entry_name: &str, entry: &Entry, meta: &mut EntryMetadata) {
+    vault.put_entry(entries_key, entry_name, entry, meta).unwrap();
+    vault.save(outer_key, fs::File::create(format!("{}.tmp", file_path)).unwrap()).unwrap();
+    fs::rename(format!("{}.tmp", file_path), file_path).unwrap();
+}
+
+fn interact_field_edit(vault: &mut Vault, mut entry: Entry, field_name: String) -> Entry {
+    let field = entry.fields.remove(&field_name).unwrap_or(
+        Field::Derived { counter: 0, site_name: None, usage: DerivedUsage::Password(PasswordTemplate::Maximum) });
+    interaction!({
+        "Save and go back" => {
+            entry.fields.insert(field_name, field);
+            return entry;
+        },
+        &format!("Rename field [{}]", field_name) => {
+            let mut new_field_name = read_text(&format!("New field name [{}]", field_name));
+            if new_field_name.len() == 0 {
+                new_field_name = field_name.to_string();
+            }
+            entry.fields.insert(new_field_name.clone(), field);
+            return interact_field_edit(vault, entry, new_field_name);
+        }
+    }, &vec!["x".to_string()].iter(), |x| {
+        return interact_field_edit(vault, entry, field_name);
     })
+}
+
+fn read_text(prompt: &str) -> String {
+    let mut tty = fs::OpenOptions::new().read(true).write(true).open("/dev/tty").unwrap();
+    tty.write(&format!("\r{}: ", prompt).into_bytes()).unwrap();
+    let mut reader = io::BufReader::new(tty);
+    let mut input = String::new();
+    reader.read_line(&mut input).unwrap();
+    input.replace("\n", "")
 }
