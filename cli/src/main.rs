@@ -246,8 +246,27 @@ fn interact_field_edit(vault: &mut Vault, mut entry: Entry, field_name: String) 
                 } else { unreachable!(); }
             }));
         },
-        Field::Stored { .. } => {
-            // TODO
+        Field::Stored { usage, data, .. } => {
+            let txt = String::from_utf8(data.unsecure().to_vec()).unwrap_or("<invalid UTF-8>".to_string());
+            field_actions.insert(format!("Change text [{}]", txt), Box::new(|f| {
+                if let Field::Stored { usage, data, .. } = f {
+                    let txt = String::from_utf8(data.unsecure().to_vec()).unwrap_or("<invalid UTF-8>".to_string());
+                    let mut new_data = read_text(&format!("New text [{}]", txt));
+                    if new_data.len() == 0 {
+                        new_data = txt;
+                    }
+                    Field::Stored { data: SecStr::from(new_data), usage: usage }
+                } else { unreachable!(); }
+            }));
+            field_actions.insert(format!("Usage: {:?}", usage), Box::new(|f| {
+                if let Field::Stored { data, .. } = f {
+                    let new_usage = interaction!({
+                        "Password"            => { StoredUsage::Password },
+                        "Text"                => { StoredUsage::Text }
+                    });
+                    Field::Stored { data: data, usage: new_usage }
+                } else { unreachable!(); }
+            }));
         }
     };
     interaction!({
