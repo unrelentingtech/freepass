@@ -14,7 +14,7 @@ name = "freepass_core"
 
 [dependencies]
 chrono = { version = "0", features = ["rustc-serialize"] }
-secstr = { version = "0.2", features = ["cbor-serialize"] }
+secstr = { version = "0.2.1", features = ["cbor-serialize", "libsodium-sys"] }
 libsodium-sys = "0"
 sodiumoxide = "0"
 rusterpassword = "0"
