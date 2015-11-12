@@ -10,6 +10,7 @@ extern crate freepass_core;
 
 use std::{fs,env,io};
 use std::io::prelude::*;
+use std::process::{Command, Stdio};
 use std::collections::btree_map::BTreeMap;
 use rustc_serialize::base64::{ToBase64, STANDARD};
 use rustc_serialize::hex::ToHex;
@@ -20,13 +21,6 @@ use interactor::*;
 use rusterpassword::*;
 use freepass_core::data::*;
 use freepass_core::output::*;
-
-fn opt_or_env(matches: &clap::ArgMatches, opt_name: &str, env_name: &str) -> String {
-    match matches.value_of(opt_name).map(|x| x.to_owned()).or(env::var_os(env_name).and_then(|s| s.into_string().ok())) {
-        Some(s) => s,
-        None => panic!("Option {} or environment variable {} not found", opt_name, env_name)
-    }
-}
 
 fn main() {
     let matches = clap_app!(freepass =>
@@ -55,27 +49,11 @@ fn main() {
     };
 
     let master_key = {
-        let read_result = read_from_tty(|buf, b, tty| {
-            if b == 4 {
-                tty.write(b"\r                \r").unwrap();
-                return;
-            }
-            let color_string = if buf.len() < 8 {
-                // Make it a bit harder to recover the password by e.g. someone filming how you're entering your password
-                // Although if you're entering your password on camera, you're kinda screwed anyway
-                b"\rPassword: ~~~~~~".to_vec()
-            } else {
-                let colors = colorhash256::hash_as_ansi(buf);
-                format!("\rPassword: {}",
-                    ANSIStrings(&[
-                        Fixed(colors[0] as u8).paint("~~"),
-                        Fixed(colors[1] as u8).paint("~~"),
-                        Fixed(colors[2] as u8).paint("~~"),
-                    ])).into_bytes()
-            };
-            tty.write(&color_string).unwrap();
-        }, true, true).unwrap();
-        gen_master_key(SecStr::new(read_result), &user_name).unwrap()
+        let password = match env::var_os("FREEPASS_ASKPASS").or(env::var_os("ASKPASS")) {
+            Some(s) => get_password_askpass(Command::new(s)),
+            None => get_password_console(),
+        };
+        gen_master_key(password, &user_name).unwrap()
     };
     let outer_key = gen_outer_key(&master_key);
 
@@ -87,13 +65,56 @@ fn main() {
     interact_entries(&mut vault, &file_path, &outer_key, &master_key);
 }
 
+fn opt_or_env(matches: &clap::ArgMatches, opt_name: &str, env_name: &str) -> String {
+    match matches.value_of(opt_name).map(|x| x.to_owned()).or(env::var_os(env_name).and_then(|s| s.into_string().ok())) {
+        Some(s) => s,
+        None => panic!("Option {} or environment variable {} not found", opt_name, env_name)
+    }
+}
+
+fn get_password_console() -> SecStr {
+    SecStr::new(read_from_tty(|buf, b, tty| {
+        if b == 4 {
+            tty.write(b"\r                \r").unwrap();
+            return;
+        }
+        let color_string = if buf.len() < 8 {
+            // Make it a bit harder to recover the password by e.g. someone filming how you're entering your password
+            // Although if you're entering your password on camera, you're kinda screwed anyway
+            b"\rPassword: ~~~~~~".to_vec()
+        } else {
+            let colors = colorhash256::hash_as_ansi(buf);
+            format!("\rPassword: {}",
+                ANSIStrings(&[
+                    Fixed(colors[0] as u8).paint("~~"),
+                    Fixed(colors[1] as u8).paint("~~"),
+                    Fixed(colors[2] as u8).paint("~~"),
+                ])).into_bytes()
+        };
+        tty.write(&color_string).unwrap();
+    }, true, true).unwrap())
+}
+
+fn get_password_askpass(mut command: Command) -> SecStr {
+    let process = command.stdout(Stdio::piped()).spawn().unwrap();
+    let mut result = Vec::new();
+    let mut reader = io::BufReader::new(process.stdout.unwrap());
+    let size = reader.read_until(b'\n', &mut result).unwrap();
+    result.truncate(size - 1);
+    SecStr::new(result)
+}
+
+pub fn menu_cmd() -> Option<Command> {
+    env::var_os("FREEPASS_MENU").or(env::var_os("MENU")).map(|s| Command::new(s))
+}
+
 macro_rules! interaction {
     ( { $($action_name:expr => $action_fn:expr),+ }, $data:expr, $data_fn:expr ) => {
         {
             let mut items = vec![$(">> ".to_string() + $action_name),+];
             let data_items : Vec<String> = $data.clone().map(|x| " | ".to_string() + x).collect();
             items.extend(data_items.iter().cloned());
-            match pick_from_list(default_menu_cmd().as_mut(), &items[..], "Selection: ").unwrap() {
+            match pick_from_list(menu_cmd().as_mut(), &items[..], "Selection: ").unwrap() {
                 $(ref x if *x == ">> ".to_string() + $action_name => $action_fn),+
                 ref x if data_items.contains(x) => ($data_fn)(&x[3..]),
                 ref x => panic!("Unknown selection: {}", x),
@@ -103,7 +124,7 @@ macro_rules! interaction {
     ( { $($action_name:expr => $action_fn:expr),+ }) => {
         {
             let items = vec![$(">> ".to_string() + $action_name),+];
-            match pick_from_list(default_menu_cmd().as_mut(), &items[..], "Selection: ").unwrap() {
+            match pick_from_list(menu_cmd().as_mut(), &items[..], "Selection: ").unwrap() {
                 $(ref x if *x == ">> ".to_string() + $action_name => $action_fn),+
                 ref x => panic!("Unknown selection: {}", x),
             }
@@ -115,6 +136,9 @@ fn interact_entries(vault: &mut Vault, file_path: &str, outer_key: &SecStr, mast
     let entries_key = gen_entries_key(&master_key);
     loop {
         interaction!({
+            "Quit" => {
+                return ();
+            },
             "Add new entry" => {
                 interact_entry_edit(vault, file_path, outer_key, master_key, &entries_key, &read_text("Entry name"), Entry::new(), EntryMetadata::new());
             }
