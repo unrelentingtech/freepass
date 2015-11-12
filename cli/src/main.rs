@@ -141,7 +141,9 @@ fn interact_entries(vault: &mut Vault, file_path: &str, outer_key: &SecStr, mast
                 return ();
             },
             "Add new entry" => {
-                interact_entry_edit(vault, file_path, outer_key, master_key, &entries_key, &read_text("Entry name"), Entry::new(), EntryMetadata::new());
+                if let Some(entry_name) = read_text("Entry name") {
+                    interact_entry_edit(vault, file_path, outer_key, master_key, &entries_key, &entry_name, Entry::new(), EntryMetadata::new());
+                }
             }
         }, vault.entry_names(), |name| {
             let (entry, meta) = vault.get_entry(&entries_key, name).unwrap();
@@ -211,16 +213,15 @@ fn interact_entry_edit(vault: &mut Vault, file_path: &str, outer_key: &SecStr, m
             })
         },
         &format!("Rename entry [{}]", entry_name) => {
-            let mut new_entry_name = read_text(&format!("New entry name [{}]", entry_name));
-            if new_entry_name.len() == 0 {
-                new_entry_name = entry_name.to_string();
-            }
+            let new_entry_name = read_text(&format!("New entry name [{}]", entry_name)).unwrap_or(entry_name.to_string());
             vault.remove_entry(entry_name);
             vault.put_entry(entries_key, &new_entry_name, &entry, &mut meta).unwrap();
             return interact_entry_edit(vault, file_path, outer_key, master_key, entries_key, &new_entry_name, entry, meta);
         },
         "Add field" => {
-            entry = interact_field_edit(vault, entry, read_text("Field name"));
+            if let Some(field_name) = read_text("Field name") {
+                entry = interact_field_edit(vault, entry, field_name);
+            }
             return interact_entry_edit(vault, file_path, outer_key, master_key, entries_key, entry_name, entry, meta);
         }
     }, entry.fields.keys(), |name: &str| {
@@ -237,7 +238,7 @@ fn interact_field_edit(vault: &mut Vault, mut entry: Entry, field_name: String) 
         Field::Derived { counter, site_name, usage } => {
             field_actions.insert(format!("Counter: {}", counter), Box::new(|f| {
                 if let Field::Derived { counter, site_name, usage } = f {
-                    let new_counter = read_text(&format!("Counter [{}]", counter)).parse::<u32>().ok().unwrap_or(counter);
+                    let new_counter = read_text(&format!("Counter [{}]", counter)).and_then(|c| c.parse::<u32>().ok()).unwrap_or(counter);
                     Field::Derived { counter: new_counter, site_name: site_name, usage: usage }
                 } else { unreachable!(); }
             }));
@@ -247,7 +248,7 @@ fn interact_field_edit(vault: &mut Vault, mut entry: Entry, field_name: String) 
             }, Box::new(|f| {
                 if let Field::Derived { counter, usage, .. } = f {
                     let new_site_name = read_text("Site name");
-                    Field::Derived { counter: counter, site_name: if new_site_name.len() == 0 { None } else { Some(new_site_name) }, usage: usage }
+                    Field::Derived { counter: counter, site_name: new_site_name, usage: usage }
                 } else { unreachable!(); }
             }));
             field_actions.insert(format!("Usage: {:?}", usage), Box::new(|f| {
@@ -273,10 +274,7 @@ fn interact_field_edit(vault: &mut Vault, mut entry: Entry, field_name: String) 
             field_actions.insert(format!("Change text [{}]", txt), Box::new(|f| {
                 if let Field::Stored { usage, data, .. } = f {
                     let txt = String::from_utf8(data.unsecure().to_vec()).unwrap_or("<invalid UTF-8>".to_string());
-                    let mut new_data = read_text(&format!("New text [{}]", txt));
-                    if new_data.len() == 0 {
-                        new_data = txt;
-                    }
+                    let new_data = read_text(&format!("New text [{}]", txt)).unwrap_or(txt);
                     Field::Stored { data: SecStr::from(new_data), usage: usage }
                 } else { unreachable!(); }
             }));
@@ -308,10 +306,7 @@ fn interact_field_edit(vault: &mut Vault, mut entry: Entry, field_name: String) 
             })
         },
         &format!("Rename field [{}]", field_name) => {
-            let mut new_field_name = read_text(&format!("New field name [{}]", field_name));
-            if new_field_name.len() == 0 {
-                new_field_name = field_name.to_string();
-            }
+            let new_field_name = read_text(&format!("New field name [{}]", field_name)).unwrap_or(field_name.to_string());
             entry.fields.insert(new_field_name.clone(), field);
             return interact_field_edit(vault, entry, new_field_name);
         }
@@ -328,11 +323,16 @@ fn save_vault(vault: &mut Vault, file_path: &str, outer_key: &SecStr) {
     fs::rename(format!("{}.tmp", file_path), file_path).unwrap();
 }
 
-fn read_text(prompt: &str) -> String {
+fn read_text(prompt: &str) -> Option<String> {
     let mut tty = fs::OpenOptions::new().read(true).write(true).open("/dev/tty").unwrap();
     tty.write(&format!("\r{}: ", prompt).into_bytes()).unwrap();
     let mut reader = io::BufReader::new(tty);
     let mut input = String::new();
     reader.read_line(&mut input).unwrap();
-    input.replace("\n", "")
+    input = input.replace("\n", "");
+    if input.len() > 0 {
+        Some(input)
+    } else {
+        None
+    }
 }
