@@ -193,16 +193,28 @@ fn interact_entry(vault: &mut Vault, file_path: &str, outer_key: &SecStr, master
 fn interact_entry_edit(vault: &mut Vault, file_path: &str, outer_key: &SecStr, master_key: &SecStr, entries_key: &SecStr, entry_name: &str, mut entry: Entry, mut meta: EntryMetadata) {
     interaction!({
         "Save" => {
+            vault.put_entry(entries_key, entry_name, &entry, &mut meta).unwrap();
+            save_vault(vault, file_path, outer_key);
             return interact_entry(vault, file_path, outer_key, master_key, entries_key, entry_name, entry, meta);
+        },
+        "Delete" => {
+            interaction!({
+                "Cancel" => {
+                    return interact_entry_edit(vault, file_path, outer_key, master_key, entries_key, entry_name, entry, meta);
+                },
+                &format!("DELETE THE ENTRY '{}'!", entry_name) => {
+                    vault.remove_entry(entry_name).unwrap();
+                    save_vault(vault, file_path, outer_key);
+                    return ();
+                }
+            })
         },
         "Add field" => {
             entry = interact_field_edit(vault, entry, read_text("Field name"));
-            save_field(vault, file_path, outer_key, entries_key, entry_name, &entry, &mut meta);
             return interact_entry_edit(vault, file_path, outer_key, master_key, entries_key, entry_name, entry, meta);
         }
     }, entry.fields.keys(), |name: &str| {
         entry = interact_field_edit(vault, entry, name.to_string());
-        save_field(vault, file_path, outer_key, entries_key, entry_name, &entry, &mut meta);
         return interact_entry_edit(vault, file_path, outer_key, master_key, entries_key, entry_name, entry, meta);
     });
 }
@@ -274,6 +286,17 @@ fn interact_field_edit(vault: &mut Vault, mut entry: Entry, field_name: String) 
             entry.fields.insert(field_name, field);
             return entry;
         },
+        &format!("Delete field [{}]", field_name) => {
+            interaction!({
+                "Cancel" => {
+                    return interact_field_edit(vault, entry, field_name);
+                },
+                &format!("DELETE THE FIELD '{}'!", field_name) => {
+                    entry.fields.remove(&field_name);
+                    return entry;
+                }
+            })
+        },
         &format!("Rename field [{}]", field_name) => {
             let mut new_field_name = read_text(&format!("New field name [{}]", field_name));
             if new_field_name.len() == 0 {
@@ -289,8 +312,7 @@ fn interact_field_edit(vault: &mut Vault, mut entry: Entry, field_name: String) 
     })
 }
 
-fn save_field(vault: &mut Vault, file_path: &str, outer_key: &SecStr, entries_key: &SecStr, entry_name: &str, entry: &Entry, meta: &mut EntryMetadata) {
-    vault.put_entry(entries_key, entry_name, entry, meta).unwrap();
+fn save_vault(vault: &mut Vault, file_path: &str, outer_key: &SecStr) {
     // Atomic save!
     vault.save(outer_key, fs::File::create(format!("{}.tmp", file_path)).unwrap()).unwrap();
     fs::rename(format!("{}.tmp", file_path), file_path).unwrap();

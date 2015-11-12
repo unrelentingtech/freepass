@@ -186,6 +186,14 @@ impl Vault {
         Ok(())
     }
 
+    pub fn remove_entry(&mut self, name: &str) -> Result<()> {
+        if let Some(_) = self.entries.remove(name) {
+            Ok(())
+        } else {
+            Err(Error::EntryNotFound)
+        }
+    }
+
     pub fn open<T: io::Read>(outer_key: &SecStr, reader: T) -> Result<Vault> {
         let wrapper = try!(try!(Decoder::from_reader(reader).decode::<EncryptedVault>().next().ok_or(Error::DataError)));
         let nonce_wrapped = try!(outerstream::Nonce::from_slice(&wrapper.nonce).ok_or(Error::WrongOuterNonceLength));
