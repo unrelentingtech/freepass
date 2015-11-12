@@ -3,7 +3,6 @@ extern crate secstr;
 extern crate colorhash256;
 extern crate interactor;
 extern crate rusterpassword;
-extern crate sodiumoxide;
 extern crate ansi_term;
 extern crate rustc_serialize;
 extern crate freepass_core;
@@ -37,7 +36,7 @@ fn main() {
     let file_path = opt_or_env(&matches, "FILE", "FREEPASS_FILE");
     let user_name = opt_or_env(&matches, "NAME", "FREEPASS_NAME");
 
-    sodiumoxide::init();
+    freepass_core::init();
 
     // Do this early because we don't want to ask for the password when we get permission denied or something.
     // Ensure we can write! Maybe someone somewhere would want to open the vault in read-only mode...
@@ -62,7 +61,9 @@ fn main() {
         None => Vault::new(),
     };
 
-    interact_entries(&mut vault, &file_path, &outer_key, &master_key);
+    match matches.subcommand() {
+        ("interact", _) | _  => interact_entries(&mut vault, &file_path, &outer_key, &master_key),
+    }
 }
 
 fn opt_or_env(matches: &clap::ArgMatches, opt_name: &str, env_name: &str) -> String {
