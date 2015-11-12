@@ -156,11 +156,12 @@ fn interact_entry(vault: &mut Vault, file_path: &str, outer_key: &SecStr, master
             "Go back" => {
                 return ();
             },
+            &format!("Name:          {}", entry_name) => {},
+            &format!("Last modified: {}", meta.updated_at.to_rfc2822()) => {},
+            &format!("Created:       {}", meta.created_at.to_rfc2822()) => {},
             "Edit" => {
                 return interact_entry_edit(vault, file_path, outer_key, master_key, entries_key, entry_name, entry, meta);
-            },
-            &format!("Last modified: {}", meta.updated_at.to_rfc2822()) => {},
-            &format!("Created:       {}", meta.created_at.to_rfc2822()) => {}
+            }
         }, entry.fields.keys(), |name: &str| {
             let output = process_output(entry_name, master_key, entry.fields.get(name).unwrap()).unwrap();
             match output {
@@ -192,22 +193,31 @@ fn interact_entry(vault: &mut Vault, file_path: &str, outer_key: &SecStr, master
 
 fn interact_entry_edit(vault: &mut Vault, file_path: &str, outer_key: &SecStr, master_key: &SecStr, entries_key: &SecStr, entry_name: &str, mut entry: Entry, mut meta: EntryMetadata) {
     interaction!({
-        "Save" => {
+        &format!("  Save entry [{}]", entry_name) => {
             vault.put_entry(entries_key, entry_name, &entry, &mut meta).unwrap();
             save_vault(vault, file_path, outer_key);
             return interact_entry(vault, file_path, outer_key, master_key, entries_key, entry_name, entry, meta);
         },
-        "Delete" => {
+        &format!("Delete entry [{}]", entry_name) => {
             interaction!({
                 "Cancel" => {
                     return interact_entry_edit(vault, file_path, outer_key, master_key, entries_key, entry_name, entry, meta);
                 },
                 &format!("DELETE THE ENTRY '{}'!", entry_name) => {
-                    vault.remove_entry(entry_name).unwrap();
+                    vault.remove_entry(entry_name);
                     save_vault(vault, file_path, outer_key);
                     return ();
                 }
             })
+        },
+        &format!("Rename entry [{}]", entry_name) => {
+            let mut new_entry_name = read_text(&format!("New entry name [{}]", entry_name));
+            if new_entry_name.len() == 0 {
+                new_entry_name = entry_name.to_string();
+            }
+            vault.remove_entry(entry_name);
+            vault.put_entry(entries_key, &new_entry_name, &entry, &mut meta).unwrap();
+            return interact_entry_edit(vault, file_path, outer_key, master_key, entries_key, &new_entry_name, entry, meta);
         },
         "Add field" => {
             entry = interact_field_edit(vault, entry, read_text("Field name"));

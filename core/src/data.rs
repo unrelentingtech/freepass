@@ -186,12 +186,8 @@ impl Vault {
         Ok(())
     }
 
-    pub fn remove_entry(&mut self, name: &str) -> Result<()> {
-        if let Some(_) = self.entries.remove(name) {
-            Ok(())
-        } else {
-            Err(Error::EntryNotFound)
-        }
+    pub fn remove_entry(&mut self, name: &str) {
+        self.entries.remove(name);
     }
 
     pub fn open<T: io::Read>(outer_key: &SecStr, reader: T) -> Result<Vault> {
