@@ -2,6 +2,8 @@
 
 The free password manager for power users: UNIX edition (command line… but not just command line).
 
+![CLI screencast gif](https://packett.cool/pub/screens/freepass-cli.gif)
+
 ## Installation
 
 You need to install [libsodium](https://download.libsodium.org/doc/) on your system first.
@@ -74,6 +76,8 @@ fi
 
 Put it into `~/.local/bin` as `freepass-x11`, make sure `~/.local/bin` is on your `$PATH`, bind it to a hotkey using [sxhkd]...
 Do whatever you want, really :-)
+
+![X11 screencast gif](https://packett.cool/pub/screens/freepass-x11.gif)
 
 [colorhash]: https://github.com/valpackett/colorhash256
 [peco]: https://github.com/peco/peco
