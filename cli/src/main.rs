@@ -7,15 +7,15 @@ extern crate ansi_term;
 extern crate rustc_serialize;
 extern crate freepass_core;
 
+mod util;
+
 use std::{fs,env,io};
 use std::io::prelude::*;
-use std::process::{Command, Stdio};
+use std::process::Command;
 use std::collections::btree_map::BTreeMap;
 use rustc_serialize::base64::{ToBase64, STANDARD};
 use rustc_serialize::hex::ToHex;
-use ansi_term::Colour::Fixed;
-use ansi_term::ANSIStrings;
-use secstr::*;
+use secstr::SecStr;
 use interactor::*;
 use rusterpassword::*;
 use freepass_core::data::*;
@@ -49,8 +49,8 @@ fn main() {
 
     let master_key = {
         let password = match env::var_os("FREEPASS_ASKPASS").or(env::var_os("ASKPASS")) {
-            Some(s) => get_password_askpass(Command::new(s)),
-            None => get_password_console(),
+            Some(s) => util::get_password_askpass(Command::new(s)),
+            None => util::get_password_console(),
         };
         gen_master_key(password, &user_name).unwrap()
     };
@@ -73,40 +73,13 @@ fn opt_or_env(matches: &clap::ArgMatches, opt_name: &str, env_name: &str) -> Str
     }
 }
 
-fn get_password_console() -> SecStr {
-    SecStr::new(read_from_tty(|buf, b, tty| {
-        if b == 4 {
-            tty.write(b"\r                \r").unwrap();
-            return;
-        }
-        let color_string = if buf.len() < 8 {
-            // Make it a bit harder to recover the password by e.g. someone filming how you're entering your password
-            // Although if you're entering your password on camera, you're kinda screwed anyway
-            b"\rPassword: ~~~~~~".to_vec()
-        } else {
-            let colors = colorhash256::hash_as_ansi(buf);
-            format!("\rPassword: {}",
-                ANSIStrings(&[
-                    Fixed(colors[0] as u8).paint("~~"),
-                    Fixed(colors[1] as u8).paint("~~"),
-                    Fixed(colors[2] as u8).paint("~~"),
-                ])).into_bytes()
-        };
-        tty.write(&color_string).unwrap();
-    }, true, true).unwrap())
-}
-
-fn get_password_askpass(mut command: Command) -> SecStr {
-    let process = command.stdout(Stdio::piped()).spawn().unwrap();
-    let mut result = Vec::new();
-    let mut reader = io::BufReader::new(process.stdout.unwrap());
-    let size = reader.read_until(b'\n', &mut result).unwrap();
-    result.truncate(size - 1);
-    SecStr::new(result)
-}
-
-pub fn menu_cmd() -> Option<Command> {
-    env::var_os("FREEPASS_MENU").or(env::var_os("MENU")).map(|s| Command::new(s))
+fn menu_cmd() -> Option<Command> {
+    env::var_os("FREEPASS_MENU").or(env::var_os("MENU"))
+        .map(|s| {
+            let mut cmd = Command::new(s);
+            cmd.env("MENU_FOR_FREEPASS", "1");
+            cmd
+        })
 }
 
 macro_rules! interaction {
@@ -141,7 +114,7 @@ fn interact_entries(vault: &mut Vault, file_path: &str, outer_key: &SecStr, mast
                 return ();
             },
             "Add new entry" => {
-                if let Some(entry_name) = read_text("Entry name") {
+                if let Some(entry_name) = util::read_text("Entry name") {
                     interact_entry_edit(vault, file_path, outer_key, master_key, &entries_key, &entry_name, Entry::new(), EntryMetadata::new());
                 }
             }
@@ -213,13 +186,13 @@ fn interact_entry_edit(vault: &mut Vault, file_path: &str, outer_key: &SecStr, m
             })
         },
         &format!("Rename entry [{}]", entry_name) => {
-            let new_entry_name = read_text(&format!("New entry name [{}]", entry_name)).unwrap_or(entry_name.to_string());
+            let new_entry_name = util::read_text(&format!("New entry name [{}]", entry_name)).unwrap_or(entry_name.to_string());
             vault.remove_entry(entry_name);
             vault.put_entry(entries_key, &new_entry_name, &entry, &mut meta).unwrap();
             return interact_entry_edit(vault, file_path, outer_key, master_key, entries_key, &new_entry_name, entry, meta);
         },
         "Add field" => {
-            if let Some(field_name) = read_text("Field name") {
+            if let Some(field_name) = util::read_text("Field name") {
                 entry = interact_field_edit(vault, entry, field_name);
             }
             return interact_entry_edit(vault, file_path, outer_key, master_key, entries_key, entry_name, entry, meta);
@@ -238,7 +211,7 @@ fn interact_field_edit(vault: &mut Vault, mut entry: Entry, field_name: String) 
         Field::Derived { counter, site_name, usage } => {
             field_actions.insert(format!("Counter: {}", counter), Box::new(|f| {
                 if let Field::Derived { counter, site_name, usage } = f {
-                    let new_counter = read_text(&format!("Counter [{}]", counter)).and_then(|c| c.parse::<u32>().ok()).unwrap_or(counter);
+                    let new_counter = util::read_text(&format!("Counter [{}]", counter)).and_then(|c| c.parse::<u32>().ok()).unwrap_or(counter);
                     Field::Derived { counter: new_counter, site_name: site_name, usage: usage }
                 } else { unreachable!(); }
             }));
@@ -247,7 +220,7 @@ fn interact_field_edit(vault: &mut Vault, mut entry: Entry, field_name: String) 
                 None => format!("Site name: <same as entry name>"),
             }, Box::new(|f| {
                 if let Field::Derived { counter, usage, .. } = f {
-                    let new_site_name = read_text("Site name");
+                    let new_site_name = util::read_text("Site name");
                     Field::Derived { counter: counter, site_name: new_site_name, usage: usage }
                 } else { unreachable!(); }
             }));
@@ -274,7 +247,7 @@ fn interact_field_edit(vault: &mut Vault, mut entry: Entry, field_name: String) 
             field_actions.insert(format!("Change text [{}]", txt), Box::new(|f| {
                 if let Field::Stored { usage, data, .. } = f {
                     let txt = String::from_utf8(data.unsecure().to_vec()).unwrap_or("<invalid UTF-8>".to_string());
-                    let new_data = read_text(&format!("New text [{}]", txt)).unwrap_or(txt);
+                    let new_data = util::read_text(&format!("New text [{}]", txt)).unwrap_or(txt);
                     Field::Stored { data: SecStr::from(new_data), usage: usage }
                 } else { unreachable!(); }
             }));
@@ -306,7 +279,7 @@ fn interact_field_edit(vault: &mut Vault, mut entry: Entry, field_name: String) 
             })
         },
         &format!("Rename field [{}]", field_name) => {
-            let new_field_name = read_text(&format!("New field name [{}]", field_name)).unwrap_or(field_name.to_string());
+            let new_field_name = util::read_text(&format!("New field name [{}]", field_name)).unwrap_or(field_name.to_string());
             entry.fields.insert(new_field_name.clone(), field);
             return interact_field_edit(vault, entry, new_field_name);
         }
@@ -321,18 +294,4 @@ fn save_vault(vault: &mut Vault, file_path: &str, outer_key: &SecStr) {
     // Atomic save!
     vault.save(outer_key, fs::File::create(format!("{}.tmp", file_path)).unwrap()).unwrap();
     fs::rename(format!("{}.tmp", file_path), file_path).unwrap();
-}
-
-fn read_text(prompt: &str) -> Option<String> {
-    let mut tty = fs::OpenOptions::new().read(true).write(true).open("/dev/tty").unwrap();
-    tty.write(&format!("\r{}: ", prompt).into_bytes()).unwrap();
-    let mut reader = io::BufReader::new(tty);
-    let mut input = String::new();
-    reader.read_line(&mut input).unwrap();
-    input = input.replace("\n", "");
-    if input.len() > 0 {
-        Some(input)
-    } else {
-        None
-    }
 }
