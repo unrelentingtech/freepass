@@ -188,11 +188,14 @@ fn interact_entry_edit(vault: &mut Vault, file_path: &str, outer_key: &SecStr, m
 }
 
 fn interact_field_edit(vault: &mut Vault, mut entry: Entry, field_name: String) -> Entry {
-    let mut field = entry.fields.remove(&field_name).unwrap_or(
-        Field::Derived { counter: 0, site_name: None, usage: DerivedUsage::Password(PasswordTemplate::Maximum) });
+    let default_derived = Field::Derived { counter: 0, site_name: None, usage: DerivedUsage::Password(PasswordTemplate::Maximum) };
+    let default_stored  = Field::Stored { data: SecStr::new(Vec::new()), usage: StoredUsage::Password };
+    let mut field = entry.fields.remove(&field_name).unwrap_or_else(|| default_derived.clone());
     let mut field_actions : BTreeMap<String, Box<Fn(Field) -> Field>> = BTreeMap::new();
+    let other_type;
     match field.clone() {
         Field::Derived { counter, site_name, usage } => {
+            other_type = "stored";
             field_actions.insert(format!("Counter: {}", counter), Box::new(|f| {
                 if let Field::Derived { counter, site_name, usage } = f {
                     let new_counter = util::read_text(&format!("Counter [{}]", counter)).and_then(|c| c.parse::<u32>().ok()).unwrap_or(counter);
@@ -227,6 +230,7 @@ fn interact_field_edit(vault: &mut Vault, mut entry: Entry, field_name: String) 
             }));
         },
         Field::Stored { usage, data, .. } => {
+            other_type = "derived";
             let txt = String::from_utf8(data.unsecure().to_vec()).unwrap_or("<invalid UTF-8>".to_string());
             field_actions.insert(format!("Change text [{}]", txt), Box::new(|f| {
                 if let Field::Stored { usage, data, .. } = f {
@@ -266,6 +270,14 @@ fn interact_field_edit(vault: &mut Vault, mut entry: Entry, field_name: String) 
             let new_field_name = util::read_text(&format!("New field name [{}]", field_name)).unwrap_or(field_name.to_string());
             entry.fields.insert(new_field_name.clone(), field);
             return interact_field_edit(vault, entry, new_field_name);
+        },
+        &format!("Change type to {}", other_type) => {
+            entry.fields.remove(&field_name);
+            entry.fields.insert(field_name.clone(), match field {
+                Field::Derived { .. } => default_stored.clone(),
+                Field::Stored { .. } => default_derived.clone(),
+            });
+            return interact_field_edit(vault, entry, field_name);
         }
     }, field_actions.keys(), |key| {
         field = field_actions.get(key).unwrap()(field);

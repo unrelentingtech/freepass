@@ -1,3 +1,3 @@
-# freepass-core
+# freepass-cli
 
 TODO
