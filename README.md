@@ -9,19 +9,28 @@ The free password manager for power users.
 - But wait, there's more! Why stop at passwords? It generates...
   - [Ed25519] digital signature keys for...
     - [OpenSSH]: Freepass adds private keys directly to a running ssh-agent & exports public keys in OpenSSH format!
-    - *TODO* [signify]: Freepass can sign files & exports public keys in signify format!
+    - *TODO* [signify]: Freepass signs files & exports public keys in signify format!
     - *TODO* [SQRL]
   - Raw 256-bit keys for symmetric ciphers.
   - *TODO* [BIP39]-compatible passphrases.
 - Yes, *all* of the above is *derived from your master password and full name*, you can always recover it by entering the same data!
-- The generator settings (site names, counters) are stored in encrypted vault files (NaCl secretbox for each entry + AES for the whole file).
-- You can also *store* (old) passwords and text in these vault files.
-- Every time you save a vault file, its size changes randomly. That's a feature. Some random junk is added to make it a bit harder to count how many passwords you have without opening the file.
+- The generator settings (site names, counters) are stored in vault files:
+  - Serialized into [CBOR].
+  - Encrypted with NaCl secretbox for each entry + AES for the whole file.
+  - (Keys are derived from the master password like the generated passwords.)
+  - Every time you save a vault file, its size changes randomly. That's a feature. Some random junk is added to make it a bit harder to count how many passwords you have without opening the file.
+- You can also *store* passwords and text in these vault files (for stuff that can't be generated).
 
 ## How?
 
-- Freepass is written in [Rust] and uses [libsodium] as the crypto library.
+- Freepass is written in the [Rust] programming language and uses [libsodium] as the crypto library.
 - Very modular code, easy to audit.
+  - You can separately check that the `core` library does everything correctly, and that the user interface passes your data to the `core` library, not to an evil server.
+- Some parts were written as completely separate Rust crates:
+  - [secstr](https://github.com/valpackett/secstr): secure strings
+  - [interactor](https://github.com/valpackett/interactor): user interface things for the `cli` version
+  - [colorhash256](https://github.com/valpackett/colorhash256): [Chroma-Hash](https://github.com/mattt/Chroma-Hash/)-style color feedback for password input
+  - [rusterpassword](https://github.com/valpackett/rusterpassword): the [Master Password algorithm] implementation
 - Completely free software: public domain / [Unlicense].
 
 [Master Password algorithm]: https://ssl.masterpasswordapp.com/algorithm.html
@@ -30,6 +39,7 @@ The free password manager for power users.
 [signify]: http://www.tedunangst.com/flak/post/signify
 [SQRL]: https://www.grc.com/sqrl/sqrl.htm
 [BIP39]: https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki
+[CBOR]: http://cbor.io
 [Rust]: https://www.rust-lang.org
 [libsodium]: https://download.libsodium.org/doc/
 [Unlicense]: http://unlicense.org

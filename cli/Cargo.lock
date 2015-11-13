@@ -3,7 +3,7 @@ name = "freepass-cli"
 version = "0.0.0"
 dependencies = [
  "ansi_term 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "clap 1.4.7 (registry+https://github.com/rust-lang/crates.io-index)",
+ "clap 1.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "colorhash256 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "freepass-core 0.0.0",
  "interactor 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -21,11 +21,6 @@ dependencies = [
  "winapi 0.2.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "winapi-build 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
-
-[[package]]
-name = "ansi_term"
-version = "0.6.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "ansi_term"
@@ -68,12 +63,13 @@ dependencies = [
 
 [[package]]
 name = "clap"
-version = "1.4.7"
+version = "1.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
- "ansi_term 0.6.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "ansi_term 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "bitflags 0.3.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "strsim 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "vec_map 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -235,6 +231,11 @@ dependencies = [
  "debug-builders 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "libc 0.1.12 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
+
+[[package]]
+name = "vec_map"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "winapi"

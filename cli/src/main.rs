@@ -133,7 +133,7 @@ fn interact_entry(vault: &mut Vault, file_path: &str, outer_key: &SecStr, master
                         "Print as hex" => { println!("{}", s.unsecure().to_hex()) }
                     })
                 },
-                Output::Ed25519Keypair(usage, ref pubkey, ref seckey) => match usage {
+                Output::Ed25519Keypair(usage, _, _) => match usage {
                     Ed25519Usage::SSH => {
                         interaction!({
                             "Go back" => {},
