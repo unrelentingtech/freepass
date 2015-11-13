@@ -11,7 +11,6 @@ mod util;
 
 use std::{fs,env,io};
 use std::io::prelude::*;
-use std::process::Command;
 use std::collections::btree_map::BTreeMap;
 use rustc_serialize::base64::{ToBase64, STANDARD};
 use rustc_serialize::hex::ToHex;
@@ -47,13 +46,7 @@ fn main() {
         Err(ref err) => panic!("Could not open file {}: {}", &file_path, err),
     };
 
-    let master_key = {
-        let password = match env::var_os("FREEPASS_ASKPASS").or(env::var_os("ASKPASS")) {
-            Some(s) => util::get_password_askpass(Command::new(s)),
-            None => util::get_password_console(),
-        };
-        gen_master_key(password, &user_name).unwrap()
-    };
+    let master_key = gen_master_key(util::read_password(), &user_name).unwrap();
     let outer_key = gen_outer_key(&master_key);
 
     let mut vault = match file {
@@ -73,22 +66,13 @@ fn opt_or_env(matches: &clap::ArgMatches, opt_name: &str, env_name: &str) -> Str
     }
 }
 
-fn menu_cmd() -> Option<Command> {
-    env::var_os("FREEPASS_MENU").or(env::var_os("MENU"))
-        .map(|s| {
-            let mut cmd = Command::new(s);
-            cmd.env("MENU_FOR_FREEPASS", "1");
-            cmd
-        })
-}
-
 macro_rules! interaction {
     ( { $($action_name:expr => $action_fn:expr),+ }, $data:expr, $data_fn:expr ) => {
         {
             let mut items = vec![$(">> ".to_string() + $action_name),+];
             let data_items : Vec<String> = $data.clone().map(|x| " | ".to_string() + x).collect();
             items.extend(data_items.iter().cloned());
-            match pick_from_list(menu_cmd().as_mut(), &items[..], "Selection: ").unwrap() {
+            match pick_from_list(util::menu_cmd().as_mut(), &items[..], "Selection: ").unwrap() {
                 $(ref x if *x == ">> ".to_string() + $action_name => $action_fn),+
                 ref x if data_items.contains(x) => ($data_fn)(&x[3..]),
                 ref x => panic!("Unknown selection: {}", x),
@@ -98,7 +82,7 @@ macro_rules! interaction {
     ( { $($action_name:expr => $action_fn:expr),+ }) => {
         {
             let items = vec![$(">> ".to_string() + $action_name),+];
-            match pick_from_list(menu_cmd().as_mut(), &items[..], "Selection: ").unwrap() {
+            match pick_from_list(util::menu_cmd().as_mut(), &items[..], "Selection: ").unwrap() {
                 $(ref x if *x == ">> ".to_string() + $action_name => $action_fn),+
                 ref x => panic!("Unknown selection: {}", x),
             }

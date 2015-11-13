@@ -2,13 +2,23 @@ use std::fs::OpenOptions;
 use std::io::prelude::*;
 use std::io::{BufReader};
 use std::process::{Command, Stdio};
+use std::env;
 use colorhash256;
 use interactor;
 use secstr::SecStr;
 use ansi_term::Colour::Fixed;
 use ansi_term::ANSIStrings;
 
-pub fn get_password_console() -> SecStr {
+pub fn menu_cmd() -> Option<Command> {
+    env::var_os("FREEPASS_MENU").or(env::var_os("MENU"))
+        .map(|s| {
+            let mut cmd = Command::new(s);
+            cmd.env("FREEPASS_MODE", "MENU");
+            cmd
+        })
+}
+
+pub fn read_password_console() -> SecStr {
     SecStr::new(interactor::read_from_tty(|buf, b, tty| {
         if b == 4 {
             tty.write(b"\r                \r").unwrap();
@@ -31,7 +41,7 @@ pub fn get_password_console() -> SecStr {
     }, true, true).unwrap())
 }
 
-pub fn get_password_askpass(mut command: Command) -> SecStr {
+pub fn read_password_askpass(mut command: Command) -> SecStr {
     let process = command.stdout(Stdio::piped()).spawn().unwrap();
     let mut result = Vec::new();
     let mut reader = BufReader::new(process.stdout.unwrap());
@@ -40,7 +50,14 @@ pub fn get_password_askpass(mut command: Command) -> SecStr {
     SecStr::new(result)
 }
 
-pub fn read_text(prompt: &str) -> Option<String> {
+pub fn read_password() -> SecStr {
+    match env::var_os("FREEPASS_ASKPASS").or(env::var_os("ASKPASS")) {
+        Some(s) => read_password_askpass(Command::new(s)),
+        None => read_password_console(),
+    }
+}
+
+pub fn read_text_console(prompt: &str) -> Option<String> {
     let mut tty = OpenOptions::new().read(true).write(true).open("/dev/tty").unwrap();
     tty.write(&format!("\r{}: ", prompt).into_bytes()).unwrap();
     let mut reader = BufReader::new(tty);
@@ -51,5 +68,21 @@ pub fn read_text(prompt: &str) -> Option<String> {
         Some(input)
     } else {
         None
+    }
+}
+
+pub fn read_text_asktext(mut command: Command, prompt: &str) -> Option<String> {
+    match command.env("FREEPASS_MODE", "TEXT")
+                 .env("FREEPASS_PROMPT", prompt).output() {
+        Ok(ref output) if output.status.success() =>
+            Some(String::from_utf8_lossy(&output.stdout).replace("\n", "")),
+        _ => None
+    }
+}
+
+pub fn read_text(prompt: &str) -> Option<String> {
+    match env::var_os("FREEPASS_ASKTEXT") {
+        Some(s) => read_text_asktext(Command::new(s), prompt),
+        None => read_text_console(prompt),
     }
 }
