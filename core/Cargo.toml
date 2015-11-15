@@ -49,3 +49,5 @@ unix_socket = "0"
 unix_socket = "0"
 [target.x86_64-unknown-dragonfly.dependencies]
 unix_socket = "0"
+[target.x86_64-apple-darwin.dependencies]
+unix_socket = "0"
