@@ -40,9 +40,6 @@ $CARGO rustc $CARGO_OPTS --target=armv7s-apple-ios -- $RUSTC_OPTS
 echo "=> Building for aarch64"
 $CARGO rustc $CARGO_OPTS --target=aarch64-apple-ios -- $RUSTC_OPTS
 
-echo "=> Building for i386"
-$CARGO rustc $CARGO_OPTS --target=i386-apple-ios -- $RUSTC_OPTS
-
 echo "=> Building for x86_64"
 $CARGO rustc $CARGO_OPTS --target=x86_64-apple-ios -- $RUSTC_OPTS
 
@@ -52,5 +49,4 @@ $LIPO -create -output "target/universal/$BUILD_MODE/$LIBNAME" \
 	"target/armv7-apple-ios/$BUILD_MODE/$LIBNAME" \
 	"target/armv7s-apple-ios/$BUILD_MODE/$LIBNAME" \
 	"target/aarch64-apple-ios/$BUILD_MODE/$LIBNAME" \
-	"target/i386-apple-ios/$BUILD_MODE/$LIBNAME" \
 	"target/x86_64-apple-ios/$BUILD_MODE/$LIBNAME"

@@ -38,13 +38,14 @@ $ make -j4
 $ make install
 ```
 
-Get submodules of this repo, make a little fix to libsodium (android-16 isn't supported on AArch64) and build it:
+Get submodules of this repo, make some fixes to libsodium build scripts and build it:
 
 ```bash
 $ git submodule update --init
 $ cd libsodium
 $ ./autogen.sh
-$ vi dist-build/android-build.sh # Replace "android-16" with "android-21"
+$ vi dist-build/android-build.sh # Replace "android-16" with "android-21", remove "--enable-minimal"
+$ vi dist-build/ios.sh # Remove "--enable-minimal"
 $ ANDROID_NDK_HOME="$(brew --prefix android-ndk)" ./dist-build/android-arm.sh
 $ ANDROID_NDK_HOME="$(brew --prefix android-ndk)" ./dist-build/android-armv8-a.sh
 $ ANDROID_NDK_HOME="$(brew --prefix android-ndk)" ./dist-build/ios.sh
@@ -53,7 +54,7 @@ $ ANDROID_NDK_HOME="$(brew --prefix android-ndk)" ./dist-build/ios.sh
 Finally, build this library:
 
 ```bash
-$ export LIBSODIUM_ROOT=../libsodium # ... customize some variables (see the scripts)
+$ export RUST_PREFIX=/opt/rust-arm # ... customize some variables if necessary (see the scripts)
 $ ./build-android.sh
 $ ./build-ios.sh
 ```
