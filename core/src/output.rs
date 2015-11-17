@@ -4,10 +4,10 @@ use rusterpassword::*;
 use rustc_serialize::base64::{ToBase64, STANDARD};
 use sodiumoxide::crypto::sign::ed25519;
 use byteorder::{BigEndian, WriteBytesExt};
-#[cfg(unix)] use unix_socket::UnixStream;
-#[cfg(unix)] use std::env;
-#[cfg(unix)] use std::io::{Read, Write};
-#[cfg(unix)] use std::net::Shutdown;
+#[cfg(all(unix, not(target_os = "android"), not(target_os = "ios")))] use unix_socket::UnixStream;
+#[cfg(all(unix, not(target_os = "android"), not(target_os = "ios")))] use std::env;
+#[cfg(all(unix, not(target_os = "android"), not(target_os = "ios")))] use std::io::{Read, Write};
+#[cfg(all(unix, not(target_os = "android"), not(target_os = "ios")))] use std::net::Shutdown;
 
 pub enum Output {
     PrivateText(SecStr),
@@ -80,7 +80,7 @@ pub fn ssh_private_key_agent_message(keypair: &Output, comment: &str) -> Result<
     } else { Err(Error::InappropriateFormat) }
 }
 
-#[cfg(unix)]
+#[cfg(all(unix, not(target_os = "android"), not(target_os = "ios")))]
 pub fn ssh_agent_send_message(msg: SecStr) -> Result<()> {
     if let Some(sock_path) = env::var_os("SSH_AUTH_SOCK") {
         let mut stream = try!(UnixStream::connect(sock_path));
@@ -93,7 +93,7 @@ pub fn ssh_agent_send_message(msg: SecStr) -> Result<()> {
     } else { Err(Error::SSHAgentSocketNotFound) }
 }
 
-#[cfg(not(unix))]
-pub fn ssh_agent_send_message(msg: SecStr) -> Result<()> {
+#[cfg(any(not(unix), target_os = "android", target_os = "ios"))]
+pub fn ssh_agent_send_message(_: SecStr) -> Result<()> {
     Err(Error::NotAvailableOnPlatform)
 }

@@ -1,0 +1,578 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		37259DFD1BFA58FD00D36B5B /* libsodium.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 37259DFC1BFA58FD00D36B5B /* libsodium.a */; };
+		37259DFF1BFB885900D36B5B /* libfreepass_capi.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 37259DFE1BFB885900D36B5B /* libfreepass_capi.a */; };
+		376234CB1BFA306700D36B5B /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 376234CA1BFA306700D36B5B /* AppDelegate.swift */; };
+		376234CD1BFA306700D36B5B /* MasterViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 376234CC1BFA306700D36B5B /* MasterViewController.swift */; };
+		376234CF1BFA306700D36B5B /* DetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 376234CE1BFA306700D36B5B /* DetailViewController.swift */; };
+		376234D21BFA306700D36B5B /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 376234D01BFA306700D36B5B /* Main.storyboard */; };
+		376234D41BFA306700D36B5B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 376234D31BFA306700D36B5B /* Assets.xcassets */; };
+		376234D71BFA306700D36B5B /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 376234D51BFA306700D36B5B /* LaunchScreen.storyboard */; };
+		376234E21BFA306800D36B5B /* FreepassTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 376234E11BFA306800D36B5B /* FreepassTests.swift */; };
+		376234ED1BFA306800D36B5B /* FreepassUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 376234EC1BFA306800D36B5B /* FreepassUITests.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		376234DE1BFA306800D36B5B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 376234BF1BFA306700D36B5B /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 376234C61BFA306700D36B5B;
+			remoteInfo = Freepass;
+		};
+		376234E91BFA306800D36B5B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 376234BF1BFA306700D36B5B /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 376234C61BFA306700D36B5B;
+			remoteInfo = Freepass;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		37259DF81BFA462700D36B5B /* Freepass-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Freepass-Bridging-Header.h"; sourceTree = "<group>"; };
+		37259DFC1BFA58FD00D36B5B /* libsodium.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libsodium.a; path = "../../../../jedisct1/libsodium/libsodium-ios/lib/libsodium.a"; sourceTree = "<group>"; };
+		37259DFE1BFB885900D36B5B /* libfreepass_capi.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libfreepass_capi.a; path = ../../capi/target/universal/release/libfreepass_capi.a; sourceTree = "<group>"; };
+		376234C71BFA306700D36B5B /* Freepass.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Freepass.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		376234CA1BFA306700D36B5B /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		376234CC1BFA306700D36B5B /* MasterViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MasterViewController.swift; sourceTree = "<group>"; };
+		376234CE1BFA306700D36B5B /* DetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailViewController.swift; sourceTree = "<group>"; };
+		376234D11BFA306700D36B5B /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		376234D31BFA306700D36B5B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		376234D61BFA306700D36B5B /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		376234D81BFA306700D36B5B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		376234DD1BFA306800D36B5B /* FreepassTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FreepassTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		376234E11BFA306800D36B5B /* FreepassTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FreepassTests.swift; sourceTree = "<group>"; };
+		376234E31BFA306800D36B5B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		376234E81BFA306800D36B5B /* FreepassUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FreepassUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		376234EC1BFA306800D36B5B /* FreepassUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FreepassUITests.swift; sourceTree = "<group>"; };
+		376234EE1BFA306800D36B5B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		376234C41BFA306700D36B5B /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				37259DFF1BFB885900D36B5B /* libfreepass_capi.a in Frameworks */,
+				37259DFD1BFA58FD00D36B5B /* libsodium.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		376234DA1BFA306800D36B5B /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		376234E51BFA306800D36B5B /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		376234BE1BFA306600D36B5B = {
+			isa = PBXGroup;
+			children = (
+				37259DFE1BFB885900D36B5B /* libfreepass_capi.a */,
+				37259DFC1BFA58FD00D36B5B /* libsodium.a */,
+				376234C91BFA306700D36B5B /* Freepass */,
+				376234E01BFA306800D36B5B /* FreepassTests */,
+				376234EB1BFA306800D36B5B /* FreepassUITests */,
+				376234C81BFA306700D36B5B /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		376234C81BFA306700D36B5B /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				376234C71BFA306700D36B5B /* Freepass.app */,
+				376234DD1BFA306800D36B5B /* FreepassTests.xctest */,
+				376234E81BFA306800D36B5B /* FreepassUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		376234C91BFA306700D36B5B /* Freepass */ = {
+			isa = PBXGroup;
+			children = (
+				376234CA1BFA306700D36B5B /* AppDelegate.swift */,
+				376234CC1BFA306700D36B5B /* MasterViewController.swift */,
+				376234CE1BFA306700D36B5B /* DetailViewController.swift */,
+				376234D01BFA306700D36B5B /* Main.storyboard */,
+				376234D31BFA306700D36B5B /* Assets.xcassets */,
+				376234D51BFA306700D36B5B /* LaunchScreen.storyboard */,
+				376234D81BFA306700D36B5B /* Info.plist */,
+				37259DF81BFA462700D36B5B /* Freepass-Bridging-Header.h */,
+			);
+			path = Freepass;
+			sourceTree = "<group>";
+		};
+		376234E01BFA306800D36B5B /* FreepassTests */ = {
+			isa = PBXGroup;
+			children = (
+				376234E11BFA306800D36B5B /* FreepassTests.swift */,
+				376234E31BFA306800D36B5B /* Info.plist */,
+			);
+			path = FreepassTests;
+			sourceTree = "<group>";
+		};
+		376234EB1BFA306800D36B5B /* FreepassUITests */ = {
+			isa = PBXGroup;
+			children = (
+				376234EC1BFA306800D36B5B /* FreepassUITests.swift */,
+				376234EE1BFA306800D36B5B /* Info.plist */,
+			);
+			path = FreepassUITests;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		376234C61BFA306700D36B5B /* Freepass */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 376234F11BFA306800D36B5B /* Build configuration list for PBXNativeTarget "Freepass" */;
+			buildPhases = (
+				376234C31BFA306700D36B5B /* Sources */,
+				376234C41BFA306700D36B5B /* Frameworks */,
+				376234C51BFA306700D36B5B /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Freepass;
+			productName = Freepass;
+			productReference = 376234C71BFA306700D36B5B /* Freepass.app */;
+			productType = "com.apple.product-type.application";
+		};
+		376234DC1BFA306800D36B5B /* FreepassTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 376234F41BFA306800D36B5B /* Build configuration list for PBXNativeTarget "FreepassTests" */;
+			buildPhases = (
+				376234D91BFA306800D36B5B /* Sources */,
+				376234DA1BFA306800D36B5B /* Frameworks */,
+				376234DB1BFA306800D36B5B /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				376234DF1BFA306800D36B5B /* PBXTargetDependency */,
+			);
+			name = FreepassTests;
+			productName = FreepassTests;
+			productReference = 376234DD1BFA306800D36B5B /* FreepassTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		376234E71BFA306800D36B5B /* FreepassUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 376234F71BFA306800D36B5B /* Build configuration list for PBXNativeTarget "FreepassUITests" */;
+			buildPhases = (
+				376234E41BFA306800D36B5B /* Sources */,
+				376234E51BFA306800D36B5B /* Frameworks */,
+				376234E61BFA306800D36B5B /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				376234EA1BFA306800D36B5B /* PBXTargetDependency */,
+			);
+			name = FreepassUITests;
+			productName = FreepassUITests;
+			productReference = 376234E81BFA306800D36B5B /* FreepassUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		376234BF1BFA306700D36B5B /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastSwiftUpdateCheck = 0710;
+				LastUpgradeCheck = 0710;
+				ORGANIZATIONNAME = packett.cool;
+				TargetAttributes = {
+					376234C61BFA306700D36B5B = {
+						CreatedOnToolsVersion = 7.1;
+						DevelopmentTeam = Y53B7HVFA3;
+					};
+					376234DC1BFA306800D36B5B = {
+						CreatedOnToolsVersion = 7.1;
+						DevelopmentTeam = 644G8932B4;
+						TestTargetID = 376234C61BFA306700D36B5B;
+					};
+					376234E71BFA306800D36B5B = {
+						CreatedOnToolsVersion = 7.1;
+						DevelopmentTeam = 644G8932B4;
+						TestTargetID = 376234C61BFA306700D36B5B;
+					};
+				};
+			};
+			buildConfigurationList = 376234C21BFA306700D36B5B /* Build configuration list for PBXProject "Freepass" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 376234BE1BFA306600D36B5B;
+			productRefGroup = 376234C81BFA306700D36B5B /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				376234C61BFA306700D36B5B /* Freepass */,
+				376234DC1BFA306800D36B5B /* FreepassTests */,
+				376234E71BFA306800D36B5B /* FreepassUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		376234C51BFA306700D36B5B /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				376234D71BFA306700D36B5B /* LaunchScreen.storyboard in Resources */,
+				376234D41BFA306700D36B5B /* Assets.xcassets in Resources */,
+				376234D21BFA306700D36B5B /* Main.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		376234DB1BFA306800D36B5B /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		376234E61BFA306800D36B5B /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		376234C31BFA306700D36B5B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				376234CF1BFA306700D36B5B /* DetailViewController.swift in Sources */,
+				376234CD1BFA306700D36B5B /* MasterViewController.swift in Sources */,
+				376234CB1BFA306700D36B5B /* AppDelegate.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		376234D91BFA306800D36B5B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				376234E21BFA306800D36B5B /* FreepassTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		376234E41BFA306800D36B5B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				376234ED1BFA306800D36B5B /* FreepassUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		376234DF1BFA306800D36B5B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 376234C61BFA306700D36B5B /* Freepass */;
+			targetProxy = 376234DE1BFA306800D36B5B /* PBXContainerItemProxy */;
+		};
+		376234EA1BFA306800D36B5B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 376234C61BFA306700D36B5B /* Freepass */;
+			targetProxy = 376234E91BFA306800D36B5B /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		376234D01BFA306700D36B5B /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				376234D11BFA306700D36B5B /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+		376234D51BFA306700D36B5B /* LaunchScreen.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				376234D61BFA306700D36B5B /* Base */,
+			);
+			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		376234EF1BFA306800D36B5B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.1;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		376234F01BFA306800D36B5B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.1;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		376234F21BFA306800D36B5B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ANALYZER_SECURITY_FLOATLOOPCOUNTER = YES;
+				CLANG_ANALYZER_SECURITY_INSECUREAPI_RAND = YES;
+				CLANG_ANALYZER_SECURITY_INSECUREAPI_STRCPY = YES;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_WARN_IMPLICIT_SIGN_CONVERSION = YES;
+				CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				ENABLE_BITCODE = NO;
+				HEADER_SEARCH_PATHS = ../../capi;
+				INFOPLIST_FILE = Freepass/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				LIBRARY_SEARCH_PATHS = (
+					"../../libsodium/libsodium-ios/lib",
+					../../capi/target/universal/release,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = technology.unrelenting.FreepassForiOS;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "Freepass/Freepass-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		376234F31BFA306800D36B5B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ANALYZER_SECURITY_FLOATLOOPCOUNTER = YES;
+				CLANG_ANALYZER_SECURITY_INSECUREAPI_RAND = YES;
+				CLANG_ANALYZER_SECURITY_INSECUREAPI_STRCPY = YES;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_WARN_IMPLICIT_SIGN_CONVERSION = YES;
+				CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				ENABLE_BITCODE = NO;
+				HEADER_SEARCH_PATHS = ../../capi;
+				INFOPLIST_FILE = Freepass/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				LIBRARY_SEARCH_PATHS = (
+					"../../libsodium/libsodium-ios/lib",
+					../../capi/target/universal/release,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = technology.unrelenting.FreepassForiOS;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "Freepass/Freepass-Bridging-Header.h";
+			};
+			name = Release;
+		};
+		376234F51BFA306800D36B5B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				HEADER_SEARCH_PATHS = ../../capi;
+				INFOPLIST_FILE = FreepassTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				LIBRARY_SEARCH_PATHS = (
+					"../../libsodium/libsodium-ios/lib",
+					../../capi/target/universal/release,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = technology.unrelenting.FreepassTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Freepass.app/Freepass";
+			};
+			name = Debug;
+		};
+		376234F61BFA306800D36B5B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				HEADER_SEARCH_PATHS = ../../capi;
+				INFOPLIST_FILE = FreepassTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				LIBRARY_SEARCH_PATHS = (
+					"../../libsodium/libsodium-ios/lib",
+					../../capi/target/universal/release,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = technology.unrelenting.FreepassTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Freepass.app/Freepass";
+			};
+			name = Release;
+		};
+		376234F81BFA306800D36B5B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				HEADER_SEARCH_PATHS = ../../capi;
+				INFOPLIST_FILE = FreepassUITests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				LIBRARY_SEARCH_PATHS = (
+					"../../libsodium/libsodium-ios/lib",
+					../../capi/target/universal/release,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = technology.unrelenting.FreepassUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_TARGET_NAME = Freepass;
+				USES_XCTRUNNER = YES;
+			};
+			name = Debug;
+		};
+		376234F91BFA306800D36B5B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				HEADER_SEARCH_PATHS = ../../capi;
+				INFOPLIST_FILE = FreepassUITests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				LIBRARY_SEARCH_PATHS = (
+					"../../libsodium/libsodium-ios/lib",
+					../../capi/target/universal/release,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = technology.unrelenting.FreepassUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_TARGET_NAME = Freepass;
+				USES_XCTRUNNER = YES;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		376234C21BFA306700D36B5B /* Build configuration list for PBXProject "Freepass" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				376234EF1BFA306800D36B5B /* Debug */,
+				376234F01BFA306800D36B5B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		376234F11BFA306800D36B5B /* Build configuration list for PBXNativeTarget "Freepass" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				376234F21BFA306800D36B5B /* Debug */,
+				376234F31BFA306800D36B5B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		376234F41BFA306800D36B5B /* Build configuration list for PBXNativeTarget "FreepassTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				376234F51BFA306800D36B5B /* Debug */,
+				376234F61BFA306800D36B5B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		376234F71BFA306800D36B5B /* Build configuration list for PBXNativeTarget "FreepassUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				376234F81BFA306800D36B5B /* Debug */,
+				376234F91BFA306800D36B5B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 376234BF1BFA306700D36B5B /* Project object */;
+}
