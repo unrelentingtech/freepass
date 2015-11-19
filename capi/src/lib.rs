@@ -13,6 +13,17 @@ use secstr::*;
 use freepass_core::data::*;
 // use freepass_core::output::*;
 
+macro_rules! from_c {
+    ( obj $o:expr ) => { unsafe { assert!(!$o.is_null()); &*$o }; };
+    ( mut obj $o:expr ) => { { assert!(!$o.is_null()); &mut *$o } };
+    ( cstr $s:expr ) => { unsafe { assert!(!$s.is_null()); CStr::from_ptr($s) }.to_str().unwrap() };
+}
+
+macro_rules! to_c {
+    ( obj $o:expr ) => { Box::into_raw(Box::new($o)) };
+    ( cstr $s:expr ) => { CString::new($s).unwrap().into_raw() };
+}
+
 #[no_mangle]
 pub extern fn freepass_init() {
     freepass_core::init();
@@ -20,14 +31,12 @@ pub extern fn freepass_init() {
 
 #[no_mangle]
 pub extern fn freepass_gen_outer_key(master_key_c: *const SecStr) -> *mut SecStr {
-    let master_key = unsafe { assert!(!master_key_c.is_null()); &*master_key_c };
-    Box::into_raw(Box::new(gen_outer_key(master_key)))
+    to_c![obj gen_outer_key(from_c![obj master_key_c])]
 }
 
 #[no_mangle]
 pub extern fn freepass_gen_entries_key(master_key_c: *const SecStr) -> *mut SecStr {
-    let master_key = unsafe { assert!(!master_key_c.is_null()); &*master_key_c };
-    Box::into_raw(Box::new(gen_entries_key(master_key)))
+    to_c![obj gen_entries_key(from_c![obj master_key_c])]
 }
 
 #[no_mangle]
@@ -42,11 +51,11 @@ pub unsafe extern fn freepass_free_entries_key(entries_key_c: *mut SecStr) {
 
 #[no_mangle]
 pub extern fn freepass_open_vault(file_path_c: *const c_char, outer_key_c: *const SecStr) -> *mut Vault {
-    let file_path = unsafe { assert!(!file_path_c.is_null()); CStr::from_ptr(file_path_c) }.to_str().unwrap();
-    let outer_key = unsafe { assert!(!outer_key_c.is_null()); &*outer_key_c };
+    let file_path = from_c![cstr file_path_c];
+    let outer_key = from_c![obj outer_key_c];
     if let Ok(file) = fs::OpenOptions::new().read(true).write(true).open(&file_path) {
         if let Ok(vault) = Vault::open(outer_key, file) {
-            return Box::into_raw(Box::new(vault))
+            return to_c![obj vault]
         }
     }
     return ptr::null_mut()
@@ -54,20 +63,18 @@ pub extern fn freepass_open_vault(file_path_c: *const c_char, outer_key_c: *cons
 
 #[no_mangle]
 pub extern fn freepass_new_vault() -> *mut Vault {
-    return Box::into_raw(Box::new(Vault::new()))
+    to_c![obj Vault::new()]
 }
 
 #[no_mangle]
 pub extern fn freepass_vault_get_entry_names_iterator<'a>(vault_c: *const Vault) -> *mut Keys<'a, String, EncryptedEntry> {
-    let vault = unsafe { assert!(!vault_c.is_null()); &*vault_c };
-    Box::into_raw(Box::new(vault.entry_names()))
+    to_c![obj from_c![obj vault_c].entry_names()]
 }
 
 #[no_mangle]
 pub unsafe extern fn freepass_entry_names_iterator_next<'a>(iter_c: *mut Keys<'a, String, EncryptedEntry>) -> *mut c_char {
-    let iter = { assert!(!iter_c.is_null()); &mut *iter_c };
-    match iter.next() {
-        Some(s) => CString::new(s.clone()).unwrap().into_raw(),
+    match from_c![mut obj iter_c].next() {
+        Some(s) => to_c![cstr s.clone()],
         None => ptr::null_mut()
     }
 }
