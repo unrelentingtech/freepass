@@ -7,6 +7,7 @@ class LoginViewController: UITableViewController, UISplitViewControllerDelegate 
 	
     override func viewDidLoad() {
         super.viewDidLoad()
+		print(documentsPath()?.path)
     }
 
     override func didReceiveMemoryWarning() {

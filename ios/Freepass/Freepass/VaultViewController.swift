@@ -16,6 +16,8 @@ class VaultViewController: UITableViewController {
 			let controllers = split.viewControllers
 			self.entryViewController = (controllers[controllers.count-1] as! UINavigationController).topViewController as? EntryViewController
 		}
+
+		objects = Vault.entryNames()
 	}
 	
 	override func viewWillAppear(animated: Bool) {
@@ -28,14 +30,7 @@ class VaultViewController: UITableViewController {
 	}
 	
 	func insertNewObject(sender: AnyObject) {
-		let mkey = rusterpassword_gen_master_key("Correct Horse Battery Staple", "Cosima Niehaus")
-		let sseed = rusterpassword_gen_site_seed(mkey, "twitter.com", 5)
-		let passw = rusterpassword_gen_site_password(sseed, 50)
-		let passws = String.fromCString(passw)
-		rusterpassword_free_site_password(passw)
-		rusterpassword_free_site_seed(sseed)
-		rusterpassword_free_master_key(mkey)
-		objects.insert(passws!, atIndex: 0)
+		objects.insert("New entry", atIndex: 0)
 		let indexPath = NSIndexPath(forRow: 0, inSection: 0)
 		self.tableView.insertRowsAtIndexPaths([indexPath], withRowAnimation: .Automatic)
 	}
@@ -45,7 +40,7 @@ class VaultViewController: UITableViewController {
 	override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
 		if segue.identifier == "showEntry" {
 			if let indexPath = self.tableView.indexPathForSelectedRow {
-				let object = objects[indexPath.row] as! NSDate
+				let object = objects[indexPath.row] as! String
 				let controller = (segue.destinationViewController as! UINavigationController).topViewController as! EntryViewController
 				controller.detailItem = object
 				controller.navigationItem.leftBarButtonItem = self.splitViewController?.displayModeButtonItem()
@@ -66,7 +61,6 @@ class VaultViewController: UITableViewController {
 	
 	override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
 		let cell = tableView.dequeueReusableCellWithIdentifier("Cell", forIndexPath: indexPath)
-		
 		let object = objects[indexPath.row] as! String
 		cell.textLabel!.text = object
 		return cell

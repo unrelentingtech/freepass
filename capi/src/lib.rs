@@ -6,6 +6,7 @@ extern crate freepass_core;
 pub use rusterpassword_capi::*;
 
 use std::{ptr,fs};
+use std::collections::btree_map::Keys;
 use std::ffi::*;
 use libc::*;
 use secstr::*;
@@ -52,6 +53,36 @@ pub extern fn freepass_open_vault(file_path_c: *const c_char, outer_key_c: *cons
 }
 
 #[no_mangle]
-pub unsafe extern fn freepass_close_vault(vault: *mut Vault) {
-    Box::from_raw(vault);
+pub extern fn freepass_new_vault() -> *mut Vault {
+    return Box::into_raw(Box::new(Vault::new()))
+}
+
+#[no_mangle]
+pub extern fn freepass_vault_get_entry_names_iterator<'a>(vault_c: *const Vault) -> *mut Keys<'a, String, EncryptedEntry> {
+    let vault = unsafe { assert!(!vault_c.is_null()); &*vault_c };
+    Box::into_raw(Box::new(vault.entry_names()))
+}
+
+#[no_mangle]
+pub unsafe extern fn freepass_entry_names_iterator_next<'a>(iter_c: *mut Keys<'a, String, EncryptedEntry>) -> *mut c_char {
+    let iter = { assert!(!iter_c.is_null()); &mut *iter_c };
+    match iter.next() {
+        Some(s) => CString::new(s.clone()).unwrap().into_raw(),
+        None => ptr::null_mut()
+    }
+}
+
+#[no_mangle]
+pub unsafe extern fn freepass_free_entry_name(name_c: *mut c_char) {
+    CString::from_raw(name_c);
+}
+
+#[no_mangle]
+pub unsafe extern fn freepass_free_entry_names_iterator<'a>(iter_c: *mut Keys<'a, String, EncryptedEntry>) {
+    Box::from_raw(iter_c);
+}
+
+#[no_mangle]
+pub unsafe extern fn freepass_close_vault(vault_c: *mut Vault) {
+    Box::from_raw(vault_c);
 }

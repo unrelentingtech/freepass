@@ -12,10 +12,9 @@ class EntryViewController: UIViewController {
 	}
 	
 	func configureView() {
-		if let detail = self.detailItem {
-			if let label = self.detailDescriptionLabel {
-				label.text = detail.description
-			}
+		if let detail = self.detailItem,
+		   let label = self.detailDescriptionLabel {
+			label.text = detail.description
 		}
 	}
 	
