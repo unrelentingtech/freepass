@@ -97,3 +97,26 @@ pub fn ssh_agent_send_message(msg: SecStr) -> Result<()> {
 pub fn ssh_agent_send_message(_: SecStr) -> Result<()> {
     Err(Error::NotAvailableOnPlatform)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use data::*;
+    use sodiumoxide::crypto::sign::ed25519;
+
+    fn keypair() -> Output {
+        let (pubkey, seckey) = ed25519::keypair_from_seed(&ed25519::Seed::from_slice(b"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa").unwrap());
+        Output::Ed25519Keypair(Ed25519Usage::SSH, pubkey, seckey)
+    }
+
+    #[test]
+    fn test_ssh_public_key_output() {
+        assert_eq!(ssh_public_key_output(&keypair(), "myComment").unwrap(), "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIK8Go+MpFxTk81bBnJsVzRlR7G5mYqp3vgdUfyiTgzQd myComment");
+    }
+
+    #[test]
+    fn test_ssh_private_key_agent_message() {
+        let msg = ssh_private_key_agent_message(&keypair(), "myComment").unwrap();
+        assert_eq!(Vec::from(msg.unsecure()), vec![17, 0, 0, 0, 11, 115, 115, 104, 45, 101, 100, 50, 53, 53, 49, 57, 0, 0, 0, 32, 175, 6, 163, 227, 41, 23, 20, 228, 243, 86, 193, 156, 155, 21, 205, 25, 81, 236, 110, 102, 98, 170, 119, 190, 7, 84, 127, 40, 147, 131, 52, 29, 0, 0, 0, 64, 97, 97, 97, 97, 97, 97, 97, 97, 97, 97, 97, 97, 97, 97, 97, 97, 97, 97, 97, 97, 97, 97, 97, 97, 97, 97, 97, 97, 97, 97, 97, 97, 175, 6, 163, 227, 41, 23, 20, 228, 243, 86, 193, 156, 155, 21, 205, 25, 81, 236, 110, 102, 98, 170, 119, 190, 7, 84, 127, 40, 147, 131, 52, 29, 0, 0, 0, 9, 109, 121, 67, 111, 109, 109, 101, 110, 116]);
+    }
+}
