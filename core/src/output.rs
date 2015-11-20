@@ -1,4 +1,5 @@
 use data::*;
+use util::*;
 use secstr::SecStr;
 use rusterpassword::*;
 use rustc_serialize::base64::{ToBase64, STANDARD};
@@ -96,6 +97,31 @@ pub fn ssh_agent_send_message(msg: SecStr) -> Result<()> {
 #[cfg(any(not(unix), target_os = "android", target_os = "ios"))]
 pub fn ssh_agent_send_message(_: SecStr) -> Result<()> {
     Err(Error::NotAvailableOnPlatform)
+}
+
+pub fn signify_keynum(pubkey_bytes: &[u8]) -> Vec<u8> {
+    blake2b(pubkey_bytes, b"freepass.signify", 8)
+}
+
+pub fn signify_public_key_output(keypair: &Output, comment: &str) -> Result<String> {
+    if let &Output::Ed25519Keypair(Ed25519Usage::Signify, ed25519::PublicKey(pubkey_bytes), _) = keypair {
+        let mut raw = vec![];
+        raw.extend(b"Ed");
+        raw.extend(&signify_keynum(&pubkey_bytes));
+        raw.extend(&pubkey_bytes);
+        Ok("untrusted comment: ".to_string() + comment + "\n" + &raw.to_base64(STANDARD))
+    } else { Err(Error::InappropriateFormat) }
+}
+
+pub fn signify_sign(keypair: &Output, comment: &str, data: &[u8]) -> Result<String> {
+    if let &Output::Ed25519Keypair(Ed25519Usage::Signify, ed25519::PublicKey(pubkey_bytes), ref seckey) = keypair {
+        let ed25519::Signature(sig_bytes) = ed25519::sign_detached(data, &seckey);
+        let mut raw = vec![];
+        raw.extend(b"Ed");
+        raw.extend(&signify_keynum(&pubkey_bytes));
+        raw.extend(sig_bytes.iter());
+        Ok("untrusted comment: ".to_string() + comment + "\n" + &raw.to_base64(STANDARD))
+    } else { Err(Error::InappropriateFormat) }
 }
 
 #[cfg(test)]

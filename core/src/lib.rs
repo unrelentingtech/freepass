@@ -13,6 +13,7 @@ extern crate rand;
 extern crate chrono;
 
 
+pub mod util;
 pub mod data;
 pub mod output;
 

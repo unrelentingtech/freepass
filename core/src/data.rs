@@ -1,10 +1,8 @@
-extern crate libsodium_sys;
-
+use util::*;
 use secstr::SecStr;
 use rusterpassword::gen_site_seed;
 use chrono::{DateTime, UTC};
 use cbor::{Encoder, Decoder, CborError};
-use libc::size_t;
 use rand::Rng;
 use rand::os::OsRng;
 use std::io;
@@ -225,24 +223,11 @@ fn gen_entry_key(entries_key: &SecStr, name: &str, counter: u32) -> Result<secbo
 }
 
 pub fn gen_outer_key(master_key: &SecStr) -> SecStr {
-    blake2b(master_key, b"freepass.outer".to_vec(), 16)
+    SecStr::new(blake2b(master_key.unsecure(), b"freepass.outer", 16))
 }
 
 pub fn gen_entries_key(master_key: &SecStr) -> SecStr {
-    blake2b(master_key, b"freepass.entries".to_vec(), 64)
-}
-
-fn blake2b(master_key: &SecStr, msg: Vec<u8>, len: usize) -> SecStr {
-    let mut dst = Vec::<u8>::with_capacity(len);
-    unsafe {
-        libsodium_sys::crypto_generichash_blake2b(
-            dst.as_mut_ptr() as *mut u8, len,
-            msg.as_ptr(), msg.len() as u64,
-            master_key.unsecure().as_ptr() as *const u8,
-            master_key.unsecure().len() as size_t);
-        dst.set_len(len);
-    }
-    SecStr::new(dst)
+    SecStr::new(blake2b(master_key.unsecure(), b"freepass.entries", 64))
 }
 
 #[cfg(test)]
