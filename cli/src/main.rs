@@ -5,6 +5,7 @@ extern crate interactor;
 extern crate rusterpassword;
 extern crate ansi_term;
 extern crate rustc_serialize;
+extern crate cbor;
 extern crate freepass_core;
 
 mod util;
@@ -27,6 +28,7 @@ fn main() {
         (about: "The free password manager for power users")
         (@arg FILE: -f --file +takes_value "Sets the vault file to use, by default: $FREEPASS_FILE")
         (@arg NAME: -n --name +takes_value "Sets the user name to use (must be always the same for a vault file!), by default: $FREEPASS_NAME")
+        (@arg DEBUG: --debug "Enables logging of data structures for debugging (DO NOT USE ON YOUR REAL DATA)")
         (@subcommand interact =>
             (about: "Launches interactive mode")
         )
@@ -34,6 +36,7 @@ fn main() {
 
     let file_path = opt_or_env(&matches, "FILE", "FREEPASS_FILE");
     let user_name = opt_or_env(&matches, "NAME", "FREEPASS_NAME");
+    let debug = matches.is_present("DEBUG");
 
     freepass_core::init();
 
@@ -54,8 +57,12 @@ fn main() {
         None => Vault::new(),
     };
 
+    if debug {
+        debug_output(&vault, "Vault");
+    }
+
     match matches.subcommand() {
-        ("interact", _) | _  => interact_entries(&mut vault, &file_path, &outer_key, &master_key),
+        ("interact", _) | _  => interact_entries(&mut vault, &file_path, &outer_key, &master_key, debug),
     }
 }
 
@@ -64,6 +71,12 @@ fn opt_or_env(matches: &clap::ArgMatches, opt_name: &str, env_name: &str) -> Str
         Some(s) => s,
         None => panic!("Option {} or environment variable {} not found", opt_name, env_name)
     }
+}
+
+fn debug_output<T: rustc_serialize::Encodable>(data: &T, description: &str) {
+    let mut e = cbor::Encoder::from_memory();
+    e.encode(&[data]).unwrap();
+    println!("--- CBOR debug output (http://cbor.me to decode) of {} ---\n{}\n", description, e.into_bytes().to_hex());
 }
 
 macro_rules! interaction {
@@ -90,7 +103,7 @@ macro_rules! interaction {
     }
 }
 
-fn interact_entries(vault: &mut Vault, file_path: &str, outer_key: &SecStr, master_key: &SecStr) {
+fn interact_entries(vault: &mut Vault, file_path: &str, outer_key: &SecStr, master_key: &SecStr, debug: bool) {
     let entries_key = gen_entries_key(&master_key);
     loop {
         interaction!({
@@ -104,6 +117,9 @@ fn interact_entries(vault: &mut Vault, file_path: &str, outer_key: &SecStr, mast
             }
         }, vault.entry_names(), |name| {
             let (entry, meta) = vault.get_entry(&entries_key, name).unwrap();
+            if debug {
+                debug_output(&entry, &format!("Entry: {}", name));
+            }
             interact_entry(vault, file_path, outer_key, master_key, &entries_key, name, entry, meta);
         });
     }

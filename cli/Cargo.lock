@@ -3,6 +3,7 @@ name = "freepass-cli"
 version = "0.0.0"
 dependencies = [
  "ansi_term 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "cbor 0.3.16 (registry+https://github.com/rust-lang/crates.io-index)",
  "clap 1.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "colorhash256 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "freepass-core 0.0.0",
