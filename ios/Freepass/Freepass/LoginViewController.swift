@@ -33,9 +33,8 @@ class LoginViewController: UITableViewController, UISplitViewControllerDelegate 
 	override func shouldPerformSegueWithIdentifier(identifier: String, sender: AnyObject?) -> Bool {
 		if identifier == "openVault" {
 			do {
-				guard let documents = documentsPath() else { return false }
-				let path = documents.URLByAppendingPathComponent("test.fpass").path! // TODO file selection
-				try Vault.open(path, userName: userName.text!, password: password.text!)
+				let path = documentsPath()?.URLByAppendingPathComponent("test.fpass").path! // TODO file selection
+				try Vault.open(path!, userName: userName.text!, password: password.text!)
 			} catch {
 				let alert = UIAlertController(title: "Error", message: "Error", preferredStyle: UIAlertControllerStyle.Alert)
 				alert.addAction(UIAlertAction(title: "OK", style: .Default) { (action) in })
