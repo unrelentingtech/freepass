@@ -21,9 +21,12 @@ echo "Rust: $RUST_PREFIX"
 echo "Cargo: $CARGO"
 echo "libsodium: $SODIUM_ROOT"
 
+set -e
+
 echo "=> Building for arm"
+PATH="$NDK_STANDALONE/arm-linux-androideabi/bin:$PATH" \
 PKG_CONFIG_PATH="$SODIUM_ROOT/libsodium-android-armv6/lib/pkgconfig" \
-	$CARGO rustc $CARGO_OPTS --target=arm-linux-androideabi -- $RUSTC_OPTS
+	$CARGO rustc $CARGO_OPTS --target=arm-linux-androideabi -- $RUSTC_OPTS -C linker=arm-linux-androideabi-gcc -C ar=arm-linux-androideabi-ar
 
 # echo "=> Building for aarch64"
 # (cd "$SODIUM_ROOT" && ANDROID_NDK_HOME="$NDK_HOME" dist-build/android-armv8-a.sh)

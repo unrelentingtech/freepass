@@ -17,6 +17,8 @@
 		376234D71BFA306700D36B5B /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 376234D51BFA306700D36B5B /* LaunchScreen.storyboard */; };
 		376234E21BFA306800D36B5B /* FreepassTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 376234E11BFA306800D36B5B /* FreepassTests.swift */; };
 		376234ED1BFA306800D36B5B /* FreepassUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 376234EC1BFA306800D36B5B /* FreepassUITests.swift */; };
+		37CA326C1C077EFB00D36B5B /* SwiftCBOR.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 37CA32671C077ED900D36B5B /* SwiftCBOR.framework */; };
+		37CA326D1C077EFB00D36B5B /* SwiftCBOR.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 37CA32671C077ED900D36B5B /* SwiftCBOR.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		37E750391BFBB02C00D36B5B /* LoginViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E750381BFBB02C00D36B5B /* LoginViewController.swift */; };
 		37E7503B1BFBCDBC00D36B5B /* Vault.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E7503A1BFBCDBC00D36B5B /* Vault.swift */; };
 /* End PBXBuildFile section */
@@ -36,7 +38,49 @@
 			remoteGlobalIDString = 376234C61BFA306700D36B5B;
 			remoteInfo = Freepass;
 		};
+		37CA32661C077ED900D36B5B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 37CA32611C077ED900D36B5B /* SwiftCBOR.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 37F34C011C0265AD00D36B5B;
+			remoteInfo = SwiftCBOR;
+		};
+		37CA32681C077ED900D36B5B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 37CA32611C077ED900D36B5B /* SwiftCBOR.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 37F34C0B1C0265AE00D36B5B;
+			remoteInfo = SwiftCBORTests;
+		};
+		37CA326A1C077EDD00D36B5B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 37CA32611C077ED900D36B5B /* SwiftCBOR.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 37F34C001C0265AD00D36B5B;
+			remoteInfo = SwiftCBOR;
+		};
+		37CA326E1C077EFB00D36B5B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 37CA32611C077ED900D36B5B /* SwiftCBOR.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 37F34C001C0265AD00D36B5B;
+			remoteInfo = SwiftCBOR;
+		};
 /* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		37CA32701C077EFB00D36B5B /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				37CA326D1C077EFB00D36B5B /* SwiftCBOR.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		37259DF81BFA462700D36B5B /* Freepass-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Freepass-Bridging-Header.h"; sourceTree = "<group>"; };
@@ -56,6 +100,7 @@
 		376234E81BFA306800D36B5B /* FreepassUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FreepassUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		376234EC1BFA306800D36B5B /* FreepassUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FreepassUITests.swift; sourceTree = "<group>"; };
 		376234EE1BFA306800D36B5B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		37CA32611C077ED900D36B5B /* SwiftCBOR.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SwiftCBOR.xcodeproj; path = Deps/SwiftCBOR/SwiftCBOR.xcodeproj; sourceTree = "<group>"; };
 		37E750381BFBB02C00D36B5B /* LoginViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LoginViewController.swift; sourceTree = "<group>"; };
 		37E7503A1BFBCDBC00D36B5B /* Vault.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Vault.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -67,6 +112,7 @@
 			files = (
 				37259DFF1BFB885900D36B5B /* libfreepass_capi.a in Frameworks */,
 				37259DFD1BFA58FD00D36B5B /* libsodium.a in Frameworks */,
+				37CA326C1C077EFB00D36B5B /* SwiftCBOR.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -90,6 +136,7 @@
 		376234BE1BFA306600D36B5B = {
 			isa = PBXGroup;
 			children = (
+				37CA32611C077ED900D36B5B /* SwiftCBOR.xcodeproj */,
 				37259DFE1BFB885900D36B5B /* libfreepass_capi.a */,
 				37259DFC1BFA58FD00D36B5B /* libsodium.a */,
 				376234C91BFA306700D36B5B /* Freepass */,
@@ -144,6 +191,15 @@
 			path = FreepassUITests;
 			sourceTree = "<group>";
 		};
+		37CA32621C077ED900D36B5B /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				37CA32671C077ED900D36B5B /* SwiftCBOR.framework */,
+				37CA32691C077ED900D36B5B /* SwiftCBORTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -154,10 +210,13 @@
 				376234C31BFA306700D36B5B /* Sources */,
 				376234C41BFA306700D36B5B /* Frameworks */,
 				376234C51BFA306700D36B5B /* Resources */,
+				37CA32701C077EFB00D36B5B /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				37CA326B1C077EDD00D36B5B /* PBXTargetDependency */,
+				37CA326F1C077EFB00D36B5B /* PBXTargetDependency */,
 			);
 			name = Freepass;
 			productName = Freepass;
@@ -237,6 +296,12 @@
 			mainGroup = 376234BE1BFA306600D36B5B;
 			productRefGroup = 376234C81BFA306700D36B5B /* Products */;
 			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = 37CA32621C077ED900D36B5B /* Products */;
+					ProjectRef = 37CA32611C077ED900D36B5B /* SwiftCBOR.xcodeproj */;
+				},
+			);
 			projectRoot = "";
 			targets = (
 				376234C61BFA306700D36B5B /* Freepass */,
@@ -245,6 +310,23 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		37CA32671C077ED900D36B5B /* SwiftCBOR.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = SwiftCBOR.framework;
+			remoteRef = 37CA32661C077ED900D36B5B /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		37CA32691C077ED900D36B5B /* SwiftCBORTests.xctest */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = SwiftCBORTests.xctest;
+			remoteRef = 37CA32681C077ED900D36B5B /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
 		376234C51BFA306700D36B5B /* Resources */ = {
@@ -315,6 +397,16 @@
 			target = 376234C61BFA306700D36B5B /* Freepass */;
 			targetProxy = 376234E91BFA306800D36B5B /* PBXContainerItemProxy */;
 		};
+		37CA326B1C077EDD00D36B5B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = SwiftCBOR;
+			targetProxy = 37CA326A1C077EDD00D36B5B /* PBXContainerItemProxy */;
+		};
+		37CA326F1C077EFB00D36B5B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = SwiftCBOR;
+			targetProxy = 37CA326E1C077EFB00D36B5B /* PBXContainerItemProxy */;
+		};
 /* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
@@ -359,6 +451,7 @@
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
+				FRAMEWORK_SEARCH_PATHS = "";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -404,6 +497,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				FRAMEWORK_SEARCH_PATHS = "";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -431,6 +525,7 @@
 				CLANG_WARN_IMPLICIT_SIGN_CONVERSION = YES;
 				CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION = YES;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				EMBEDDED_CONTENT_CONTAINS_SWIFT = YES;
 				ENABLE_BITCODE = NO;
 				HEADER_SEARCH_PATHS = ../../capi;
 				INFOPLIST_FILE = Freepass/Info.plist;
@@ -458,6 +553,7 @@
 				CLANG_WARN_IMPLICIT_SIGN_CONVERSION = YES;
 				CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION = YES;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				EMBEDDED_CONTENT_CONTAINS_SWIFT = YES;
 				ENABLE_BITCODE = NO;
 				HEADER_SEARCH_PATHS = ../../capi;
 				INFOPLIST_FILE = Freepass/Info.plist;

@@ -4,3 +4,6 @@
 [submodule "rusterpassword"]
 	path = rusterpassword
 	url = https://codeberg.org/valpackett/rusterpassword.git
+[submodule "ios/Freepass/Deps/SwiftCBOR"]
+	path = ios/Freepass/Deps/SwiftCBOR
+	url = https://github.com/valpackett/SwiftCBOR.git

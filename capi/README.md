@@ -20,8 +20,8 @@ $ sudo mkdir /opt/ndk /opt/ndk64
 $ sudo chown $(whoami) /opt/ndk /opt/ndk64
 $ brew install android-ndk
 $ cd $(brew --prefix android-ndk)
-$ build/tools/make-standalone-toolchain.sh --platform=android-21 --toolchain=arm-linux-androideabi-clang3.6 --install-dir=/opt/ndk
-$ build/tools/make-standalone-toolchain.sh --platform=android-21 --toolchain=aarch64-linux-android-clang3.6 --install-dir=/opt/ndk64
+$ build/tools/make-standalone-toolchain.sh --platform=android-21 --toolchain=arm-linux-androideabi-4.9 --install-dir=/opt/ndk
+$ build/tools/make-standalone-toolchain.sh --platform=android-21 --toolchain=aarch64-linux-android-4.9 --install-dir=/opt/ndk64
 ```
 
 Get the Rust source and build it:

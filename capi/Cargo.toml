@@ -15,6 +15,7 @@ name = "freepass_capi"
 [dependencies]
 freepass-core = { version = "0", path = "../core" }
 secstr = { version = "0.2.1", features = ["cbor-serialize", "libsodium-sys"] }
+cbor = "0"
 sodiumoxide = "0"
 rusterpassword = "0"
 rusterpassword-capi = { version = "0", path = "../rusterpassword/capi" }

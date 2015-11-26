@@ -31,6 +31,11 @@ LIBNAME="libfreepass_capi.a"
 CARGO_OPTS="-v --$BUILD_MODE"
 RUSTC_OPTS="--crate-type=staticlib"
 
+set -e
+
+echo "=> Building for x86_64"
+$CARGO rustc $CARGO_OPTS --target=x86_64-apple-ios -- $RUSTC_OPTS
+
 echo "=> Building for armv7"
 $CARGO rustc $CARGO_OPTS --target=armv7-apple-ios -- $RUSTC_OPTS
 
@@ -39,9 +44,6 @@ $CARGO rustc $CARGO_OPTS --target=armv7s-apple-ios -- $RUSTC_OPTS
 
 echo "=> Building for aarch64"
 $CARGO rustc $CARGO_OPTS --target=aarch64-apple-ios -- $RUSTC_OPTS
-
-echo "=> Building for x86_64"
-$CARGO rustc $CARGO_OPTS --target=x86_64-apple-ios -- $RUSTC_OPTS
 
 echo "=> Making universal library"
 mkdir -p "target/universal/$BUILD_MODE"

@@ -15,6 +15,7 @@ class EntryViewController: UIViewController {
 		if let detail = self.detailItem,
 		   let label = self.detailDescriptionLabel {
 			label.text = detail.description
+			print(Vault.getEntry(detail.description))
 		}
 	}
 	

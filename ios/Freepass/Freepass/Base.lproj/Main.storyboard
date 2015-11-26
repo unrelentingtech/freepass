@@ -64,7 +64,6 @@
         <!--Login View Controller-->
         <scene sceneID="tYz-Ew-SQ8">
             <objects>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="md4-CK-pde" userLabel="First Responder" sceneMemberID="firstResponder"/>
                 <tableViewController id="3aH-BQ-1TL" customClass="LoginViewController" customModule="Freepass" customModuleProvider="target" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="static" style="grouped" separatorStyle="default" rowHeight="44" sectionHeaderHeight="18" sectionFooterHeight="18" id="7ON-3S-pg9">
                         <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
@@ -189,6 +188,7 @@
                         <outlet property="userName" destination="WkM-rV-6TM" id="DTx-zJ-Or0"/>
                     </connections>
                 </tableViewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="md4-CK-pde" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="-1627" y="-330"/>
         </scene>
