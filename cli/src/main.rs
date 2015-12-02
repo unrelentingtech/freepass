@@ -204,7 +204,7 @@ fn interact_entry_edit(vault: &mut Vault, file_path: &str, outer_key: &SecStr, m
 }
 
 fn interact_field_edit(vault: &mut Vault, mut entry: Entry, field_name: String) -> Entry {
-    let default_derived = Field::Derived { counter: 0, site_name: None, usage: DerivedUsage::Password(PasswordTemplate::Maximum) };
+    let default_derived = Field::Derived { counter: 1, site_name: None, usage: DerivedUsage::Password(PasswordTemplate::Maximum) };
     let default_stored  = Field::Stored { data: SecStr::new(Vec::new()), usage: StoredUsage::Password };
     let mut field = entry.fields.remove(&field_name).unwrap_or_else(|| default_derived.clone());
     let mut field_actions : BTreeMap<String, Box<Fn(Field) -> Field>> = BTreeMap::new();
