@@ -40,6 +40,7 @@ struct Vault {
 	static func entryNames() -> [String] {
 		guard let vaultObj = vaultObj else { return [] }
 		let names_iter = freepass_vault_get_entry_names_iterator(vaultObj)
+		defer { freepass_free_entry_names_iterator(names_iter) }
 		var names = [String]()
 		var curr = freepass_entry_names_iterator_next(names_iter)
 		while curr != UnsafeMutablePointer.init(nilLiteral: ()) {
@@ -47,18 +48,17 @@ struct Vault {
 			freepass_free_entry_name(curr)
 			curr = freepass_entry_names_iterator_next(names_iter)
 		}
-		freepass_free_entry_names_iterator(names_iter)
 		return names
 	}
 
-	static func getEntry(name: String) -> CBOR? {
+	static func getEntry(name: String) -> Entry? {
 		guard let vaultObj = vaultObj else { return nil }
 		guard let entriesKey = entriesKey else { return nil }
 		let cbor = freepass_vault_get_entry_cbor(vaultObj, entriesKey, name)
+		defer { freepass_free_entry_cbor(cbor) }
 		let bytes = Array(UnsafeBufferPointer(start: cbor.data, count: cbor.len))
-		let result = try! CBORDecoder(input: bytes).decodeItem()
-		freepass_free_entry_cbor(cbor)
-		return result
+		guard let result = try! CBORDecoder(input: bytes).decodeItem() else { return nil }
+		return Entry(fromCbor: result)
 	}
 
 	static func close() {

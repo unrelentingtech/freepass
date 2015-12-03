@@ -1,10 +1,10 @@
 import UIKit
 
 class LoginViewController: UITableViewController, UISplitViewControllerDelegate {
-	
+
 	@IBOutlet weak var userName: UITextField!
 	@IBOutlet weak var password: UITextField!
-	
+
     override func viewDidLoad() {
         super.viewDidLoad()
 		print(documentsPath()?.path)
@@ -13,11 +13,11 @@ class LoginViewController: UITableViewController, UISplitViewControllerDelegate 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
     }
-	
+
 	func documentsPath() -> NSURL? {
 		return NSFileManager.defaultManager().URLsForDirectory(.DocumentDirectory, inDomains: .UserDomainMask).first
 	}
-    
+
 
     // MARK: - Navigation
 
@@ -29,7 +29,7 @@ class LoginViewController: UITableViewController, UISplitViewControllerDelegate 
 			splitViewController.delegate = self
 		}
     }
-	
+
 	override func shouldPerformSegueWithIdentifier(identifier: String, sender: AnyObject?) -> Bool {
 		if identifier == "openVault" {
 			do {
@@ -44,13 +44,13 @@ class LoginViewController: UITableViewController, UISplitViewControllerDelegate 
 		}
 		return true
 	}
-	
+
 	// MARK: - Split view
-	
+
 	func splitViewController(splitViewController: UISplitViewController, collapseSecondaryViewController secondaryViewController:UIViewController, ontoPrimaryViewController primaryViewController:UIViewController) -> Bool {
 		guard let secondaryAsNavController = secondaryViewController as? UINavigationController else { return false }
 		guard let topAsDetailController = secondaryAsNavController.topViewController as? EntryViewController else { return false }
-		if topAsDetailController.detailItem == nil {
+		if topAsDetailController.entry == nil {
 			// Return true to indicate that we have handled the collapse by doing nothing; the secondary controller will be discarded.
 			return true
 		}
