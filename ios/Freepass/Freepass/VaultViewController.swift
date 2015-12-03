@@ -1,23 +1,33 @@
 import UIKit
 
-class VaultViewController: UITableViewController {
+let NEW_ENTRY_NAME = "New entry"
+
+class VaultViewController: UITableViewController, UISearchResultsUpdating {
 
 	var entryViewController: EntryViewController? = nil
-	var objects = [AnyObject]()
+	var entrySearchController = UISearchController(searchResultsController: nil)
+	var entryNames = [String]()
+	var filteredEntryNames = [String]()
 
 
 	override func viewDidLoad() {
 		super.viewDidLoad()
-		self.navigationItem.leftBarButtonItem = self.editButtonItem()
+		entryNames = Vault.entryNames()
 
+		self.definesPresentationContext = true
 		let addButton = UIBarButtonItem(barButtonSystemItem: .Add, target: self, action: "insertNewObject:")
 		self.navigationItem.rightBarButtonItem = addButton
 		if let split = self.splitViewController {
 			let controllers = split.viewControllers
 			self.entryViewController = (controllers[controllers.count-1] as! UINavigationController).topViewController as? EntryViewController
 		}
-
-		objects = Vault.entryNames()
+		self.entrySearchController.searchResultsUpdater = self
+		self.entrySearchController.dimsBackgroundDuringPresentation = false
+		self.entrySearchController.hidesNavigationBarDuringPresentation = false
+		self.entrySearchController.searchBar.sizeToFit()
+		self.entrySearchController.searchBar.searchBarStyle = .Minimal
+		self.tableView.tableHeaderView = self.entrySearchController.searchBar
+		self.tableView.reloadData()
 	}
 
 	override func viewWillAppear(animated: Bool) {
@@ -30,7 +40,7 @@ class VaultViewController: UITableViewController {
 	}
 
 	func insertNewObject(sender: AnyObject) {
-		objects.insert("New entry", atIndex: 0)
+		entryNames.insert(NEW_ENTRY_NAME, atIndex: 0)
 		let indexPath = NSIndexPath(forRow: 0, inSection: 0)
 		self.tableView.insertRowsAtIndexPaths([indexPath], withRowAnimation: .Automatic)
 	}
@@ -40,10 +50,14 @@ class VaultViewController: UITableViewController {
 	override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
 		if segue.identifier == "showEntry" {
 			if let indexPath = self.tableView.indexPathForSelectedRow {
-				let entryName = objects[indexPath.row] as! String
+				let entryName = entryNames[indexPath.row]
 				let controller = (segue.destinationViewController as! UINavigationController).topViewController as! EntryViewController
 				controller.entryName = entryName
-				controller.entry = Vault.getEntry(entryName)
+				if (entryName != NEW_ENTRY_NAME) {
+					controller.entry = Vault.getEntry(entryName)
+				} else {
+					controller.entry = Entry()
+				}
 				controller.navigationItem.leftBarButtonItem = self.splitViewController?.displayModeButtonItem()
 				controller.navigationItem.leftItemsSupplementBackButton = true
 			}
@@ -57,28 +71,32 @@ class VaultViewController: UITableViewController {
 	}
 
 	override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-		return objects.count
+		if (self.entrySearchController.active) {
+			return self.filteredEntryNames.count
+		} else {
+			return self.entryNames.count
+		}
 	}
 
 	override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
 		let cell = tableView.dequeueReusableCellWithIdentifier("Cell", forIndexPath: indexPath)
-		let object = objects[indexPath.row] as! String
-		cell.textLabel!.text = object
+		let entryName: String
+		if (self.entrySearchController.active) {
+			entryName = filteredEntryNames[indexPath.row]
+		} else {
+			entryName = entryNames[indexPath.row]
+		}
+		cell.textLabel!.text = entryName
 		return cell
 	}
 
-	override func tableView(tableView: UITableView, canEditRowAtIndexPath indexPath: NSIndexPath) -> Bool {
-		// Return false if you do not want the specified item to be editable.
-		return true
-	}
-
-	override func tableView(tableView: UITableView, commitEditingStyle editingStyle: UITableViewCellEditingStyle, forRowAtIndexPath indexPath: NSIndexPath) {
-		if editingStyle == .Delete {
-			objects.removeAtIndex(indexPath.row)
-			tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Fade)
-		} else if editingStyle == .Insert {
-			// Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view.
-		}
+	func updateSearchResultsForSearchController(searchController: UISearchController) {
+		self.filteredEntryNames.removeAll(keepCapacity: false)
+		let array = (self.entryNames as NSArray).filteredArrayUsingPredicate(
+			NSPredicate(format: "SELF CONTAINS[c] %@", self.entrySearchController.searchBar.text!)
+		)
+		self.filteredEntryNames = array as! [String]
+		self.tableView.reloadData()
 	}
 
 }

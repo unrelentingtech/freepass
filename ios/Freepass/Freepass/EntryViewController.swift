@@ -4,8 +4,11 @@ class EntryViewController: UIViewController {
 
 	@IBOutlet weak var detailDescriptionLabel: UILabel!
 
-
-	var entryName: String?
+	var entryName: String? {
+		didSet {
+			title = entryName
+		}
+	}
 	
 	var entry: Entry? {
 		didSet {
