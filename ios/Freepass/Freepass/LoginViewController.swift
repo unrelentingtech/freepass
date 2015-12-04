@@ -7,6 +7,7 @@ class LoginViewController: UITableViewController, UISplitViewControllerDelegate 
 
     override func viewDidLoad() {
         super.viewDidLoad()
+		self.view.backgroundColor = Colors.primaryAccent
 		print(documentsPath()?.path)
     }
 

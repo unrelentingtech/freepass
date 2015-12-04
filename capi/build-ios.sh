@@ -33,6 +33,9 @@ RUSTC_OPTS="--crate-type=staticlib"
 
 set -e
 
+echo "=> Building for i386"
+$CARGO rustc $CARGO_OPTS --target=i386-apple-ios -- $RUSTC_OPTS
+
 echo "=> Building for x86_64"
 $CARGO rustc $CARGO_OPTS --target=x86_64-apple-ios -- $RUSTC_OPTS
 

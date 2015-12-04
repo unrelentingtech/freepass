@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		3705C7181C12511400D36B5B /* HexColor.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 3705C7121C12510000D36B5B /* HexColor.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		3705C71E1C1251B000D36B5B /* HexColor.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3705C7121C12510000D36B5B /* HexColor.framework */; };
+		3705C7271C1251CE00D36B5B /* Colors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3705C7261C1251CE00D36B5B /* Colors.swift */; };
 		37259DFD1BFA58FD00D36B5B /* libsodium.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 37259DFC1BFA58FD00D36B5B /* libsodium.a */; };
 		37259DFF1BFB885900D36B5B /* libfreepass_capi.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 37259DFE1BFB885900D36B5B /* libfreepass_capi.a */; };
 		376234CB1BFA306700D36B5B /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 376234CA1BFA306700D36B5B /* AppDelegate.swift */; };
@@ -20,11 +23,34 @@
 		37CA326C1C077EFB00D36B5B /* SwiftCBOR.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 37CA32671C077ED900D36B5B /* SwiftCBOR.framework */; };
 		37CA326D1C077EFB00D36B5B /* SwiftCBOR.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 37CA32671C077ED900D36B5B /* SwiftCBOR.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		37CA32761C10949900D36B5B /* Entry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37CA32751C10949800D36B5B /* Entry.swift */; };
+		37CA32911C10EA7900D36B5B /* Bond.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 37CA32821C10EA3400D36B5B /* Bond.framework */; };
+		37CA32921C10EA8E00D36B5B /* Bond.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 37CA32821C10EA3400D36B5B /* Bond.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		37E750391BFBB02C00D36B5B /* LoginViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E750381BFBB02C00D36B5B /* LoginViewController.swift */; };
 		37E7503B1BFBCDBC00D36B5B /* Vault.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E7503A1BFBCDBC00D36B5B /* Vault.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		3705C7111C12510000D36B5B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 3705C7061C12510000D36B5B /* HexColor.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 7228B6E619B5353600A81D94;
+			remoteInfo = HexColor;
+		};
+		3705C7131C12510000D36B5B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 3705C7061C12510000D36B5B /* HexColor.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 7228B6F119B5353600A81D94;
+			remoteInfo = HexColorTests;
+		};
+		3705C7161C12510E00D36B5B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 3705C7061C12510000D36B5B /* HexColor.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 7228B6E519B5353600A81D94;
+			remoteInfo = HexColor;
+		};
 		376234DE1BFA306800D36B5B /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 376234BF1BFA306700D36B5B /* Project object */;
@@ -67,6 +93,62 @@
 			remoteGlobalIDString = 37F34C001C0265AD00D36B5B;
 			remoteInfo = SwiftCBOR;
 		};
+		37CA32811C10EA3400D36B5B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 37CA32771C10EA3200D36B5B /* Bond.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 69491BAE1A7C217100A13B6B;
+			remoteInfo = Bond;
+		};
+		37CA32831C10EA3400D36B5B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 37CA32771C10EA3200D36B5B /* Bond.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 69491BB91A7C217100A13B6B;
+			remoteInfo = BondTests;
+		};
+		37CA32851C10EA3400D36B5B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 37CA32771C10EA3200D36B5B /* Bond.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = DCA979691A83C3A100DD4A30;
+			remoteInfo = BondOSX;
+		};
+		37CA32871C10EA3400D36B5B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 37CA32771C10EA3200D36B5B /* Bond.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = DCA979731A83C3A200DD4A30;
+			remoteInfo = BondOSXTests;
+		};
+		37CA32891C10EA3400D36B5B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 37CA32771C10EA3200D36B5B /* Bond.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 03ACB4FE1AB555D6001B3E64;
+			remoteInfo = iOSAppForTesting;
+		};
+		37CA328B1C10EA3400D36B5B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 37CA32771C10EA3200D36B5B /* Bond.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = B56989C21BD8A00C00927A6B;
+			remoteInfo = BondtvOS;
+		};
+		37CA328D1C10EA3400D36B5B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 37CA32771C10EA3200D36B5B /* Bond.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = B5616DBB1BD8A39E0016CCB4;
+			remoteInfo = tvOSAppForTesting;
+		};
+		37CA328F1C10EA6900D36B5B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 37CA32771C10EA3200D36B5B /* Bond.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 69491BAD1A7C217100A13B6B;
+			remoteInfo = Bond;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -76,6 +158,8 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				3705C7181C12511400D36B5B /* HexColor.framework in Embed Frameworks */,
+				37CA32921C10EA8E00D36B5B /* Bond.framework in Embed Frameworks */,
 				37CA326D1C077EFB00D36B5B /* SwiftCBOR.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
@@ -84,6 +168,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		3705C7061C12510000D36B5B /* HexColor.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = HexColor.xcodeproj; path = Deps/HexColor/HexColor.xcodeproj; sourceTree = "<group>"; };
+		3705C7261C1251CE00D36B5B /* Colors.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Colors.swift; sourceTree = "<group>"; };
 		37259DF81BFA462700D36B5B /* Freepass-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Freepass-Bridging-Header.h"; sourceTree = "<group>"; };
 		37259DFC1BFA58FD00D36B5B /* libsodium.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libsodium.a; path = "../../../../jedisct1/libsodium/libsodium-ios/lib/libsodium.a"; sourceTree = "<group>"; };
 		37259DFE1BFB885900D36B5B /* libfreepass_capi.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libfreepass_capi.a; path = ../../capi/target/universal/release/libfreepass_capi.a; sourceTree = "<group>"; };
@@ -103,6 +189,7 @@
 		376234EE1BFA306800D36B5B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		37CA32611C077ED900D36B5B /* SwiftCBOR.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SwiftCBOR.xcodeproj; path = Deps/SwiftCBOR/SwiftCBOR.xcodeproj; sourceTree = "<group>"; };
 		37CA32751C10949800D36B5B /* Entry.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Entry.swift; sourceTree = "<group>"; };
+		37CA32771C10EA3200D36B5B /* Bond.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Bond.xcodeproj; path = Deps/Bond/Bond.xcodeproj; sourceTree = "<group>"; };
 		37E750381BFBB02C00D36B5B /* LoginViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LoginViewController.swift; sourceTree = "<group>"; };
 		37E7503A1BFBCDBC00D36B5B /* Vault.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Vault.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -114,7 +201,9 @@
 			files = (
 				37259DFF1BFB885900D36B5B /* libfreepass_capi.a in Frameworks */,
 				37259DFD1BFA58FD00D36B5B /* libsodium.a in Frameworks */,
+				3705C71E1C1251B000D36B5B /* HexColor.framework in Frameworks */,
 				37CA326C1C077EFB00D36B5B /* SwiftCBOR.framework in Frameworks */,
+				37CA32911C10EA7900D36B5B /* Bond.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -135,10 +224,21 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		3705C7071C12510000D36B5B /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				3705C7121C12510000D36B5B /* HexColor.framework */,
+				3705C7141C12510000D36B5B /* HexColorTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
 		376234BE1BFA306600D36B5B = {
 			isa = PBXGroup;
 			children = (
 				37CA32611C077ED900D36B5B /* SwiftCBOR.xcodeproj */,
+				37CA32771C10EA3200D36B5B /* Bond.xcodeproj */,
+				3705C7061C12510000D36B5B /* HexColor.xcodeproj */,
 				37259DFE1BFB885900D36B5B /* libfreepass_capi.a */,
 				37259DFC1BFA58FD00D36B5B /* libsodium.a */,
 				376234C91BFA306700D36B5B /* Freepass */,
@@ -172,6 +272,7 @@
 				37E750381BFBB02C00D36B5B /* LoginViewController.swift */,
 				37E7503A1BFBCDBC00D36B5B /* Vault.swift */,
 				37CA32751C10949800D36B5B /* Entry.swift */,
+				3705C7261C1251CE00D36B5B /* Colors.swift */,
 			);
 			path = Freepass;
 			sourceTree = "<group>";
@@ -203,6 +304,20 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		37CA32781C10EA3200D36B5B /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				37CA32821C10EA3400D36B5B /* Bond.framework */,
+				37CA32841C10EA3400D36B5B /* BondTests.xctest */,
+				37CA32861C10EA3400D36B5B /* Bond.framework */,
+				37CA32881C10EA3400D36B5B /* BondOSXTests.xctest */,
+				37CA328A1C10EA3400D36B5B /* iOSAppForTesting.app */,
+				37CA328C1C10EA3400D36B5B /* Bond.framework */,
+				37CA328E1C10EA3400D36B5B /* tvOSAppForTesting.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -218,7 +333,9 @@
 			buildRules = (
 			);
 			dependencies = (
+				3705C7171C12510E00D36B5B /* PBXTargetDependency */,
 				37CA326B1C077EDD00D36B5B /* PBXTargetDependency */,
+				37CA32901C10EA6900D36B5B /* PBXTargetDependency */,
 				37CA326F1C077EFB00D36B5B /* PBXTargetDependency */,
 			);
 			name = Freepass;
@@ -301,6 +418,14 @@
 			projectDirPath = "";
 			projectReferences = (
 				{
+					ProductGroup = 37CA32781C10EA3200D36B5B /* Products */;
+					ProjectRef = 37CA32771C10EA3200D36B5B /* Bond.xcodeproj */;
+				},
+				{
+					ProductGroup = 3705C7071C12510000D36B5B /* Products */;
+					ProjectRef = 3705C7061C12510000D36B5B /* HexColor.xcodeproj */;
+				},
+				{
 					ProductGroup = 37CA32621C077ED900D36B5B /* Products */;
 					ProjectRef = 37CA32611C077ED900D36B5B /* SwiftCBOR.xcodeproj */;
 				},
@@ -315,6 +440,20 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
+		3705C7121C12510000D36B5B /* HexColor.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = HexColor.framework;
+			remoteRef = 3705C7111C12510000D36B5B /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		3705C7141C12510000D36B5B /* HexColorTests.xctest */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = HexColorTests.xctest;
+			remoteRef = 3705C7131C12510000D36B5B /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
 		37CA32671C077ED900D36B5B /* SwiftCBOR.framework */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.framework;
@@ -327,6 +466,55 @@
 			fileType = wrapper.cfbundle;
 			path = SwiftCBORTests.xctest;
 			remoteRef = 37CA32681C077ED900D36B5B /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		37CA32821C10EA3400D36B5B /* Bond.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = Bond.framework;
+			remoteRef = 37CA32811C10EA3400D36B5B /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		37CA32841C10EA3400D36B5B /* BondTests.xctest */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = BondTests.xctest;
+			remoteRef = 37CA32831C10EA3400D36B5B /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		37CA32861C10EA3400D36B5B /* Bond.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = Bond.framework;
+			remoteRef = 37CA32851C10EA3400D36B5B /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		37CA32881C10EA3400D36B5B /* BondOSXTests.xctest */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = BondOSXTests.xctest;
+			remoteRef = 37CA32871C10EA3400D36B5B /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		37CA328A1C10EA3400D36B5B /* iOSAppForTesting.app */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.application;
+			path = iOSAppForTesting.app;
+			remoteRef = 37CA32891C10EA3400D36B5B /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		37CA328C1C10EA3400D36B5B /* Bond.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = Bond.framework;
+			remoteRef = 37CA328B1C10EA3400D36B5B /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		37CA328E1C10EA3400D36B5B /* tvOSAppForTesting.app */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.application;
+			path = tvOSAppForTesting.app;
+			remoteRef = 37CA328D1C10EA3400D36B5B /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 /* End PBXReferenceProxy section */
@@ -366,6 +554,7 @@
 				37CA32761C10949900D36B5B /* Entry.swift in Sources */,
 				37E750391BFBB02C00D36B5B /* LoginViewController.swift in Sources */,
 				376234CF1BFA306700D36B5B /* EntryViewController.swift in Sources */,
+				3705C7271C1251CE00D36B5B /* Colors.swift in Sources */,
 				376234CD1BFA306700D36B5B /* VaultViewController.swift in Sources */,
 				376234CB1BFA306700D36B5B /* AppDelegate.swift in Sources */,
 				37E7503B1BFBCDBC00D36B5B /* Vault.swift in Sources */,
@@ -391,6 +580,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		3705C7171C12510E00D36B5B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = HexColor;
+			targetProxy = 3705C7161C12510E00D36B5B /* PBXContainerItemProxy */;
+		};
 		376234DF1BFA306800D36B5B /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 376234C61BFA306700D36B5B /* Freepass */;
@@ -410,6 +604,11 @@
 			isa = PBXTargetDependency;
 			name = SwiftCBOR;
 			targetProxy = 37CA326E1C077EFB00D36B5B /* PBXContainerItemProxy */;
+		};
+		37CA32901C10EA6900D36B5B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = Bond;
+			targetProxy = 37CA328F1C10EA6900D36B5B /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -470,7 +669,6 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.1;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
@@ -510,7 +708,6 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.1;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";

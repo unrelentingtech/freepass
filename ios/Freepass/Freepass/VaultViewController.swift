@@ -1,5 +1,9 @@
 import UIKit
 
+class EntryCell: UITableViewCell {
+	@IBOutlet weak var entryName: UILabel!
+}
+
 let NEW_ENTRY_NAME = "New entry"
 
 class VaultViewController: UITableViewController, UISearchResultsUpdating {
@@ -52,7 +56,7 @@ class VaultViewController: UITableViewController, UISearchResultsUpdating {
 			if let indexPath = self.tableView.indexPathForSelectedRow {
 				let entryName = entryNames[indexPath.row]
 				let controller = (segue.destinationViewController as! UINavigationController).topViewController as! EntryViewController
-				controller.entryName = entryName
+				controller.entryName.value = entryName
 				if (entryName != NEW_ENTRY_NAME) {
 					controller.entry = Vault.getEntry(entryName)
 				} else {
@@ -79,14 +83,15 @@ class VaultViewController: UITableViewController, UISearchResultsUpdating {
 	}
 
 	override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-		let cell = tableView.dequeueReusableCellWithIdentifier("Cell", forIndexPath: indexPath)
+		let cell = tableView.dequeueReusableCellWithIdentifier("EntryCell", forIndexPath: indexPath) as! EntryCell
 		let entryName: String
 		if (self.entrySearchController.active) {
 			entryName = filteredEntryNames[indexPath.row]
 		} else {
 			entryName = entryNames[indexPath.row]
 		}
-		cell.textLabel!.text = entryName
+		cell.entryName.text = entryName
+		cell.entryName.textColor = Colors.primaryContent
 		return cell
 	}
 
