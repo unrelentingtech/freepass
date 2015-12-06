@@ -13,3 +13,6 @@
 [submodule "ios/Freepass/Deps/HexColor"]
 	path = ios/Freepass/Deps/HexColor
 	url = https://github.com/artman/HexColor.git
+[submodule "ios/Freepass/Deps/Cartography"]
+	path = ios/Freepass/Deps/Cartography
+	url = https://github.com/robb/Cartography.git
