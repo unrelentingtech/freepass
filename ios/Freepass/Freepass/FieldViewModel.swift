@@ -31,10 +31,10 @@ class FieldViewModel {
 			self.stored_data.value = $0?.utf8.map { UInt8(bitPattern: Int8($0.value)) }
 			updatingFromSelf = false
 		}
-		// XXX: fix updating via string
 	}
 
 	init(name: String, field: Field) {
+		init_stored_data_conversion()
 		field_name.value = name
 		switch field {
 		case .Derived(let counter, let site_name, let usage):

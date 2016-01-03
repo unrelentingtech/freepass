@@ -16,3 +16,6 @@
 [submodule "ios/Freepass/Deps/Cartography"]
 	path = ios/Freepass/Deps/Cartography
 	url = https://github.com/robb/Cartography.git
+[submodule "ios/Freepass/Deps/ActionSheetPicker"]
+	path = ios/Freepass/Deps/ActionSheetPicker
+	url = https://github.com/skywinder/ActionSheetPicker-3.0.git

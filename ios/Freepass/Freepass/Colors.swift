@@ -27,6 +27,7 @@ struct Colors {
 		UIButton.appearance().tintColor = primaryAccent
 		UISearchBar.appearance().tintColor = primaryAccent
 
+		UINavigationBar.appearance().translucent = false
 		UINavigationBar.appearance().barTintColor = toolbarBackground
 		UINavigationBar.appearance().tintColor = toolbarContent
 		UINavigationBar.appearance().titleTextAttributes = [NSForegroundColorAttributeName: toolbarContent]

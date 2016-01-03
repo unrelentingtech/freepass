@@ -25,6 +25,8 @@
 		376234D71BFA306700D36B5B /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 376234D51BFA306700D36B5B /* LaunchScreen.storyboard */; };
 		376234E21BFA306800D36B5B /* FreepassTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 376234E11BFA306800D36B5B /* FreepassTests.swift */; };
 		376234ED1BFA306800D36B5B /* FreepassUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 376234EC1BFA306800D36B5B /* FreepassUITests.swift */; };
+		37936F161C163CF500D36B5B /* CoreActionSheetPicker.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 37936F0F1C163CB800D36B5B /* CoreActionSheetPicker.framework */; };
+		37936F171C163CFE00D36B5B /* CoreActionSheetPicker.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 37936F0F1C163CB800D36B5B /* CoreActionSheetPicker.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		37CA326C1C077EFB00D36B5B /* SwiftCBOR.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 37CA32671C077ED900D36B5B /* SwiftCBOR.framework */; };
 		37CA326D1C077EFB00D36B5B /* SwiftCBOR.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 37CA32671C077ED900D36B5B /* SwiftCBOR.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		37CA32761C10949900D36B5B /* Entry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37CA32751C10949800D36B5B /* Entry.swift */; };
@@ -118,6 +120,27 @@
 			proxyType = 1;
 			remoteGlobalIDString = 376234C61BFA306700D36B5B;
 			remoteInfo = Freepass;
+		};
+		37936F0E1C163CB800D36B5B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 37936EFE1C163CB800D36B5B /* CoreActionSheetPicker.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 1CCA90431AE0EFB000368F5E;
+			remoteInfo = CoreActionSheetPicker;
+		};
+		37936F101C163CB800D36B5B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 37936EFE1C163CB800D36B5B /* CoreActionSheetPicker.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 1CCA904E1AE0EFB000368F5E;
+			remoteInfo = CoreActionSheetPickerTests;
+		};
+		37936F141C163CEC00D36B5B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 37936EFE1C163CB800D36B5B /* CoreActionSheetPicker.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 1CCA90421AE0EFB000368F5E;
+			remoteInfo = CoreActionSheetPicker;
 		};
 		37CA32661C077ED900D36B5B /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -213,6 +236,7 @@
 			dstSubfolderSpec = 10;
 			files = (
 				3705C5F41C14598300D36B5B /* Cartography.framework in Embed Frameworks */,
+				37936F171C163CFE00D36B5B /* CoreActionSheetPicker.framework in Embed Frameworks */,
 				3705C7181C12511400D36B5B /* HexColor.framework in Embed Frameworks */,
 				37CA32921C10EA8E00D36B5B /* Bond.framework in Embed Frameworks */,
 				37CA326D1C077EFB00D36B5B /* SwiftCBOR.framework in Embed Frameworks */,
@@ -246,6 +270,7 @@
 		376234E81BFA306800D36B5B /* FreepassUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FreepassUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		376234EC1BFA306800D36B5B /* FreepassUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FreepassUITests.swift; sourceTree = "<group>"; };
 		376234EE1BFA306800D36B5B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		37936EFE1C163CB800D36B5B /* CoreActionSheetPicker.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = CoreActionSheetPicker.xcodeproj; path = Deps/ActionSheetPicker/CoreActionSheetPicker/CoreActionSheetPicker.xcodeproj; sourceTree = "<group>"; };
 		37CA32611C077ED900D36B5B /* SwiftCBOR.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SwiftCBOR.xcodeproj; path = Deps/SwiftCBOR/SwiftCBOR.xcodeproj; sourceTree = "<group>"; };
 		37CA32751C10949800D36B5B /* Entry.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Entry.swift; sourceTree = "<group>"; };
 		37CA32771C10EA3200D36B5B /* Bond.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Bond.xcodeproj; path = Deps/Bond/Bond.xcodeproj; sourceTree = "<group>"; };
@@ -263,6 +288,7 @@
 				37CA326C1C077EFB00D36B5B /* SwiftCBOR.framework in Frameworks */,
 				3705C71E1C1251B000D36B5B /* HexColor.framework in Frameworks */,
 				3705C5F31C14597100D36B5B /* Cartography.framework in Frameworks */,
+				37936F161C163CF500D36B5B /* CoreActionSheetPicker.framework in Frameworks */,
 				37CA32911C10EA7900D36B5B /* Bond.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -350,6 +376,7 @@
 				37CA32771C10EA3200D36B5B /* Bond.xcodeproj */,
 				3705C7061C12510000D36B5B /* HexColor.xcodeproj */,
 				3705C5D41C14595A00D36B5B /* Cartography.xcodeproj */,
+				37936EFE1C163CB800D36B5B /* CoreActionSheetPicker.xcodeproj */,
 				37259DFE1BFB885900D36B5B /* libfreepass_capi.a */,
 				37259DFC1BFA58FD00D36B5B /* libsodium.a */,
 				376234C91BFA306700D36B5B /* Freepass */,
@@ -404,6 +431,15 @@
 			path = FreepassUITests;
 			sourceTree = "<group>";
 		};
+		37936EFF1C163CB800D36B5B /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				37936F0F1C163CB800D36B5B /* CoreActionSheetPicker.framework */,
+				37936F111C163CB800D36B5B /* CoreActionSheetPickerTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
 		37CA32621C077ED900D36B5B /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -445,6 +481,7 @@
 				37CA326B1C077EDD00D36B5B /* PBXTargetDependency */,
 				3705C7171C12510E00D36B5B /* PBXTargetDependency */,
 				3705C5F21C14596A00D36B5B /* PBXTargetDependency */,
+				37936F151C163CEC00D36B5B /* PBXTargetDependency */,
 				37CA32901C10EA6900D36B5B /* PBXTargetDependency */,
 				37CA326F1C077EFB00D36B5B /* PBXTargetDependency */,
 			);
@@ -536,6 +573,10 @@
 					ProjectRef = 3705C5D41C14595A00D36B5B /* Cartography.xcodeproj */;
 				},
 				{
+					ProductGroup = 37936EFF1C163CB800D36B5B /* Products */;
+					ProjectRef = 37936EFE1C163CB800D36B5B /* CoreActionSheetPicker.xcodeproj */;
+				},
+				{
 					ProductGroup = 3705C7071C12510000D36B5B /* Products */;
 					ProjectRef = 3705C7061C12510000D36B5B /* HexColor.xcodeproj */;
 				},
@@ -608,6 +649,20 @@
 			fileType = wrapper.cfbundle;
 			path = HexColorTests.xctest;
 			remoteRef = 3705C7131C12510000D36B5B /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		37936F0F1C163CB800D36B5B /* CoreActionSheetPicker.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = CoreActionSheetPicker.framework;
+			remoteRef = 37936F0E1C163CB800D36B5B /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		37936F111C163CB800D36B5B /* CoreActionSheetPickerTests.xctest */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = CoreActionSheetPickerTests.xctest;
+			remoteRef = 37936F101C163CB800D36B5B /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		37CA32671C077ED900D36B5B /* SwiftCBOR.framework */ = {
@@ -758,6 +813,11 @@
 			isa = PBXTargetDependency;
 			target = 376234C61BFA306700D36B5B /* Freepass */;
 			targetProxy = 376234E91BFA306800D36B5B /* PBXContainerItemProxy */;
+		};
+		37936F151C163CEC00D36B5B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = CoreActionSheetPicker;
+			targetProxy = 37936F141C163CEC00D36B5B /* PBXContainerItemProxy */;
 		};
 		37CA326B1C077EDD00D36B5B /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;

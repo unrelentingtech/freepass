@@ -11,7 +11,7 @@ class EntryViewController: UITableViewController {
 
 	var entry: Entry? {
 		didSet {
-			print(entry!.fields)
+//			print(entry!.fields)
 			setFields(entry!.fields)
 		}
 	}
@@ -38,7 +38,6 @@ class EntryViewController: UITableViewController {
 		super.viewDidLoad()
 		self.tableView.backgroundColor = Colors.primaryBackground
 		self.tableView.rowHeight = UITableViewAutomaticDimension
-		self.tableView.estimatedRowHeight = 80.0
 		self.tableView.allowsSelectionDuringEditing = false
 		let cancelButton = UIBarButtonItem(title: "Cancel", style: .Plain, target: self, action: "cancelEdit:")
 		self.entryName.observe { self.title = $0 }
@@ -48,6 +47,7 @@ class EntryViewController: UITableViewController {
 			self.navigationItem.setLeftBarButtonItem($0 ? cancelButton : nil, animated: true)
 			self.editButton.title = $0 ? "Save" : "Edit"
 			self.tableView.editing = $0
+			self.tableView.estimatedRowHeight = $0 ? 140.0 : 60.0
 		}
 		self.fields.lift()
 			.combineLatestWith(self.inEditMode).map { (e, _) in e } // Update when inEditMode is updated, but get inEditMode directly inside the block because bindTo needs the value to be of the event type

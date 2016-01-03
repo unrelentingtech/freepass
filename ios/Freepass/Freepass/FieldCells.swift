@@ -65,7 +65,7 @@ class EditFieldCell: UITableViewCell {
 	init(forField field: FieldViewModel) {
 		super.init(style: .Default, reuseIdentifier: nil)
 		self.field = field
-		
+
 		self.addSubview(name_field)
 		field.field_name.bidirectionalBindTo(name_field.bnd_text).disposeIn(self.bnd_bag)
 		name_field.textColor = Colors.primaryContent
@@ -104,7 +104,9 @@ class EditFieldCell: UITableViewCell {
 			self.derived_counter_stepper.hidden = !$0
 			self.derived_counter_label.hidden = !$0
 			self.stored_string_field.hidden = $0
+			let scrollPos = self.tableView?.contentOffset.y
 			self.tableView?.reloadData() // If I try updateConstraints instead, the height won't change!
+			self.tableView?.contentOffset.y = scrollPos ?? 0
 		}.disposeIn(self.bnd_bag)
 
 		updateConstraints()
