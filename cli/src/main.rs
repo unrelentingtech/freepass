@@ -203,10 +203,37 @@ fn interact_entry_edit(vault: &mut Vault, file_path: &str, outer_key: &SecStr, m
     });
 }
 
+fn new_derived_field(field_name: &str) -> Field {
+    let fname = field_name.to_lowercase();
+    if fname.contains("key") {
+        Field::Derived { counter: 1, site_name: None, usage: DerivedUsage::Ed25519Key(Ed25519Usage::SSH) }
+    } else {
+        Field::Derived { counter: 1, site_name: None, usage: DerivedUsage::Password(PasswordTemplate::Maximum) }
+    }
+}
+
+fn new_stored_field(field_name: &str) -> Field {
+    let fname = field_name.to_lowercase();
+    if fname.contains("name") || fname.contains("login") || fname.contains("email") {
+        Field::Stored { data: SecStr::new(Vec::new()), usage: StoredUsage::Text }
+    } else {
+        Field::Stored { data: SecStr::new(Vec::new()), usage: StoredUsage::Password }
+    }
+}
+
+fn new_field(field_name: &str) -> Field {
+    let fname = field_name.to_lowercase();
+    if fname.contains("name") || fname.contains("login") || fname.contains("email") {
+        Field::Stored { data: SecStr::new(Vec::new()), usage: StoredUsage::Text }
+    } else if fname.contains("key") {
+        Field::Derived { counter: 1, site_name: None, usage: DerivedUsage::Ed25519Key(Ed25519Usage::SSH) }
+    } else {
+        Field::Derived { counter: 1, site_name: None, usage: DerivedUsage::Password(PasswordTemplate::Maximum) }
+    }
+}
+
 fn interact_field_edit(vault: &mut Vault, mut entry: Entry, field_name: String) -> Entry {
-    let default_derived = Field::Derived { counter: 1, site_name: None, usage: DerivedUsage::Password(PasswordTemplate::Maximum) };
-    let default_stored  = Field::Stored { data: SecStr::new(Vec::new()), usage: StoredUsage::Password };
-    let mut field = entry.fields.remove(&field_name).unwrap_or_else(|| default_derived.clone());
+    let mut field = entry.fields.remove(&field_name).unwrap_or_else(|| new_field(&field_name));
     let mut field_actions : BTreeMap<String, Box<Fn(Field) -> Field>> = BTreeMap::new();
     let other_type;
     match field.clone() {
@@ -290,8 +317,8 @@ fn interact_field_edit(vault: &mut Vault, mut entry: Entry, field_name: String) 
         &format!("Change type to {}", other_type) => {
             entry.fields.remove(&field_name);
             entry.fields.insert(field_name.clone(), match field {
-                Field::Derived { .. } => default_stored.clone(),
-                Field::Stored { .. } => default_derived.clone(),
+                Field::Derived { .. } => new_stored_field(&field_name),
+                Field::Stored { .. } => new_derived_field(&field_name),
             });
             return interact_field_edit(vault, entry, field_name);
         }
