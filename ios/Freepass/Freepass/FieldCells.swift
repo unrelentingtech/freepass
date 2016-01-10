@@ -6,19 +6,29 @@ class ShowFieldCell: UITableViewCell {
 	lazy var name = UITextField()
 	lazy var content = UITextField()
 
-	init(forField field: FieldViewModel) {
-		super.init(style: .Default, reuseIdentifier: nil)
-
+	override init(style: UITableViewCellStyle, reuseIdentifier: String?) {
+		super.init(style: style, reuseIdentifier: reuseIdentifier)
 		self.addSubview(name)
-		field.field_name.bindTo(name.bnd_text).disposeIn(self.bnd_bag)
+		self.addSubview(content)
+	}
+
+	required init?(coder aDecoder: NSCoder) { // REALLY?
+		fatalError("init(coder:) has not been implemented")
+	}
+
+	override func layoutSubviews() {
+		super.layoutSubviews()
 		name.enabled = false
 		name.textColor = Colors.primaryAccent
 		name.font = name.font?.fontWithSize(16)
 
-		self.addSubview(content)
 		content.enabled = false
 		content.textColor = Colors.primaryContent
-
+	}
+	
+	func setField(field: FieldViewModel) {
+		self.bnd_bag.dispose()
+		field.field_name.bindTo(name.bnd_text).disposeIn(self.bnd_bag)
 		updateConstraints()
 	}
 
@@ -27,6 +37,7 @@ class ShowFieldCell: UITableViewCell {
 			for v in [name, content] {
 				v.centerX == name.superview!.centerX
 				v.width == name.superview!.width - 20
+//				v.height == 24
 			}
 			name.top == name.superview!.topMargin
 			content.bottom == name.superview!.bottomMargin
@@ -34,21 +45,21 @@ class ShowFieldCell: UITableViewCell {
 		}
 		super.updateConstraints()
 	}
-
-	required init?(coder aDecoder: NSCoder) { // REALLY?
-	    fatalError("init(coder:) has not been implemented")
-	}
 }
 
 class ShowPasswordFieldCell: ShowFieldCell {
-	override init(forField field: FieldViewModel) {
-		super.init(forField: field)
-		content.secureTextEntry = true
-		content.text = "************"
+	override init(style: UITableViewCellStyle, reuseIdentifier: String?) {
+		super.init(style: style, reuseIdentifier: reuseIdentifier)
 	}
 
 	required init?(coder aDecoder: NSCoder) { // WHAT
-	    fatalError("init(coder:) has not been implemented")
+		fatalError("init(coder:) has not been implemented")
+	}
+
+	override func layoutSubviews() {
+		super.layoutSubviews()
+		content.secureTextEntry = true
+		content.text = "************"
 	}
 }
 
@@ -61,36 +72,54 @@ class EditFieldCell: UITableViewCell {
 	lazy var derived_counter_label = UILabel()
 	lazy var derived_counter_stepper = UIStepper()
 	lazy var stored_string_field = UITextField()
-
-	init(forField field: FieldViewModel) {
-		super.init(style: .Default, reuseIdentifier: nil)
-		self.field = field
-
+	
+	override init(style: UITableViewCellStyle, reuseIdentifier: String?) {
+		super.init(style: style, reuseIdentifier: reuseIdentifier)
 		self.addSubview(name_field)
-		field.field_name.bidirectionalBindTo(name_field.bnd_text).disposeIn(self.bnd_bag)
+		self.addSubview(type_selector)
+		self.addSubview(derived_site_name_field)
+		self.addSubview(derived_counter_stepper)
+		self.addSubview(derived_counter_label)
+		self.addSubview(stored_string_field)
+	}
+	
+	override func layoutSubviews() {
+		super.layoutSubviews()
 		name_field.textColor = Colors.primaryContent
 
-		self.addSubview(type_selector)
-		// No bidirectional map :-(
-		field.field_type.map { $0 == .Some(.Derived) ? 0 : 1 }.distinct().bindTo(type_selector.bnd_selectedSegmentIndex).disposeIn(self.bnd_bag)
-		type_selector.bnd_selectedSegmentIndex.distinct().map { $0 == 0 ? .Some(.Derived) : .Some(.Stored) }.bindTo(field.field_type).disposeIn(self.bnd_bag)
-
-		self.addSubview(derived_site_name_field)
 		derived_site_name_field.placeholder = "Site name (leave blank to use the entry name)"
 		derived_site_name_field.textColor = Colors.primaryContent
+
+		derived_counter_stepper.maximumValue = Double(UInt32.max)
+		derived_counter_label.textColor = Colors.primaryContent
+
+		stored_string_field.textColor = Colors.primaryContent
+		updateConstraints()
+	}
+
+	func setField(field: FieldViewModel, row: NSIndexPath) {
+		self.bnd_bag.dispose()
+		self.field = field
+
+		field.field_name.bidirectionalBindTo(name_field.bnd_text).disposeIn(self.bnd_bag)
+
+		// No bidirectional map :-(
+		field.field_type.map { $0 == .Some(.Derived) ? 0 : 1 }.distinct()
+			.bindTo(type_selector.bnd_selectedSegmentIndex).disposeIn(self.bnd_bag)
+		type_selector.bnd_selectedSegmentIndex.distinct()
+			.map { $0 == 0 ? .Some(.Derived) : .Some(.Stored) }
+			.bindTo(field.field_type).disposeIn(self.bnd_bag)
+
 		field.derived_site_name.bidirectionalBindTo(derived_site_name_field.bnd_text).disposeIn(self.bnd_bag)
 
-		self.addSubview(derived_counter_stepper)
-		derived_counter_stepper.maximumValue = Double(UInt32.max)
 		field.derived_counter.observe { self.derived_counter_stepper.value = Double($0 ?? 1) }.disposeIn(self.bnd_bag)
-		derived_counter_stepper.bnd_controlEvent.filter { $0 == .ValueChanged }.map { _ in UInt32(self.derived_counter_stepper.value) }.distinct().bindTo(field.derived_counter).disposeIn(self.bnd_bag)
+		derived_counter_stepper.bnd_controlEvent.filter { $0 == .ValueChanged }
+			.map { _ in UInt32(self.derived_counter_stepper.value) }.distinct()
+			.bindTo(field.derived_counter).disposeIn(self.bnd_bag)
 
-		self.addSubview(derived_counter_label)
-		derived_counter_label.textColor = Colors.primaryContent
-		field.derived_counter.map { "Counter: \($0 ?? 1)" }.bindTo(derived_counter_label.bnd_text).disposeIn(self.bnd_bag)
+		field.derived_counter.map { "Counter: \($0 ?? 1)" }
+			.bindTo(derived_counter_label.bnd_text).disposeIn(self.bnd_bag)
 
-		self.addSubview(stored_string_field)
-		stored_string_field.textColor = Colors.primaryContent
 		field.stored_data_string.bidirectionalBindTo(stored_string_field.bnd_text).disposeIn(self.bnd_bag)
 		field.stored_usage.observe {
 			switch $0 ?? .Text {
@@ -104,9 +133,8 @@ class EditFieldCell: UITableViewCell {
 			self.derived_counter_stepper.hidden = !$0
 			self.derived_counter_label.hidden = !$0
 			self.stored_string_field.hidden = $0
-			let scrollPos = self.tableView?.contentOffset.y
-			self.tableView?.reloadData() // If I try updateConstraints instead, the height won't change!
-			self.tableView?.contentOffset.y = scrollPos ?? 0
+			self.updateConstraints()
+			self.tableView?.reloadRowsAtIndexPaths([row], withRowAnimation: .None)
 		}.disposeIn(self.bnd_bag)
 
 		updateConstraints()
@@ -116,12 +144,13 @@ class EditFieldCell: UITableViewCell {
 
 	override func updateConstraints() {
 		constrain([name_field, type_selector, derived_site_name_field, derived_counter_label, derived_counter_stepper, stored_string_field], replace: group) {
-			let name_field = $0[0], type_selector = $0[1], derived_site_name_field = $0[2], derived_counter_label = $0[3], derived_counter_stepper = $0[4], stored_string_field = $0[5] // FUCK
-			let superview = name_field.superview!
+			let name_field = $0[0], type_selector = $0[1], derived_site_name_field = $0[2], derived_counter_label = $0[3], derived_counter_stepper = $0[4], stored_string_field = $0[5] //  FUCK
+			guard let superview = name_field.superview else { return }
 			let isDerived = self.field?.field_type.value == .Some(.Derived)
 			for v in [name_field, type_selector, derived_site_name_field, stored_string_field] {
 				v.left == superview.left + 10
 				v.right == superview.right - 10
+				v.height == 24
 			}
 			name_field.top == superview.topMargin
 			if isDerived {
