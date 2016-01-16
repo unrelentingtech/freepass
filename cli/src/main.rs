@@ -21,6 +21,40 @@ use rusterpassword::*;
 use freepass_core::data::*;
 use freepass_core::output::*;
 
+struct OpenFile {
+    vault: Vault,
+    master_key: SecStr,
+    outer_key: SecStr,
+    file_path: String
+}
+
+impl OpenFile {
+    fn open(file_path: String, user_name: &str, password: SecStr, need_write: bool) -> OpenFile {
+        let file = match fs::OpenOptions::new().read(true).write(need_write).open(&file_path) {
+            Ok(file) => Some(file),
+            Err(ref err) if err.kind() == io::ErrorKind::NotFound => None,
+            Err(ref err) => panic!("Could not open file {}: {}", &file_path, err),
+        };
+        let master_key = gen_master_key(password, user_name).unwrap();
+        let outer_key = gen_outer_key(&master_key);
+        OpenFile {
+            vault: match file {
+                Some(f) => Vault::open(&outer_key, f).unwrap(),
+                None => Vault::new(),
+            },
+            master_key: master_key,
+            outer_key: outer_key,
+            file_path: file_path,
+        }
+    }
+
+    fn save(self: &mut OpenFile) {
+        // Atomic save!
+        self.vault.save(&self.outer_key, fs::File::create(format!("{}.tmp", &self.file_path)).unwrap()).unwrap();
+        fs::rename(format!("{}.tmp", &self.file_path), &self.file_path).unwrap();
+    }
+}
+
 fn main() {
     let matches = clap_app!(freepass =>
         (version: env!("CARGO_PKG_VERSION"))
@@ -40,29 +74,16 @@ fn main() {
 
     freepass_core::init();
 
-    // Do this early because we don't want to ask for the password when we get permission denied or something.
     // Ensure we can write! Maybe someone somewhere would want to open the vault in read-only mode...
     // But the frustration of trying to save the vault while only having read permissions would be worse.
-    let file = match fs::OpenOptions::new().read(true).write(true).open(&file_path) {
-        Ok(file) => Some(file),
-        Err(ref err) if err.kind() == io::ErrorKind::NotFound => None,
-        Err(ref err) => panic!("Could not open file {}: {}", &file_path, err),
-    };
-
-    let master_key = gen_master_key(util::read_password(), &user_name).unwrap();
-    let outer_key = gen_outer_key(&master_key);
-
-    let mut vault = match file {
-        Some(f) => Vault::open(&outer_key, f).unwrap(),
-        None => Vault::new(),
-    };
+    let mut open_file = OpenFile::open(file_path, &user_name, util::read_password(), true);
 
     if debug {
-        debug_output(&vault, "Vault");
+        debug_output(&open_file.vault, "Vault");
     }
 
     match matches.subcommand() {
-        ("interact", _) | _  => interact_entries(&mut vault, &file_path, &outer_key, &master_key, debug),
+        ("interact", _) | _  => interact_entries(&mut open_file, debug),
     }
 }
 
@@ -103,8 +124,8 @@ macro_rules! interaction {
     }
 }
 
-fn interact_entries(vault: &mut Vault, file_path: &str, outer_key: &SecStr, master_key: &SecStr, debug: bool) {
-    let entries_key = gen_entries_key(&master_key);
+fn interact_entries(open_file: &mut OpenFile, debug: bool) {
+    let entries_key = gen_entries_key(&open_file.master_key);
     loop {
         interaction!({
             "Quit" => {
@@ -112,20 +133,20 @@ fn interact_entries(vault: &mut Vault, file_path: &str, outer_key: &SecStr, mast
             },
             "Add new entry" => {
                 if let Some(entry_name) = util::read_text("Entry name") {
-                    interact_entry_edit(vault, file_path, outer_key, master_key, &entries_key, &entry_name, Entry::new(), EntryMetadata::new());
+                    interact_entry_edit(open_file, &entries_key, &entry_name, Entry::new(), EntryMetadata::new());
                 }
             }
-        }, vault.entry_names(), |name| {
-            let (entry, meta) = vault.get_entry(&entries_key, name).unwrap();
+        }, open_file.vault.entry_names(), |name| {
+            let (entry, meta) = open_file.vault.get_entry(&entries_key, name).unwrap();
             if debug {
                 debug_output(&entry, &format!("Entry: {}", name));
             }
-            interact_entry(vault, file_path, outer_key, master_key, &entries_key, name, entry, meta);
+            interact_entry(open_file, &entries_key, name, entry, meta);
         });
     }
 }
 
-fn interact_entry(vault: &mut Vault, file_path: &str, outer_key: &SecStr, master_key: &SecStr, entries_key: &SecStr, entry_name: &str, entry: Entry, meta: EntryMetadata) {
+fn interact_entry(open_file: &mut OpenFile, entries_key: &SecStr, entry_name: &str, entry: Entry, meta: EntryMetadata) {
     loop {
         interaction!({
             "Go back" => {
@@ -135,10 +156,10 @@ fn interact_entry(vault: &mut Vault, file_path: &str, outer_key: &SecStr, master
             &format!("Last modified: {}", meta.updated_at.to_rfc2822()) => {},
             &format!("Created:       {}", meta.created_at.to_rfc2822()) => {},
             "Edit" => {
-                return interact_entry_edit(vault, file_path, outer_key, master_key, entries_key, entry_name, entry, meta);
+                return interact_entry_edit(open_file, entries_key, entry_name, entry, meta);
             }
         }, entry.fields.keys(), |name: &str| {
-            let output = process_output(entry_name, master_key, entry.fields.get(name).unwrap()).unwrap();
+            let output = process_output(entry_name, &open_file.master_key, entry.fields.get(name).unwrap()).unwrap();
             match output {
                 Output::PrivateText(s) => println!("{}", String::from_utf8(Vec::from(s.unsecure())).unwrap()),
                 Output::OpenText(s) => println!("{}", s),
@@ -166,40 +187,40 @@ fn interact_entry(vault: &mut Vault, file_path: &str, outer_key: &SecStr, master
     }
 }
 
-fn interact_entry_edit(vault: &mut Vault, file_path: &str, outer_key: &SecStr, master_key: &SecStr, entries_key: &SecStr, entry_name: &str, mut entry: Entry, mut meta: EntryMetadata) {
+fn interact_entry_edit(open_file: &mut OpenFile, entries_key: &SecStr, entry_name: &str, mut entry: Entry, mut meta: EntryMetadata) {
     interaction!({
         &format!("  Save entry [{}]", entry_name) => {
-            vault.put_entry(entries_key, entry_name, &entry, &mut meta).unwrap();
-            save_vault(vault, file_path, outer_key);
-            return interact_entry(vault, file_path, outer_key, master_key, entries_key, entry_name, entry, meta);
+            open_file.vault.put_entry(&entries_key, entry_name, &entry, &mut meta).unwrap();
+            open_file.save();
+            return interact_entry(open_file, entries_key, entry_name, entry, meta);
         },
         &format!("Delete entry [{}]", entry_name) => {
             interaction!({
                 "Cancel" => {
-                    return interact_entry_edit(vault, file_path, outer_key, master_key, entries_key, entry_name, entry, meta);
+                    return interact_entry_edit(open_file, entries_key, entry_name, entry, meta);
                 },
                 &format!("DELETE THE ENTRY '{}'!", entry_name) => {
-                    vault.remove_entry(entry_name);
-                    save_vault(vault, file_path, outer_key);
+                    open_file.vault.remove_entry(entry_name);
+                    open_file.save();
                     return ();
                 }
             })
         },
         &format!("Rename entry [{}]", entry_name) => {
             let new_entry_name = util::read_text(&format!("New entry name [{}]", entry_name)).unwrap_or(entry_name.to_string());
-            vault.remove_entry(entry_name);
-            vault.put_entry(entries_key, &new_entry_name, &entry, &mut meta).unwrap();
-            return interact_entry_edit(vault, file_path, outer_key, master_key, entries_key, &new_entry_name, entry, meta);
+            open_file.vault.remove_entry(entry_name);
+            open_file.vault.put_entry(&entries_key, &new_entry_name, &entry, &mut meta).unwrap();
+            return interact_entry_edit(open_file, entries_key, &new_entry_name, entry, meta);
         },
         "Add field" => {
             if let Some(field_name) = util::read_text("Field name") {
-                entry = interact_field_edit(vault, entry, field_name);
+                entry = interact_field_edit(&mut open_file.vault, entry, field_name);
             }
-            return interact_entry_edit(vault, file_path, outer_key, master_key, entries_key, entry_name, entry, meta);
+            return interact_entry_edit(open_file, entries_key, entry_name, entry, meta);
         }
     }, entry.fields.keys(), |name: &str| {
-        entry = interact_field_edit(vault, entry, name.to_string());
-        return interact_entry_edit(vault, file_path, outer_key, master_key, entries_key, entry_name, entry, meta);
+        entry = interact_field_edit(&mut open_file.vault, entry, name.to_string());
+        return interact_entry_edit(open_file, entries_key, entry_name, entry, meta);
     });
 }
 
@@ -327,10 +348,4 @@ fn interact_field_edit(vault: &mut Vault, mut entry: Entry, field_name: String) 
         entry.fields.insert(field_name.clone(), field);
         return interact_field_edit(vault, entry, field_name);
     })
-}
-
-fn save_vault(vault: &mut Vault, file_path: &str, outer_key: &SecStr) {
-    // Atomic save!
-    vault.save(outer_key, fs::File::create(format!("{}.tmp", file_path)).unwrap()).unwrap();
-    fs::rename(format!("{}.tmp", file_path), file_path).unwrap();
 }
