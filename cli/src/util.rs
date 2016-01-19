@@ -86,3 +86,15 @@ pub fn read_text(prompt: &str) -> Option<String> {
         None => read_text_console(prompt),
     }
 }
+
+pub fn read_yesno(prompt: &str) -> bool {
+    loop {
+        if let Some(x) = read_text(&format!("{} [y/n]", prompt)) {
+            match x.to_lowercase().as_ref() {
+                "y" | "yes" | "yeah" | "yep" => return true,
+                "n" | "no" | "nope" => return false,
+                _ => (),
+            }
+        }
+    }
+}

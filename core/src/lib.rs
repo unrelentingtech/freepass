@@ -16,6 +16,7 @@ extern crate chrono;
 pub mod util;
 pub mod data;
 pub mod output;
+pub mod merge;
 
 pub fn init() {
     sodiumoxide::init();

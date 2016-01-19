@@ -20,6 +20,7 @@ use interactor::*;
 use rusterpassword::*;
 use freepass_core::data::*;
 use freepass_core::output::*;
+use freepass_core::merge::*;
 
 struct OpenFile {
     vault: Vault,
@@ -60,16 +61,21 @@ fn main() {
         (version: env!("CARGO_PKG_VERSION"))
         (author: "Val Packett <val@packett.cool>")
         (about: "The free password manager for power users")
-        (@arg FILE: -f --file +takes_value "Sets the vault file to use, by default: $FREEPASS_FILE")
-        (@arg NAME: -n --name +takes_value "Sets the user name to use (must be always the same for a vault file!), by default: $FREEPASS_NAME")
-        (@arg DEBUG: --debug "Enables logging of data structures for debugging (DO NOT USE ON YOUR REAL DATA)")
+        (@arg FILE: -f --file +takes_value "The vault file to use, by default: $FREEPASS_FILE")
+        (@arg NAME: -n --name +takes_value "The user name to use (must be always the same for a vault file!), by default: $FREEPASS_NAME")
+        (@arg DEBUG: --debug "Enable logging of data structures for debugging (DO NOT USE ON YOUR REAL DATA)")
         (@subcommand interact =>
             (about: "Launches interactive mode")
         )
+        (@subcommand mergein =>
+            (about: "Adds entires from a second file that don't exist in the first file (e.g. to resolve file sync conflicts)")
+            (@arg SECONDFILE: -F --secondfile +takes_value "The vault file to get additional entries from, by default: $FREEPASS_SECOND_FILE")
+            (@arg SECONDNAME: -N --secondname +takes_value "The user name to use for the second file, by default: $FREEPASS_SECOND_NAME or the first file name")
+        )
     ).get_matches();
 
-    let file_path = opt_or_env(&matches, "FILE", "FREEPASS_FILE");
-    let user_name = opt_or_env(&matches, "NAME", "FREEPASS_NAME");
+    let file_path = unwrap_for_opt(opt_or_env(&matches, "FILE", "FREEPASS_FILE"), "file");
+    let user_name = unwrap_for_opt(opt_or_env(&matches, "NAME", "FREEPASS_NAME"), "name");
     let debug = matches.is_present("DEBUG");
 
     freepass_core::init();
@@ -83,14 +89,29 @@ fn main() {
     }
 
     match matches.subcommand() {
+        ("mergein", submatches_opt) => {
+            if let Some(submatches) = submatches_opt {
+                let second_file_path = unwrap_for_opt(opt_or_env(submatches, "SECONDFILE", "FREEPASS_SECOND_FILE"), "secondfile");
+                let second_user_name = opt_or_env(submatches, "SECONDNAME", "FREEPASS_SECOND_NAME").unwrap_or(user_name);
+                let second_open_file = OpenFile::open(second_file_path, &second_user_name, util::read_password(), false);
+                if debug {
+                    debug_output(&second_open_file.vault, "Second Vault");
+                }
+                merge_in(&mut open_file, &second_open_file)
+            } else { panic!("No options for mergein") }
+        },
         ("interact", _) | _  => interact_entries(&mut open_file, debug),
     }
 }
 
-fn opt_or_env(matches: &clap::ArgMatches, opt_name: &str, env_name: &str) -> String {
-    match matches.value_of(opt_name).map(|x| x.to_owned()).or(env::var_os(env_name).and_then(|s| s.into_string().ok())) {
+fn opt_or_env(matches: &clap::ArgMatches, opt_name: &str, env_name: &str) -> Option<String> {
+    matches.value_of(opt_name).map(|x| x.to_owned()).or(env::var_os(env_name).and_then(|s| s.into_string().ok()))
+}
+
+fn unwrap_for_opt(opt: Option<String>, name: &str) -> String {
+    match opt {
         Some(s) => s,
-        None => panic!("Option {} or environment variable {} not found", opt_name, env_name)
+        None => panic!("Option {} not found", name)
     }
 }
 
@@ -348,4 +369,35 @@ fn interact_field_edit(vault: &mut Vault, mut entry: Entry, field_name: String) 
         entry.fields.insert(field_name.clone(), field);
         return interact_field_edit(vault, entry, field_name);
     })
+}
+
+fn merge_in(into_open_file: &mut OpenFile, from_open_file: &OpenFile) {
+    let into_entries_key = gen_entries_key(&into_open_file.master_key);
+    let from_entries_key = gen_entries_key(&from_open_file.master_key);
+    let log = merge_vaults(&mut into_open_file.vault, &into_entries_key, &from_open_file.vault, &from_entries_key);
+    for lentry in &log {
+        match *lentry {
+            MergeLogEntry::Added(ref entry_name) => println!("Added: {}", entry_name),
+            MergeLogEntry::IsNewer(_) => (),
+            MergeLogEntry::IsOlder(ref entry_name) => println!("Not updated in the second file: {}", entry_name),
+            MergeLogEntry::WeirdError(ref entry_name) => println!("ERROR! Couldn't add: {}", entry_name),
+        }
+    }
+    // Handling all IsNewers together for better output
+    for lentry in &log {
+        if let MergeLogEntry::IsNewer(ref entry_name) = *lentry {
+            if util::read_yesno(&format!("Update entry '{}'?", entry_name)) {
+                if let Ok((from_entry, from_entry_meta)) = from_open_file.vault.get_entry(&from_entries_key, &entry_name) {
+                    if let Ok(_) = into_open_file.vault.put_entry(&into_entries_key, &entry_name, &from_entry, &mut from_entry_meta.clone()) {
+                        println!("Added: {}", entry_name)
+                    } else {
+                        println!("ERROR! Couldn't add: {}", entry_name)
+                    }
+                } else {
+                    println!("ERROR! Couldn't add: {}", entry_name)
+                }
+            }
+        }
+    }
+    into_open_file.save();
 }

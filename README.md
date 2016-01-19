@@ -22,6 +22,7 @@ The free password manager for power users.
   - (Keys are derived from the master password like the generated passwords.)
   - Every time you save a vault file, its size changes randomly. That's a feature. Some random junk is added to make it a bit harder to count how many passwords you have without opening the file.
 - You can also *store* passwords and text in these vault files (for stuff that can't be generated).
+- You can merge two vault files (e.g. from sync conflicts).
 
 ## How?
 
