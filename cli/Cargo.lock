@@ -4,7 +4,7 @@ version = "0.0.0"
 dependencies = [
  "ansi_term 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "cbor 0.3.16 (registry+https://github.com/rust-lang/crates.io-index)",
- "clap 1.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "clap 2.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "colorhash256 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "freepass-core 0.0.0",
  "interactor 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -30,7 +30,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "bitflags"
-version = "0.3.2"
+version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
@@ -64,13 +64,13 @@ dependencies = [
 
 [[package]]
 name = "clap"
-version = "1.5.0"
+version = "2.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "ansi_term 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "bitflags 0.3.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "bitflags 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "strsim 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "vec_map 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "vec_map 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -235,7 +235,7 @@ dependencies = [
 
 [[package]]
 name = "vec_map"
-version = "0.3.0"
+version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
