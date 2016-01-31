@@ -130,19 +130,29 @@ mod tests {
     use data::*;
     use sodiumoxide::crypto::sign::ed25519;
 
-    fn keypair() -> Output {
+    fn keypair(usage: Ed25519Usage) -> Output {
         let (pubkey, seckey) = ed25519::keypair_from_seed(&ed25519::Seed::from_slice(b"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa").unwrap());
-        Output::Ed25519Keypair(Ed25519Usage::SSH, pubkey, seckey)
+        Output::Ed25519Keypair(usage, pubkey, seckey)
     }
 
     #[test]
     fn test_ssh_public_key_output() {
-        assert_eq!(ssh_public_key_output(&keypair(), "myComment").unwrap(), "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIK8Go+MpFxTk81bBnJsVzRlR7G5mYqp3vgdUfyiTgzQd myComment");
+        assert_eq!(ssh_public_key_output(&keypair(Ed25519Usage::SSH), "myComment").unwrap(), "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIK8Go+MpFxTk81bBnJsVzRlR7G5mYqp3vgdUfyiTgzQd myComment");
     }
 
     #[test]
     fn test_ssh_private_key_agent_message() {
-        let msg = ssh_private_key_agent_message(&keypair(), "myComment").unwrap();
+        let msg = ssh_private_key_agent_message(&keypair(Ed25519Usage::SSH), "myComment").unwrap();
         assert_eq!(Vec::from(msg.unsecure()), vec![17, 0, 0, 0, 11, 115, 115, 104, 45, 101, 100, 50, 53, 53, 49, 57, 0, 0, 0, 32, 175, 6, 163, 227, 41, 23, 20, 228, 243, 86, 193, 156, 155, 21, 205, 25, 81, 236, 110, 102, 98, 170, 119, 190, 7, 84, 127, 40, 147, 131, 52, 29, 0, 0, 0, 64, 97, 97, 97, 97, 97, 97, 97, 97, 97, 97, 97, 97, 97, 97, 97, 97, 97, 97, 97, 97, 97, 97, 97, 97, 97, 97, 97, 97, 97, 97, 97, 97, 175, 6, 163, 227, 41, 23, 20, 228, 243, 86, 193, 156, 155, 21, 205, 25, 81, 236, 110, 102, 98, 170, 119, 190, 7, 84, 127, 40, 147, 131, 52, 29, 0, 0, 0, 9, 109, 121, 67, 111, 109, 109, 101, 110, 116]);
+    }
+
+    #[test]
+    fn test_signify_public_key_output() {
+        assert_eq!(signify_public_key_output(&keypair(Ed25519Usage::Signify), "myComment").unwrap(), "untrusted comment: myComment\nRWTvU+MamKpB6a8Go+MpFxTk81bBnJsVzRlR7G5mYqp3vgdUfyiTgzQd");
+    }
+
+    #[test]
+    fn test_signify_sign() {
+        assert_eq!(signify_sign(&keypair(Ed25519Usage::Signify), "myComment", b"hello world\n").unwrap(), "untrusted comment: myComment\nRWTvU+MamKpB6auI/gtU4NWNehjKQjhXsPp15mrjGTC1TfZ4SHESosQOOFkOpd+UPSUsoMac2pA5NEi+u5oHwLkKV9UeLm69JAI=");
     }
 }
