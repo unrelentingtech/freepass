@@ -1,8 +1,9 @@
-use std::fs::OpenOptions;
+use std::{env,io,fs};
 use std::io::prelude::*;
-use std::io::{BufReader};
 use std::process::{Command, Stdio};
-use std::env;
+use cbor;
+use rustc_serialize;
+use rustc_serialize::hex::ToHex;
 use colorhash256;
 use interactor;
 use secstr::SecStr;
@@ -44,7 +45,7 @@ pub fn read_password_console() -> SecStr {
 pub fn read_password_askpass(mut command: Command) -> SecStr {
     let process = command.stdout(Stdio::piped()).spawn().unwrap();
     let mut result = Vec::new();
-    let mut reader = BufReader::new(process.stdout.unwrap());
+    let mut reader = io::BufReader::new(process.stdout.unwrap());
     let size = reader.read_until(b'\n', &mut result).unwrap();
     result.truncate(size - 1);
     SecStr::new(result)
@@ -58,9 +59,9 @@ pub fn read_password() -> SecStr {
 }
 
 pub fn read_text_console(prompt: &str) -> Option<String> {
-    let mut tty = OpenOptions::new().read(true).write(true).open("/dev/tty").unwrap();
+    let mut tty = fs::OpenOptions::new().read(true).write(true).open("/dev/tty").unwrap();
     tty.write(&format!("\r{}: ", prompt).into_bytes()).unwrap();
-    let mut reader = BufReader::new(tty);
+    let mut reader = io::BufReader::new(tty);
     let mut input = String::new();
     reader.read_line(&mut input).unwrap();
     input = input.replace("\n", "");
@@ -97,4 +98,10 @@ pub fn read_yesno(prompt: &str) -> bool {
             }
         }
     }
+}
+
+pub fn debug_output<T: rustc_serialize::Encodable>(data: &T, description: &str) {
+    let mut e = cbor::Encoder::from_memory();
+    e.encode(&[data]).unwrap();
+    println!("--- CBOR debug output (http://cbor.me to decode) of {} ---\n{}\n", description, e.into_bytes().to_hex());
 }
