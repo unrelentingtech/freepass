@@ -11,7 +11,7 @@ The free password manager for power users.
 - But wait, there's more! Why stop at passwords? It generates...
   - [Ed25519] digital signature keys for...
     - [OpenSSH]: Freepass adds private keys directly to a running ssh-agent & exports public keys in OpenSSH format!
-    - *TODO* [signify]: Freepass signs files & exports public keys in signify format!
+    - [signify]: Freepass signs files & exports public keys in signify format!
     - *TODO* [SQRL]
   - Raw 256-bit keys for symmetric ciphers.
   - *TODO* [BIP39]-compatible passphrases.

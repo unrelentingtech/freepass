@@ -109,7 +109,7 @@ pub fn signify_public_key_output(keypair: &Output, comment: &str) -> Result<Stri
         raw.extend(b"Ed");
         raw.extend(&signify_keynum(&pubkey_bytes));
         raw.extend(&pubkey_bytes);
-        Ok("untrusted comment: ".to_string() + comment + "\n" + &raw.to_base64(STANDARD))
+        Ok(format!("untrusted comment: {}\n{}\n", comment, &raw.to_base64(STANDARD)))
     } else { Err(Error::InappropriateFormat) }
 }
 
@@ -120,7 +120,7 @@ pub fn signify_sign(keypair: &Output, comment: &str, data: &[u8]) -> Result<Stri
         raw.extend(b"Ed");
         raw.extend(&signify_keynum(&pubkey_bytes));
         raw.extend(sig_bytes.iter());
-        Ok("untrusted comment: ".to_string() + comment + "\n" + &raw.to_base64(STANDARD))
+        Ok(format!("untrusted comment: {}\n{}\n", comment, &raw.to_base64(STANDARD)))
     } else { Err(Error::InappropriateFormat) }
 }
 

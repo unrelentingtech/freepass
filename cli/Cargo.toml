@@ -18,7 +18,7 @@ secstr = { version = "0.2.1", features = ["cbor-serialize", "libsodium-sys"] }
 sodiumoxide = "0"
 rusterpassword = "0"
 colorhash256 = "0"
-interactor = "0"
+interactor = "0.1.1"
 rustc-serialize = "0"
 cbor = "0"
 ansi_term = "0"

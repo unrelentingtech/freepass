@@ -7,7 +7,7 @@ dependencies = [
  "clap 2.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "colorhash256 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "freepass-core 0.0.0",
- "interactor 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "interactor 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "rustc-serialize 0.3.16 (registry+https://github.com/rust-lang/crates.io-index)",
  "rusterpassword 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "secstr 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -105,7 +105,7 @@ dependencies = [
 
 [[package]]
 name = "interactor"
-version = "0.1.0"
+version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "libc 0.2.6 (registry+https://github.com/rust-lang/crates.io-index)",

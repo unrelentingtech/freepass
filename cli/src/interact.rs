@@ -1,3 +1,6 @@
+use std::env;
+use std::io::{Read, Write};
+use std::fs::OpenOptions;
 use std::collections::btree_map::BTreeMap;
 use rustc_serialize::base64::{ToBase64, STANDARD};
 use rustc_serialize::hex::ToHex;
@@ -87,7 +90,21 @@ fn interact_entry(open_file: &mut OpenFile, entries_key: &SecStr, entry_name: &s
                                 ssh_agent_send_message(ssh_private_key_agent_message(&output, entry_name).unwrap()).unwrap()
                             }
                         })
-                    }
+                    },
+                    Ed25519Usage::Signify => {
+                        interaction!({
+                            "Go back" => {},
+                            "Print public key" => { println!("{}", signify_public_key_output(&output, entry_name).unwrap()) },
+                            "Sign a file" => {
+                                let path = pick_file(util::menu_cmd, env::current_dir().unwrap()).unwrap();
+                                let mut sigfile = OpenOptions::new().write(true).create(true).open(format!("{}.sig", path.to_str().unwrap())).unwrap();
+                                let mut buffer = Vec::new();
+                                OpenOptions::new().read(true).open(path).unwrap().read_to_end(&mut buffer).unwrap();
+                                let signature = signify_sign(&output, &format!("signed with freepass key: {}", entry_name), &buffer[..]).unwrap().into_bytes();
+                                sigfile.write_all(&signature[..]).unwrap();
+                            }
+                        })
+                    },
                     _ => panic!("Unsupported key usage"),
                 }
             }
