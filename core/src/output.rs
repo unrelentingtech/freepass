@@ -148,11 +148,11 @@ mod tests {
 
     #[test]
     fn test_signify_public_key_output() {
-        assert_eq!(signify_public_key_output(&keypair(Ed25519Usage::Signify), "myComment").unwrap(), "untrusted comment: myComment\nRWTvU+MamKpB6a8Go+MpFxTk81bBnJsVzRlR7G5mYqp3vgdUfyiTgzQd");
+        assert_eq!(signify_public_key_output(&keypair(Ed25519Usage::Signify), "myComment").unwrap(), "untrusted comment: myComment\nRWTvU+MamKpB6a8Go+MpFxTk81bBnJsVzRlR7G5mYqp3vgdUfyiTgzQd\n");
     }
 
     #[test]
     fn test_signify_sign() {
-        assert_eq!(signify_sign(&keypair(Ed25519Usage::Signify), "myComment", b"hello world\n").unwrap(), "untrusted comment: myComment\nRWTvU+MamKpB6auI/gtU4NWNehjKQjhXsPp15mrjGTC1TfZ4SHESosQOOFkOpd+UPSUsoMac2pA5NEi+u5oHwLkKV9UeLm69JAI=");
+        assert_eq!(signify_sign(&keypair(Ed25519Usage::Signify), "myComment", b"hello world\n").unwrap(), "untrusted comment: myComment\nRWTvU+MamKpB6auI/gtU4NWNehjKQjhXsPp15mrjGTC1TfZ4SHESosQOOFkOpd+UPSUsoMac2pA5NEi+u5oHwLkKV9UeLm69JAI=\n");
     }
 }
