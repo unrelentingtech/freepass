@@ -6,13 +6,14 @@ extern crate freepass_core;
 
 pub use rusterpassword_capi::*;
 
-use std::{ptr,fs,mem,slice};
-use std::collections::btree_map::Keys;
+use std::{ptr, fs, mem, slice};
 use std::ffi::*;
 use cbor::{Encoder, Decoder};
 use libc::*;
 use secstr::*;
 use freepass_core::data::*;
+use freepass_core::vault::*;
+use freepass_core::encvault::*;
 // use freepass_core::output::*;
 
 #[repr(C)]
@@ -67,11 +68,12 @@ pub unsafe extern fn freepass_free_entries_key(entries_key_c: *mut SecStr) {
 }
 
 #[no_mangle]
-pub extern fn freepass_open_vault(file_path_c: *const c_char, outer_key_c: *const SecStr) -> *mut Vault {
+pub extern fn freepass_open_vault(file_path_c: *const c_char, entries_key_c: *const SecStr, outer_key_c: *const SecStr) -> *mut DecryptedVault {
     let file_path = from_c![cstr file_path_c];
+    let entries_key = from_c![obj entries_key_c];
     let outer_key = from_c![obj outer_key_c];
     if let Ok(file) = fs::OpenOptions::new().read(true).write(true).open(&file_path) {
-        if let Ok(vault) = Vault::open(outer_key, file) {
+        if let Ok(vault) = DecryptedVault::open(entries_key.clone(), outer_key.clone(), file) {
             return to_c![obj vault]
         }
     }
@@ -79,22 +81,22 @@ pub extern fn freepass_open_vault(file_path_c: *const c_char, outer_key_c: *cons
 }
 
 #[no_mangle]
-pub extern fn freepass_new_vault() -> *mut Vault {
-    to_c![obj Vault::new()]
+pub extern fn freepass_new_vault(entries_key_c: *const SecStr, outer_key_c: *const SecStr) -> *mut DecryptedVault {
+    to_c![obj DecryptedVault::new(from_c![obj entries_key_c].clone(), from_c![obj outer_key_c].clone())]
 }
 
 #[no_mangle]
-pub unsafe extern fn freepass_close_vault(vault_c: *mut Vault) {
+pub unsafe extern fn freepass_close_vault(vault_c: *mut DecryptedVault) {
     Box::from_raw(vault_c);
 }
 
 #[no_mangle]
-pub extern fn freepass_vault_get_entry_names_iterator<'a>(vault_c: *const Vault) -> *mut Keys<'a, String, EncryptedEntry> {
+pub extern fn freepass_vault_get_entry_names_iterator<'a>(vault_c: *const DecryptedVault) -> *mut Box<Iterator<Item=&'a String> + 'a> {
     to_c![obj from_c![obj vault_c].entry_names()]
 }
 
 #[no_mangle]
-pub unsafe extern fn freepass_entry_names_iterator_next<'a>(iter_c: *mut Keys<'a, String, EncryptedEntry>) -> *mut c_char {
+pub unsafe extern fn freepass_entry_names_iterator_next<'a>(iter_c: *mut Box<Iterator<Item=&'a String> + 'a>) -> *mut c_char {
     match from_c![mut obj iter_c].next() {
         Some(s) => to_c![cstr s.clone()],
         None => ptr::null_mut()
@@ -107,13 +109,13 @@ pub unsafe extern fn freepass_free_entry_name(name_c: *mut c_char) {
 }
 
 #[no_mangle]
-pub unsafe extern fn freepass_free_entry_names_iterator<'a>(iter_c: *mut Keys<'a, String, EncryptedEntry>) {
+pub unsafe extern fn freepass_free_entry_names_iterator<'a>(iter_c: *mut Box<Iterator<Item=&'a String> + 'a>) {
     Box::from_raw(iter_c);
 }
 
 #[no_mangle]
-pub extern fn freepass_vault_get_entry_cbor(vault_c: *const Vault, entries_key_c: *const SecStr, name_c: *const c_char) -> CVector {
-    let (entry, metadata) = from_c![obj vault_c].get_entry(from_c![obj entries_key_c], from_c![cstr name_c]).unwrap();
+pub extern fn freepass_vault_get_entry_cbor(vault_c: *const DecryptedVault, name_c: *const c_char) -> CVector {
+    let (entry, metadata) = from_c![obj vault_c].get_entry(from_c![cstr name_c]).unwrap();
     let mut e = Encoder::from_memory();
     e.encode(&[(entry, metadata)]).unwrap();
     to_c![vec e.into_bytes()]
@@ -125,7 +127,7 @@ pub unsafe extern fn freepass_free_entry_cbor(cbor_c: CVector) {
 }
 
 #[no_mangle]
-pub extern fn freepass_vault_put_entry_cbor(vault_c: *mut Vault, entries_key_c: *const SecStr, name_c: *const c_char, cbor_c: *const u8, cbor_len_c: size_t) {
+pub extern fn freepass_vault_put_entry_cbor(vault_c: *mut DecryptedVault, name_c: *const c_char, cbor_c: *const u8, cbor_len_c: size_t) {
     let (entry, mut metadata) = Decoder::from_bytes(from_c![slice cbor_c, cbor_len_c]).decode::<(Entry, EntryMetadata)>().next().unwrap().unwrap();
-    from_c![mut obj vault_c].put_entry(from_c![obj entries_key_c], from_c![cstr name_c], &entry, &mut metadata).unwrap()
+    from_c![mut obj vault_c].put_entry(from_c![cstr name_c], &entry, &mut metadata).unwrap()
 }

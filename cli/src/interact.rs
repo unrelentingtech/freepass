@@ -8,6 +8,8 @@ use interactor::*;
 use secstr::SecStr;
 use freepass_core::output::*;
 use freepass_core::data::*;
+use freepass_core::vault::{Vault, WritableVault};
+use freepass_core::encvault::*;
 use openfile::*;
 use util;
 
@@ -15,7 +17,7 @@ macro_rules! interaction {
     ( { $($action_name:expr => $action_fn:expr),+ }, $data:expr, $data_fn:expr ) => {
         {
             let mut items = vec![$(">> ".to_string() + $action_name),+];
-            let data_items : Vec<String> = $data.clone().map(|x| " | ".to_string() + x).collect();
+            let data_items : Vec<String> = $data.map(|x| " | ".to_string() + x).collect();
             items.extend(data_items.iter().cloned());
             match pick_from_list(util::menu_cmd().as_mut(), &items[..], "Selection: ").unwrap() {
                 $(ref x if *x == ">> ".to_string() + $action_name => $action_fn),+
@@ -36,7 +38,6 @@ macro_rules! interaction {
 }
 
 pub fn interact_entries(open_file: &mut OpenFile, debug: bool) {
-    let entries_key = gen_entries_key(&open_file.master_key);
     loop {
         interaction!({
             "Quit" => {
@@ -44,20 +45,20 @@ pub fn interact_entries(open_file: &mut OpenFile, debug: bool) {
             },
             "Add new entry" => {
                 if let Some(entry_name) = util::read_text("Entry name") {
-                    interact_entry_edit(open_file, &entries_key, &entry_name, Entry::new(), EntryMetadata::new());
+                    interact_entry_edit(open_file, &entry_name, Entry::new(), EntryMetadata::new());
                 }
             }
         }, open_file.vault.entry_names(), |name| {
-            let (entry, meta) = open_file.vault.get_entry(&entries_key, name).unwrap();
+            let (entry, meta) = open_file.vault.get_entry(name).unwrap();
             if debug {
                 util::debug_output(&entry, &format!("Entry: {}", name));
             }
-            interact_entry(open_file, &entries_key, name, entry, meta);
+            interact_entry(open_file, name, entry, meta);
         });
     }
 }
 
-fn interact_entry(open_file: &mut OpenFile, entries_key: &SecStr, entry_name: &str, entry: Entry, meta: EntryMetadata) {
+fn interact_entry(open_file: &mut OpenFile, entry_name: &str, entry: Entry, meta: EntryMetadata) {
     loop {
         interaction!({
             "Go back" => {
@@ -67,7 +68,7 @@ fn interact_entry(open_file: &mut OpenFile, entries_key: &SecStr, entry_name: &s
             &format!("Last modified: {}", meta.updated_at.to_rfc2822()) => {},
             &format!("Created:       {}", meta.created_at.to_rfc2822()) => {},
             "Edit" => {
-                return interact_entry_edit(open_file, entries_key, entry_name, entry, meta);
+                return interact_entry_edit(open_file, entry_name, entry, meta);
             }
         }, entry.fields.keys(), |name: &str| {
             let output = process_output(entry_name, &open_file.master_key, entry.fields.get(name).unwrap()).unwrap();
@@ -112,17 +113,17 @@ fn interact_entry(open_file: &mut OpenFile, entries_key: &SecStr, entry_name: &s
     }
 }
 
-fn interact_entry_edit(open_file: &mut OpenFile, entries_key: &SecStr, entry_name: &str, mut entry: Entry, mut meta: EntryMetadata) {
+fn interact_entry_edit(open_file: &mut OpenFile, entry_name: &str, mut entry: Entry, mut meta: EntryMetadata) {
     interaction!({
         &format!("  Save entry [{}]", entry_name) => {
-            open_file.vault.put_entry(&entries_key, entry_name, &entry, &mut meta).unwrap();
+            open_file.vault.put_entry(entry_name, &entry, &mut meta).unwrap();
             open_file.save();
-            return interact_entry(open_file, entries_key, entry_name, entry, meta);
+            return interact_entry(open_file, entry_name, entry, meta);
         },
         &format!("Delete entry [{}]", entry_name) => {
             interaction!({
                 "Cancel" => {
-                    return interact_entry_edit(open_file, entries_key, entry_name, entry, meta);
+                    return interact_entry_edit(open_file, entry_name, entry, meta);
                 },
                 &format!("DELETE THE ENTRY '{}'!", entry_name) => {
                     open_file.vault.remove_entry(entry_name);
@@ -134,18 +135,18 @@ fn interact_entry_edit(open_file: &mut OpenFile, entries_key: &SecStr, entry_nam
         &format!("Rename entry [{}]", entry_name) => {
             let new_entry_name = util::read_text(&format!("New entry name [{}]", entry_name)).unwrap_or(entry_name.to_string());
             open_file.vault.remove_entry(entry_name);
-            open_file.vault.put_entry(&entries_key, &new_entry_name, &entry, &mut meta).unwrap();
-            return interact_entry_edit(open_file, entries_key, &new_entry_name, entry, meta);
+            open_file.vault.put_entry(&new_entry_name, &entry, &mut meta).unwrap();
+            return interact_entry_edit(open_file, &new_entry_name, entry, meta);
         },
         "Add field" => {
             if let Some(field_name) = util::read_text("Field name") {
                 entry = interact_field_edit(&mut open_file.vault, entry, field_name);
             }
-            return interact_entry_edit(open_file, entries_key, entry_name, entry, meta);
+            return interact_entry_edit(open_file, entry_name, entry, meta);
         }
     }, entry.fields.keys(), |name: &str| {
         entry = interact_field_edit(&mut open_file.vault, entry, name.to_string());
-        return interact_entry_edit(open_file, entries_key, entry_name, entry, meta);
+        return interact_entry_edit(open_file, entry_name, entry, meta);
     });
 }
 
@@ -178,7 +179,7 @@ fn new_field(field_name: &str) -> Field {
     }
 }
 
-fn interact_field_edit(vault: &mut Vault, mut entry: Entry, field_name: String) -> Entry {
+fn interact_field_edit(vault: &mut DecryptedVault, mut entry: Entry, field_name: String) -> Entry {
     let mut field = entry.fields.remove(&field_name).unwrap_or_else(|| new_field(&field_name));
     let mut field_actions : BTreeMap<String, Box<Fn(Field) -> Field>> = BTreeMap::new();
     let other_type;

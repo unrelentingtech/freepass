@@ -16,6 +16,8 @@ extern crate chrono;
 pub mod util;
 pub mod result;
 pub mod data;
+pub mod vault;
+pub mod encvault;
 pub mod output;
 pub mod merge;
 

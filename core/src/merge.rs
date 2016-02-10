@@ -1,5 +1,4 @@
-use secstr::SecStr;
-use data::*;
+use vault::{Vault, WritableVault};
 
 pub enum MergeLogEntry {
     Added(String),
@@ -8,12 +7,15 @@ pub enum MergeLogEntry {
     WeirdError(String),
 }
 
-pub fn merge_vaults(into_vault: &mut Vault, into_entries_key: &SecStr, from_vault: &Vault, from_entries_key: &SecStr) -> Vec<MergeLogEntry> {
-    let mut results = Vec::with_capacity(from_vault.entry_names().len());
+pub fn merge_vaults<T1: Vault + WritableVault, T2: Vault>(into_vault: &mut T1, from_vault: &T2) -> Vec<MergeLogEntry> {
+    let mut results = Vec::with_capacity(from_vault.len());
     for entry_name in from_vault.entry_names() {
-        if let Ok((from_entry, from_entry_meta)) = from_vault.get_entry(from_entries_key, entry_name) {
-            if let Some(_) = into_vault.entry_names().find(|&n| n == entry_name) {
-                if let Ok((_, into_entry_meta)) = into_vault.get_entry(into_entries_key, entry_name) {
+        if let Ok((from_entry, from_entry_meta)) = from_vault.get_entry(entry_name) {
+            // After changing the into_vault type to be generic, the borrow checker started
+            // complaining about multiple borrows o_0 So we use a raw pointer here.
+            // Probably this is related: https://github.com/rust-lang/rfcs/issues/811
+            if let Some(_) = unsafe { (*(into_vault as *const T1)).entry_names().find(|&n| n == entry_name) } {
+                if let Ok((_, into_entry_meta)) = into_vault.get_entry(entry_name) {
                     if from_entry_meta.updated_at > into_entry_meta.updated_at {
                         results.push(MergeLogEntry::IsNewer(entry_name.to_string()));
                     } else {
@@ -23,7 +25,7 @@ pub fn merge_vaults(into_vault: &mut Vault, into_entries_key: &SecStr, from_vaul
                     results.push(MergeLogEntry::WeirdError(entry_name.to_string()));
                 }
             } else {
-                if let Ok(_) = into_vault.put_entry(into_entries_key, entry_name, &from_entry, &mut from_entry_meta.clone()) {
+                if let Ok(_) = into_vault.put_entry(entry_name, &from_entry, &mut from_entry_meta.clone()) {
                     results.push(MergeLogEntry::Added(entry_name.to_string()));
                 } else {
                     results.push(MergeLogEntry::WeirdError(entry_name.to_string()));

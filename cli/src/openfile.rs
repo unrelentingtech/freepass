@@ -1,12 +1,11 @@
 use std::{fs,io};
 use secstr::SecStr;
 use rusterpassword::gen_master_key;
-use freepass_core::data::*;
+use freepass_core::encvault::*;
 
 pub struct OpenFile {
-    pub vault: Vault,
+    pub vault: DecryptedVault,
     pub master_key: SecStr,
-    pub outer_key: SecStr,
     pub file_path: String
 }
 
@@ -18,21 +17,19 @@ impl OpenFile {
             Err(ref err) => panic!("Could not open file {}: {}", &file_path, err),
         };
         let master_key = gen_master_key(password, user_name).unwrap();
-        let outer_key = gen_outer_key(&master_key);
         OpenFile {
             vault: match file {
-                Some(f) => Vault::open(&outer_key, f).unwrap(),
-                None => Vault::new(),
+                Some(f) => DecryptedVault::open(gen_entries_key(&master_key), gen_outer_key(&master_key), f).unwrap(),
+                None => DecryptedVault::new(gen_entries_key(&master_key), gen_outer_key(&master_key)),
             },
             master_key: master_key,
-            outer_key: outer_key,
             file_path: file_path,
         }
     }
 
     pub fn save(self: &mut OpenFile) {
         // Atomic save!
-        self.vault.save(&self.outer_key, fs::File::create(format!("{}.tmp", &self.file_path)).unwrap()).unwrap();
+        self.vault.save(fs::File::create(format!("{}.tmp", &self.file_path)).unwrap()).unwrap();
         fs::rename(format!("{}.tmp", &self.file_path), &self.file_path).unwrap();
     }
 }

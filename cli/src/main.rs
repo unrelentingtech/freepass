@@ -49,7 +49,7 @@ fn main() {
     let mut open_file = OpenFile::open(file_path, &user_name, util::read_password(), true);
 
     if debug {
-        util::debug_output(&open_file.vault, "Vault");
+        util::debug_output(&open_file.vault.data, "Vault");
     }
 
     match matches.subcommand() {
@@ -59,7 +59,7 @@ fn main() {
                 let second_user_name = opt_or_env(submatches, "SECONDNAME", "FREEPASS_SECOND_NAME").unwrap_or(user_name);
                 let second_open_file = OpenFile::open(second_file_path, &second_user_name, util::read_password(), false);
                 if debug {
-                    util::debug_output(&second_open_file.vault, "Second Vault");
+                    util::debug_output(&second_open_file.vault.data, "Second Vault");
                 }
                 mergein::merge_in(&mut open_file, &second_open_file)
             } else { panic!("No options for mergein") }

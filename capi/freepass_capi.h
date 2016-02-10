@@ -16,8 +16,8 @@ secstr_t* freepass_gen_entries_key(const secstr_t*);
 void freepass_free_outer_key(const secstr_t*);
 void freepass_free_entries_key(const secstr_t*);
 
-vault_t* freepass_open_vault(const char*, const secstr_t*);
-vault_t* freepass_new_vault();
+vault_t* freepass_open_vault(const char*, const secstr_t*, const secstr_t*);
+vault_t* freepass_new_vault(const secstr_t*, const secstr_t*);
 void freepass_close_vault(const vault_t*);
 
 string_iter_t* freepass_vault_get_entry_names_iterator(const vault_t*);
