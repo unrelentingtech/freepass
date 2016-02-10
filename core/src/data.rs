@@ -1,17 +1,15 @@
 use util::*;
+use result::{Error, Result};
 use secstr::SecStr;
 use rusterpassword::gen_site_seed;
 use chrono::{DateTime, UTC};
-use cbor::{Encoder, Decoder, CborError};
+use cbor::{Encoder, Decoder};
 use rand::Rng;
 use rand::os::OsRng;
 use std::io;
-use std::result;
-use std::string;
 use std::collections::btree_map::{BTreeMap, Keys};
 use sodiumoxide::crypto::secretbox::xsalsa20poly1305 as secbox;
 use sodiumoxide::crypto::stream::aes128ctr as outerstream;
-use byteorder;
 
 #[derive(Debug, RustcDecodable, RustcEncodable)]
 pub struct EncryptedVault {
@@ -98,53 +96,6 @@ pub enum PasswordTemplate {
     Basic   = 20,
     Pin     = 10,
 }
-
-#[derive(Debug)]
-pub enum Error {
-    WrongEntriesKeyLength,
-    WrongEntryNonceLength,
-    WrongOuterNonceLength,
-    WrongOuterKeyLength,
-    WrongDerivedKeyLength,
-    InappropriateFormat,
-    SeedGenerationError,
-    DecryptionError,
-    CodecError(CborError),
-    ByteCodecError(byteorder::Error),
-    StringCodecError(string::FromUtf8Error),
-    OtherError(io::Error),
-    DataError,
-    EntryNotFound,
-    NotImplemented,
-    NotAvailableOnPlatform,
-    SSHAgentSocketNotFound,
-}
-
-impl From<CborError> for Error {
-    fn from(err: CborError) -> Error {
-        Error::CodecError(err)
-    }
-}
-
-impl From<byteorder::Error> for Error {
-    fn from(err: byteorder::Error) -> Error {
-        Error::ByteCodecError(err)
-    }
-}
-
-impl From<string::FromUtf8Error> for Error {
-    fn from(err: string::FromUtf8Error) -> Error {
-        Error::StringCodecError(err)
-    }
-}
-
-impl From<io::Error> for Error {
-    fn from(err: io::Error) -> Error {
-        Error::OtherError(err)
-    }
-}
-
-pub type Result<T> = result::Result<T, Error>;
 
 impl Vault {
 

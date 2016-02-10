@@ -1,5 +1,6 @@
 use data::*;
 use util::*;
+use result::{Error, Result};
 use secstr::SecStr;
 use rusterpassword::*;
 use rustc_serialize::base64::{ToBase64, STANDARD};

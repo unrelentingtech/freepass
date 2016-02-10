@@ -14,6 +14,7 @@ extern crate chrono;
 
 
 pub mod util;
+pub mod result;
 pub mod data;
 pub mod output;
 pub mod merge;
