@@ -32,7 +32,7 @@ fn pick_tpl(tpl: &PasswordTemplate) -> &'static [&'static str] {
 pub fn process_output(entry_name: &str, master_key: &SecStr, field: &Field) -> Result<Output> {
     match *field {
         Field::Derived { counter, ref site_name, ref usage } => {
-            let site_seed = try!(gen_site_seed(master_key, &site_name.clone().unwrap_or(entry_name.to_string()), counter)
+            let site_seed = try!(gen_site_seed(master_key, &site_name.clone().unwrap_or(entry_name.to_owned()), counter)
                                  .map_err(|_| Error::SeedGenerationError));
             match *usage {
                 DerivedUsage::Password(ref tpl) =>
@@ -63,7 +63,7 @@ pub fn ssh_public_key_output(keypair: &Output, comment: &str) -> Result<String> 
         raw.extend(b"ssh-ed25519");
         try!(raw.write_u32::<BigEndian>(ed25519::PUBLICKEYBYTES as u32));
         raw.extend(&pubkey_bytes);
-        Ok("ssh-ed25519 ".to_string() + &raw.to_base64(STANDARD) + " " + comment)
+        Ok("ssh-ed25519 ".to_owned() + &raw.to_base64(STANDARD) + " " + comment)
     } else { Err(Error::InappropriateFormat) }
 }
 

@@ -43,7 +43,7 @@ pub fn read_password_console() -> SecStr {
 }
 
 pub fn read_password_askpass(mut command: Command) -> SecStr {
-    let process = command.stdout(Stdio::piped()).spawn().unwrap();
+    let process = command.stdout(Stdio::piped()).spawn().expect("Couldn't spawn askpass program");
     let mut result = Vec::new();
     let mut reader = io::BufReader::new(process.stdout.unwrap());
     let size = reader.read_until(b'\n', &mut result).unwrap();
@@ -59,7 +59,7 @@ pub fn read_password() -> SecStr {
 }
 
 pub fn read_text_console(prompt: &str) -> Option<String> {
-    let mut tty = fs::OpenOptions::new().read(true).write(true).open("/dev/tty").unwrap();
+    let mut tty = fs::OpenOptions::new().read(true).write(true).open("/dev/tty").expect("Couldn't open terminal device /dev/tty");
     tty.write(&format!("\r{}: ", prompt).into_bytes()).unwrap();
     let mut reader = io::BufReader::new(tty);
     let mut input = String::new();

@@ -66,7 +66,7 @@ fn main() {
                             Ok(file) => file,
                             Err(ref err) => panic!("Could not open file {}: {}", &second_file_path, err),
                         };
-                        Box::new(import::kdbx(&mut second_file, &util::read_password()).unwrap())
+                        Box::new(import::kdbx(&mut second_file, &util::read_password()).expect("Could not read the file as kdbx"))
                     },
                     Some(x) => panic!("Unsupported import format {}", x),
                     None => {

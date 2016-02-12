@@ -17,11 +17,11 @@ use util;
 macro_rules! interaction {
     ( { $($action_name:expr => $action_fn:expr),+ }, $data:expr, $data_fn:expr ) => {
         {
-            let mut items = vec![$(">> ".to_string() + $action_name),+];
-            let data_items : Vec<String> = $data.map(|x| " | ".to_string() + x).collect();
+            let mut items = vec![$(">> ".to_owned() + $action_name),+];
+            let data_items : Vec<String> = $data.map(|x| " | ".to_owned() + x).collect();
             items.extend(data_items.iter().cloned());
             match pick_from_list(util::menu_cmd().as_mut(), &items[..], "Selection: ").unwrap() {
-                $(ref x if *x == ">> ".to_string() + $action_name => $action_fn),+
+                $(ref x if *x == ">> ".to_owned() + $action_name => $action_fn),+
                 ref x if data_items.contains(x) => ($data_fn)(&x[3..]),
                 ref x => panic!("Unknown selection: {}", x),
             }
@@ -29,9 +29,9 @@ macro_rules! interaction {
     };
     ( { $($action_name:expr => $action_fn:expr),+ }) => {
         {
-            let items = vec![$(">> ".to_string() + $action_name),+];
+            let items = vec![$(">> ".to_owned() + $action_name),+];
             match pick_from_list(util::menu_cmd().as_mut(), &items[..], "Selection: ").unwrap() {
-                $(ref x if *x == ">> ".to_string() + $action_name => $action_fn),+
+                $(ref x if *x == ">> ".to_owned() + $action_name => $action_fn),+
                 ref x => panic!("Unknown selection: {}", x),
             }
         }
@@ -50,7 +50,7 @@ pub fn interact_entries(open_file: &mut OpenFile, debug: bool) {
                 }
             }
         }, open_file.vault.entry_names(), |name| {
-            let (entry, meta) = open_file.vault.get_entry(name).unwrap();
+            let (entry, meta) = open_file.vault.get_entry(name).expect("Couldn't read selected entry");
             if debug {
                 util::debug_output(&entry, &format!("Entry: {}", name));
             }
@@ -72,9 +72,10 @@ fn interact_entry(open_file: &mut OpenFile, entry_name: &str, entry: Entry, meta
                 return interact_entry_edit(open_file, entry_name, entry, meta);
             }
         }, entry.fields.keys(), |name: &str| {
-            let output = process_output(entry_name, &open_file.master_key, entry.fields.get(name).unwrap()).unwrap();
+            let field = entry.fields.get(name).expect("Couldn't read selected field");
+            let output = process_output(entry_name, &open_file.master_key, field).unwrap();
             match output {
-                Output::PrivateText(s) => println!("{}", String::from_utf8(Vec::from(s.unsecure())).unwrap()),
+                Output::PrivateText(s) => println!("{}", String::from_utf8(Vec::from(s.unsecure())).expect("Couldn't decode UTF-8")),
                 Output::OpenText(s) => println!("{}", s),
                 Output::PrivateBinary(s) => {
                     interaction!({
@@ -103,7 +104,7 @@ fn interact_entry(open_file: &mut OpenFile, entry_name: &str, entry: Entry, meta
                                 let mut buffer = Vec::new();
                                 OpenOptions::new().read(true).open(path).unwrap().read_to_end(&mut buffer).unwrap();
                                 let signature = signify_sign(&output, &format!("signed with freepass key: {}", entry_name), &buffer[..]).unwrap().into_bytes();
-                                sigfile.write_all(&signature[..]).unwrap();
+                                sigfile.write_all(&signature[..]).expect("Couldn't write the signature to the file");
                             }
                         })
                     },
@@ -134,7 +135,7 @@ fn interact_entry_edit(open_file: &mut OpenFile, entry_name: &str, mut entry: En
             })
         },
         &format!("Rename entry [{}]", entry_name) => {
-            let new_entry_name = util::read_text(&format!("New entry name [{}]", entry_name)).unwrap_or(entry_name.to_string());
+            let new_entry_name = util::read_text(&format!("New entry name [{}]", entry_name)).unwrap_or(entry_name.to_owned());
             open_file.vault.remove_entry(entry_name);
             open_file.vault.put_entry(&new_entry_name, &entry, &mut meta).unwrap();
             return interact_entry_edit(open_file, &new_entry_name, entry, meta);
@@ -146,7 +147,7 @@ fn interact_entry_edit(open_file: &mut OpenFile, entry_name: &str, mut entry: En
             return interact_entry_edit(open_file, entry_name, entry, meta);
         }
     }, entry.fields.keys(), |name: &str| {
-        entry = interact_field_edit(&mut open_file.vault, entry, name.to_string());
+        entry = interact_field_edit(&mut open_file.vault, entry, name.to_owned());
         return interact_entry_edit(open_file, entry_name, entry, meta);
     });
 }
@@ -210,10 +211,10 @@ fn interact_field_edit(vault: &mut DecryptedVault, mut entry: Entry, field_name:
         },
         Field::Stored { usage, data, .. } => {
             other_type = "derived";
-            let txt = String::from_utf8(data.unsecure().to_vec()).unwrap_or("<invalid UTF-8>".to_string());
+            let txt = String::from_utf8(data.unsecure().to_vec()).unwrap_or("<invalid UTF-8>".to_owned());
             field_actions.insert(format!("Change text [{}]", txt), Box::new(|f| {
                 if let Field::Stored { usage, data, .. } = f {
-                    let txt = String::from_utf8(data.unsecure().to_vec()).unwrap_or("<invalid UTF-8>".to_string());
+                    let txt = String::from_utf8(data.unsecure().to_vec()).unwrap_or("<invalid UTF-8>".to_owned());
                     let new_data = util::read_text(&format!("New text [{}]", txt)).unwrap_or(txt);
                     Field::Stored { data: SecStr::from(new_data), usage: usage }
                 } else { unreachable!(); }
@@ -246,7 +247,7 @@ fn interact_field_edit(vault: &mut DecryptedVault, mut entry: Entry, field_name:
             })
         },
         &format!("Rename field [{}]", field_name) => {
-            let new_field_name = util::read_text(&format!("New field name [{}]", field_name)).unwrap_or(field_name.to_string());
+            let new_field_name = util::read_text(&format!("New field name [{}]", field_name)).unwrap_or(field_name.to_owned());
             entry.fields.insert(new_field_name.clone(), field);
             return interact_field_edit(vault, entry, new_field_name);
         },

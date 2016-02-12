@@ -2,9 +2,8 @@ use freepass_core::merge::*;
 use freepass_core::vault::{Vault, WritableVault};
 use util;
 
-
-// println!("Vault '{:?}'", vault);
-pub fn merge_in<I: Vault + WritableVault + ?Sized, F: Vault + ?Sized>(into_vault: &mut I, from_vault: &F) {
+pub fn merge_in<I: ?Sized, F: ?Sized>(into_vault: &mut I, from_vault: &F)
+where I: Vault + WritableVault, F: Vault {
     let log = merge_vaults(into_vault, from_vault);
     for lentry in &log {
         match *lentry {

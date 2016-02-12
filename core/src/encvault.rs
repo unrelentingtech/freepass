@@ -14,6 +14,14 @@ use vault::{Vault, WritableVault};
 use data::*;
 use util::blake2b;
 
+#[derive(PartialEq, Debug, RustcDecodable, RustcEncodable)]
+pub struct EncryptedEntry {
+    pub nonce: Vec<u8>,
+    pub counter: u32,
+    pub ciphertext: Vec<u8>,
+    pub metadata: EntryMetadata,
+}
+
 #[derive(Debug, RustcDecodable, RustcEncodable)]
 pub struct EncryptedVault {
     pub version: u16,
@@ -160,7 +168,7 @@ mod tests {
     fn test_roundtrip_vault() {
         let master_key = gen_master_key(SecStr::from("Correct Horse Battery Staple"), "Clarke Griffin").unwrap();
         let mut vault = DecryptedVault::new(gen_entries_key(&master_key), gen_outer_key(&master_key));
-        vault.data.entries.insert("test".to_string(), EncryptedEntry {
+        vault.data.entries.insert("test".to_owned(), EncryptedEntry {
             nonce: b"fuck".to_vec(), counter: 123, ciphertext: b"hello".to_vec(), metadata: EntryMetadata::new()
         });
         let mut storage = Vec::new();

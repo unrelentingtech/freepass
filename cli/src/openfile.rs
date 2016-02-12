@@ -19,7 +19,7 @@ impl OpenFile {
         let master_key = gen_master_key(password, user_name).unwrap();
         OpenFile {
             vault: match file {
-                Some(f) => DecryptedVault::open(gen_entries_key(&master_key), gen_outer_key(&master_key), f).unwrap(),
+                Some(f) => DecryptedVault::open(gen_entries_key(&master_key), gen_outer_key(&master_key), f).expect("Couldn't read/decrypt freepass vault"),
                 None => DecryptedVault::new(gen_entries_key(&master_key), gen_outer_key(&master_key)),
             },
             master_key: master_key,

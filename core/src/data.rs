@@ -3,14 +3,6 @@ use secstr::SecStr;
 use chrono::{DateTime, UTC};
 use std::collections::btree_map::BTreeMap;
 
-#[derive(PartialEq, Debug, RustcDecodable, RustcEncodable)]
-pub struct EncryptedEntry {
-    pub nonce: Vec<u8>,
-    pub counter: u32,
-    pub ciphertext: Vec<u8>,
-    pub metadata: EntryMetadata,
-}
-
 #[derive(PartialEq, Clone, Debug, RustcDecodable, RustcEncodable)]
 pub struct EntryMetadata {
     pub created_at: DateTime<UTC>,
