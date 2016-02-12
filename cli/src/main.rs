@@ -13,9 +13,10 @@ mod openfile;
 mod interact;
 mod mergein;
 
-use std::env;
+use std::{env, fs};
 use clap::{Arg, App, SubCommand};
 use openfile::*;
+use freepass_core::{import, vault};
 
 fn main() {
     let matches = App::new("freepass")
@@ -31,7 +32,9 @@ fn main() {
         .subcommand(SubCommand::with_name("interact")
                     .about("Launches interactive mode"))
         .subcommand(SubCommand::with_name("mergein")
-                    .about("Adds entires from a second file that don't exist in the first file (e.g. to resolve file sync conflicts)")
+                    .about("Adds entires from a second file (possibly importing from a foreign format) that don't exist in the first file (e.g. to resolve file sync conflicts)")
+                    .arg(Arg::with_name("IMPORTTYPE").short("i").long("import").takes_value(true)
+                         .help("If you want to import from a foreign file format instead of merging a second freepass vault, the format of that file. Supported: kdbx"))
                     .arg(Arg::with_name("SECONDFILE").short("F").long("secondfile").takes_value(true)
                          .help("The vault file to get additional entries from, by default: $FREEPASS_SECOND_FILE"))
                     .arg(Arg::with_name("SECONDNAME").short("N").long("secondname").takes_value(true)
@@ -53,18 +56,35 @@ fn main() {
     }
 
     match matches.subcommand() {
+
         ("mergein", submatches_opt) => {
             if let Some(submatches) = submatches_opt {
                 let second_file_path = unwrap_for_opt(opt_or_env(submatches, "SECONDFILE", "FREEPASS_SECOND_FILE"), "secondfile");
-                let second_user_name = opt_or_env(submatches, "SECONDNAME", "FREEPASS_SECOND_NAME").unwrap_or(user_name);
-                let second_open_file = OpenFile::open(second_file_path, &second_user_name, util::read_password(), false);
-                if debug {
-                    util::debug_output(&second_open_file.vault.data, "Second Vault");
-                }
-                mergein::merge_in(&mut open_file, &second_open_file)
+                let second_vault : Box<vault::Vault> = match submatches.value_of("IMPORTTYPE") {
+                    Some("kdbx") => {
+                        let mut second_file = match fs::OpenOptions::new().read(true).open(&second_file_path) {
+                            Ok(file) => file,
+                            Err(ref err) => panic!("Could not open file {}: {}", &second_file_path, err),
+                        };
+                        Box::new(import::kdbx(&mut second_file, &util::read_password()).unwrap())
+                    },
+                    Some(x) => panic!("Unsupported import format {}", x),
+                    None => {
+                        let second_user_name = opt_or_env(submatches, "SECONDNAME", "FREEPASS_SECOND_NAME").unwrap_or(user_name);
+                        let second_open_file = OpenFile::open(second_file_path, &second_user_name, util::read_password(), false);
+                        if debug {
+                            util::debug_output(&second_open_file.vault.data, "Second Vault");
+                        }
+                        Box::new(second_open_file.vault)
+                    }
+                };
+                mergein::merge_in(&mut open_file.vault, &*second_vault);
+                open_file.save();
             } else { panic!("No options for mergein") }
         },
+
         ("interact", _) | _  => interact::interact_entries(&mut open_file, debug),
+
     }
 }
 

@@ -1,10 +1,11 @@
 use freepass_core::merge::*;
 use freepass_core::vault::{Vault, WritableVault};
-use openfile::OpenFile;
 use util;
 
-pub fn merge_in(into_open_file: &mut OpenFile, from_open_file: &OpenFile) {
-    let log = merge_vaults(&mut into_open_file.vault, &from_open_file.vault);
+
+// println!("Vault '{:?}'", vault);
+pub fn merge_in<I: Vault + WritableVault + ?Sized, F: Vault + ?Sized>(into_vault: &mut I, from_vault: &F) {
+    let log = merge_vaults(into_vault, from_vault);
     for lentry in &log {
         match *lentry {
             MergeLogEntry::Added(ref entry_name) => println!("Added: {}", entry_name),
@@ -17,8 +18,8 @@ pub fn merge_in(into_open_file: &mut OpenFile, from_open_file: &OpenFile) {
     for lentry in &log {
         if let MergeLogEntry::IsNewer(ref entry_name) = *lentry {
             if util::read_yesno(&format!("Update entry '{}'?", entry_name)) {
-                if let Ok((from_entry, from_entry_meta)) = from_open_file.vault.get_entry(&entry_name) {
-                    if let Ok(_) = into_open_file.vault.put_entry(&entry_name, &from_entry, &mut from_entry_meta.clone()) {
+                if let Ok((from_entry, from_entry_meta)) = from_vault.get_entry(&entry_name) {
+                    if let Ok(_) = into_vault.put_entry(&entry_name, &from_entry, &mut from_entry_meta.clone()) {
                         println!("Added: {}", entry_name)
                     } else {
                         println!("ERROR! Couldn't add: {}", entry_name)
@@ -29,5 +30,4 @@ pub fn merge_in(into_open_file: &mut OpenFile, from_open_file: &OpenFile) {
             }
         }
     }
-    into_open_file.save();
 }

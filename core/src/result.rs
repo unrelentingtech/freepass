@@ -1,6 +1,7 @@
-use std::{io, string, result};
+use std::{io, str, string, result};
 use cbor;
 use byteorder;
+use keepass;
 
 #[derive(Debug)]
 pub enum Error {
@@ -15,6 +16,8 @@ pub enum Error {
     CodecError(cbor::CborError),
     ByteCodecError(byteorder::Error),
     StringCodecError(string::FromUtf8Error),
+    StrCodecError(str::Utf8Error),
+    KeepassReadError(keepass::OpenDBError),
     OtherError(io::Error),
     DataError,
     EntryNotFound,
@@ -38,6 +41,18 @@ impl From<byteorder::Error> for Error {
 impl From<string::FromUtf8Error> for Error {
     fn from(err: string::FromUtf8Error) -> Error {
         Error::StringCodecError(err)
+    }
+}
+
+impl From<str::Utf8Error> for Error {
+    fn from(err: str::Utf8Error) -> Error {
+        Error::StrCodecError(err)
+    }
+}
+
+impl From<keepass::OpenDBError> for Error {
+    fn from(err: keepass::OpenDBError) -> Error {
+        Error::KeepassReadError(err)
     }
 }
 

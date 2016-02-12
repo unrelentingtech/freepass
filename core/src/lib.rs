@@ -11,6 +11,7 @@ extern crate sodiumoxide;
 extern crate rand;
 
 extern crate chrono;
+extern crate keepass;
 
 
 pub mod util;
@@ -20,6 +21,7 @@ pub mod vault;
 pub mod encvault;
 pub mod output;
 pub mod merge;
+pub mod import;
 
 pub fn init() {
     sodiumoxide::init();

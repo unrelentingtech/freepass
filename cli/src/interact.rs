@@ -8,6 +8,7 @@ use interactor::*;
 use secstr::SecStr;
 use freepass_core::output::*;
 use freepass_core::data::*;
+use freepass_core::util::{guess_usage_stored, guess_usage_derived};
 use freepass_core::vault::{Vault, WritableVault};
 use freepass_core::encvault::*;
 use openfile::*;
@@ -151,31 +152,19 @@ fn interact_entry_edit(open_file: &mut OpenFile, entry_name: &str, mut entry: En
 }
 
 fn new_derived_field(field_name: &str) -> Field {
-    let fname = field_name.to_lowercase();
-    if fname.contains("key") {
-        Field::Derived { counter: 1, site_name: None, usage: DerivedUsage::Ed25519Key(Ed25519Usage::SSH) }
-    } else {
-        Field::Derived { counter: 1, site_name: None, usage: DerivedUsage::Password(PasswordTemplate::Maximum) }
-    }
+    Field::Derived { counter: 1, site_name: None, usage: guess_usage_derived(field_name) }
 }
 
 fn new_stored_field(field_name: &str) -> Field {
-    let fname = field_name.to_lowercase();
-    if fname.contains("name") || fname.contains("login") || fname.contains("email") {
-        Field::Stored { data: SecStr::new(Vec::new()), usage: StoredUsage::Text }
-    } else {
-        Field::Stored { data: SecStr::new(Vec::new()), usage: StoredUsage::Password }
-    }
+    Field::Stored { data: SecStr::new(Vec::new()), usage: guess_usage_stored(field_name) }
 }
 
 fn new_field(field_name: &str) -> Field {
     let fname = field_name.to_lowercase();
-    if fname.contains("name") || fname.contains("login") || fname.contains("email") {
-        Field::Stored { data: SecStr::new(Vec::new()), usage: StoredUsage::Text }
-    } else if fname.contains("key") {
-        Field::Derived { counter: 1, site_name: None, usage: DerivedUsage::Ed25519Key(Ed25519Usage::SSH) }
+    if fname.contains("name") || fname.contains("login") || fname.contains("mail") || fname.contains("pin") {
+        new_stored_field(field_name)
     } else {
-        Field::Derived { counter: 1, site_name: None, usage: DerivedUsage::Password(PasswordTemplate::Maximum) }
+        new_derived_field(field_name)
     }
 }
 

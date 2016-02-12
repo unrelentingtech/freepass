@@ -28,7 +28,7 @@ impl EntryMetadata {
     }
 }
 
-#[derive(PartialEq, Debug, RustcDecodable, RustcEncodable)]
+#[derive(PartialEq, Clone, Debug, RustcDecodable, RustcEncodable)]
 pub struct Entry {
     pub fields: BTreeMap<String, Field>
 }
