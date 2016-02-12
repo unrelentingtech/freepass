@@ -12,7 +12,7 @@ It defines all the data structures, serialization, encryption and output.
 
 The `EncryptedVault` struct is what's stored on disk in [CBOR] format.
 
-The `Vault` struct is what's stored in the `ciphertext` field of the `EncryptedVault` in [CBOR] format, encrypted using AES-128-CTR.  
+The `DecryptedVault` struct contains what's stored in the `ciphertext` field of the `EncryptedVault` in [CBOR] format, encrypted using AES-128-CTR (`DecryptedVaultData`).  
 The key (`outer_key`) is the 16-byte BLAKE2b keyed hash of the string `freepass.outer`, using the master key as the key.
 
 The `EncryptedEntry` struct is what's stored as values in the `entries` field of the `Vault`.
