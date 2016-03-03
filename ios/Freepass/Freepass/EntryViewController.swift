@@ -7,25 +7,25 @@ class EntryViewController: UITableViewController {
 
 	let dbag = DisposeBag()
 	let inEditMode = Variable(false)
-	var fields : [FieldViewModel] = []
+	var fieldModels : [FieldViewModel] = []
 	let entryName = Variable("")
 
 	var entry: Entry? {
 		didSet {
 //			print(entry!.fields)
-			setFields(entry!.fields)
+			setFieldModels(entry!.fields)
 		}
 	}
 
-	func setFields(fields: [(String, Field)]) {
-		self.fields = fields.map { (k, v) in FieldViewModel(name: k, field: v) }
-		self.tableView!.reloadData()
+	func setFieldModels(fields: [(String, Field)]) {
+		self.fieldModels = fields.map { (k, v) in FieldViewModel(name: k, field: v) }
+		self.tableView.reloadData()
 	}
 
 	@IBAction func toggleEdit(sender: AnyObject) {
 		self.inEditMode.value = !self.inEditMode.value
 		if (!self.inEditMode.value) {
-			entry!.fields = 	self.fields.flatMap { $0.toField() }
+			entry!.fields = 	self.fieldModels.flatMap { $0.toField() }
 			print(entry!.fields)
 			// TODO: save
 		}
@@ -33,14 +33,11 @@ class EntryViewController: UITableViewController {
 
 	func cancelEdit(sender: AnyObject) {
 		self.inEditMode.value = false
-		setFields(self.entry!.fields)
+		setFieldModels(self.entry!.fields)
 	}
 
 	override func viewDidLoad() {
 		super.viewDidLoad()
-		self.tableView.registerClass(ShowPasswordFieldCell.self, forCellReuseIdentifier: "ShowPasswordFieldCell")
-		self.tableView.registerClass(EditFieldCell.self, forCellReuseIdentifier: "EditStoredFieldCell")
-		self.tableView.registerClass(EditFieldCell.self, forCellReuseIdentifier: "EditDerivedFieldCell")
 		self.tableView.backgroundColor = Colors.primaryBackground
 		self.tableView.rowHeight = UITableViewAutomaticDimension
 		self.tableView.allowsSelectionDuringEditing = false
@@ -69,25 +66,28 @@ class EntryViewController: UITableViewController {
 	}
 
 	override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-		return self.fields.count
+		return self.fieldModels.count
 	}
 
 	override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-		if (self.inEditMode.value) {
-			let field = fields[indexPath.row]
-			let cell : EditFieldCell
-			switch field.field_type.value ?? .Derived {
-			case .Derived: cell = self.tableView.dequeueReusableCellWithIdentifier("EditDerivedFieldCell", forIndexPath: indexPath) as! EditFieldCell
-			case .Stored:  cell = self.tableView.dequeueReusableCellWithIdentifier("EditStoredFieldCell", forIndexPath: indexPath) as! EditFieldCell
-			}
-			cell.tableView = self.tableView
-			cell.setField(field, row: indexPath)
+		let field = fieldModels[indexPath.row]
+		if (inEditMode.value) {
+			let cell = EditFieldCell.init(style: .Default, reuseIdentifier: nil)
+			cell.setField(field)
 			return cell
 		} else {
-			let cell = self.tableView.dequeueReusableCellWithIdentifier("ShowPasswordFieldCell", forIndexPath: indexPath) as! ShowPasswordFieldCell
-			cell.setField(fields[indexPath.row])
+			let cell = ShowPasswordFieldCell.init(style: .Default, reuseIdentifier: nil)
+			cell.setField(field)
 			return cell
 		}
+	}
+
+	func beginUpdates() {
+		tableView.beginUpdates()
+	}
+
+	func endUpdates() {
+		tableView.endUpdates()
 	}
 
 }

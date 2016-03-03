@@ -12,7 +12,18 @@ func <-> <T>(property: ControlProperty<T>, variable: Variable<T>) -> Disposable 
 	let bindToVariable = property
 		.subscribe(onNext: { n in
 			variable.value = n
-			}, onCompleted:  {
+			}, onCompleted: {
+				bindToUIDisposable.dispose()
+			})
+	return StableCompositeDisposable.create(bindToUIDisposable, bindToVariable)
+}
+
+func transformBind<T1, T2>(property: ControlProperty<T1>, variable: Variable<T2>, propToVar: T1 -> T2, varToProp: T2 -> T1) -> Disposable {
+	let bindToUIDisposable = variable.asObservable().map(varToProp).bindTo(property)
+	let bindToVariable = property
+		.subscribe(onNext: { n in
+			variable.value = propToVar(n)
+			}, onCompleted: {
 				bindToUIDisposable.dispose()
 			})
 	return StableCompositeDisposable.create(bindToUIDisposable, bindToVariable)

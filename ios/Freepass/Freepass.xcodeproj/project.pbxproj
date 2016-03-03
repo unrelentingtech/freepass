@@ -16,6 +16,7 @@
 		3705C71E1C1251B000D36B5B /* HexColor.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3705C7121C12510000D36B5B /* HexColor.framework */; };
 		3705C7271C1251CE00D36B5B /* Colors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3705C7261C1251CE00D36B5B /* Colors.swift */; };
 		37259DFD1BFA58FD00D36B5B /* libsodium.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 37259DFC1BFA58FD00D36B5B /* libsodium.a */; };
+		3759131B1C88BFFE00D36B5B /* CocoaStuff.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3759131A1C88BFFE00D36B5B /* CocoaStuff.swift */; };
 		376234CB1BFA306700D36B5B /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 376234CA1BFA306700D36B5B /* AppDelegate.swift */; };
 		376234CD1BFA306700D36B5B /* VaultViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 376234CC1BFA306700D36B5B /* VaultViewController.swift */; };
 		376234CF1BFA306700D36B5B /* EntryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 376234CE1BFA306700D36B5B /* EntryViewController.swift */; };
@@ -344,6 +345,7 @@
 		37259DF81BFA462700D36B5B /* Freepass-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Freepass-Bridging-Header.h"; sourceTree = "<group>"; };
 		37259DFC1BFA58FD00D36B5B /* libsodium.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libsodium.a; path = "../../../../jedisct1/libsodium/libsodium-ios/lib/libsodium.a"; sourceTree = "<group>"; };
 		37259DFE1BFB885900D36B5B /* libfreepass_capi.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libfreepass_capi.a; path = ../../capi/target/universal/release/libfreepass_capi.a; sourceTree = "<group>"; };
+		3759131A1C88BFFE00D36B5B /* CocoaStuff.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CocoaStuff.swift; sourceTree = "<group>"; };
 		376234C71BFA306700D36B5B /* Freepass.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Freepass.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		376234CA1BFA306700D36B5B /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		376234CC1BFA306700D36B5B /* VaultViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultViewController.swift; sourceTree = "<group>"; };
@@ -494,6 +496,7 @@
 				376234CA1BFA306700D36B5B /* AppDelegate.swift */,
 				3705C7261C1251CE00D36B5B /* Colors.swift */,
 				37D8790B1C5517E900D36B5B /* RxStuff.swift */,
+				3759131A1C88BFFE00D36B5B /* CocoaStuff.swift */,
 				3705C5F71C1459F800D36B5B /* Login */,
 				3705C5F61C1459EB00D36B5B /* Vault */,
 				3705C5F51C1459DF00D36B5B /* Entry */,
@@ -962,6 +965,7 @@
 				37CA32761C10949900D36B5B /* Entry.swift in Sources */,
 				37E750391BFBB02C00D36B5B /* LoginViewController.swift in Sources */,
 				37D8790C1C5517E900D36B5B /* RxStuff.swift in Sources */,
+				3759131B1C88BFFE00D36B5B /* CocoaStuff.swift in Sources */,
 				376234CF1BFA306700D36B5B /* EntryViewController.swift in Sources */,
 				3705C7271C1251CE00D36B5B /* Colors.swift in Sources */,
 				376234CD1BFA306700D36B5B /* VaultViewController.swift in Sources */,

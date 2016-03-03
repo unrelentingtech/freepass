@@ -11,8 +11,8 @@ class ShowFieldCell: UITableViewCell {
 
 	override init(style: UITableViewCellStyle, reuseIdentifier: String?) {
 		super.init(style: style, reuseIdentifier: reuseIdentifier)
-		self.addSubview(name)
-		self.addSubview(content)
+		addSubview(name)
+		addSubview(content)
 	}
 
 	required init?(coder aDecoder: NSCoder) { // REALLY?
@@ -30,7 +30,6 @@ class ShowFieldCell: UITableViewCell {
 	}
 	
 	func setField(field: FieldViewModel) {
-		dbag = DisposeBag()
 		field.field_name.asObservable().bindTo(name.rx_text).addDisposableTo(dbag)
 		updateConstraints()
 	}
@@ -68,7 +67,6 @@ class ShowPasswordFieldCell: ShowFieldCell {
 
 class EditFieldCell: UITableViewCell {
 	var dbag = DisposeBag()
-	weak var tableView: UITableView?
 	weak var field: FieldViewModel?
 	lazy var name_field = UITextField()
 	lazy var type_selector = UISegmentedControl(items: ["Derived", "Stored"])
@@ -79,12 +77,12 @@ class EditFieldCell: UITableViewCell {
 	
 	override init(style: UITableViewCellStyle, reuseIdentifier: String?) {
 		super.init(style: style, reuseIdentifier: reuseIdentifier)
-		self.addSubview(name_field)
-		self.addSubview(type_selector)
-		self.addSubview(derived_site_name_field)
-		self.addSubview(derived_counter_stepper)
-		self.addSubview(derived_counter_label)
-		self.addSubview(stored_string_field)
+		addSubview(name_field)
+		addSubview(type_selector)
+		addSubview(derived_site_name_field)
+		addSubview(derived_counter_stepper)
+		addSubview(derived_counter_label)
+		addSubview(stored_string_field)
 	}
 	
 	override func layoutSubviews() {
@@ -101,22 +99,25 @@ class EditFieldCell: UITableViewCell {
 		updateConstraints()
 	}
 
-	func setField(field: FieldViewModel, row: NSIndexPath) {
-		dbag = DisposeBag()
+	func setField(field: FieldViewModel) {
 		self.field = field
 
 		(name_field.rx_text <-> field.field_name).addDisposableTo(dbag)
 
-		type_selector.rx_value.subscribeNext { field.field_type.value = $0 == 0 ? .Some(.Derived) : .Some(.Stored) }.addDisposableTo(dbag)
-		field.field_type.asObservable().map { $0 == .Some(.Derived) ? 0 : 1 }.bindTo(type_selector.rx_value).addDisposableTo(dbag)
+		transformBind(type_selector.rx_value,
+			variable: field.field_type,
+			propToVar: { $0 == 0 ? .Some(.Derived) : .Some(.Stored) },
+			varToProp: { $0 == .Some(.Derived) ? 0 : 1 }).addDisposableTo(dbag)
 
 		field.field_type.asObservable().map { $0 == .Some(.Derived) }.distinctUntilChanged().subscribeNext {
 			self.derived_site_name_field.hidden = !$0
 			self.derived_counter_stepper.hidden = !$0
 			self.derived_counter_label.hidden = !$0
 			self.stored_string_field.hidden = $0
+			// I've spent so much time figuring this shit out:
+			self.tableView?.beginUpdates()
 			self.updateConstraints()
-			self.tableView?.reloadRowsAtIndexPaths([row], withRowAnimation: .None)
+			self.tableView?.endUpdates()
 		}.addDisposableTo(dbag)
 
 		(derived_site_name_field.rx_text <-> field.derived_site_name).addDisposableTo(dbag)
@@ -135,7 +136,6 @@ class EditFieldCell: UITableViewCell {
 			}
 		}.addDisposableTo(dbag)
 
-
 		updateConstraints()
 	}
 
@@ -147,14 +147,14 @@ class EditFieldCell: UITableViewCell {
 			guard let superview = name_field.superview else { return }
 			let isDerived = self.field?.field_type.value == .Some(.Derived)
 			for v in [name_field, type_selector, derived_site_name_field, stored_string_field] {
-				v.left == superview.left + 10
+				v.left == superview.left + 50
 				v.right == superview.right - 10
 				v.height == 24
 			}
 			name_field.top == superview.topMargin
 			if isDerived {
 				derived_counter_stepper.bottom == superview.bottomMargin
-				derived_counter_label.left == superview.left + 10
+				derived_counter_label.left == superview.left + 50
 				derived_counter_label.right == derived_counter_stepper.left - 10
 				derived_counter_label.top == derived_counter_stepper.top
 				derived_counter_label.bottom == derived_counter_stepper.bottom
