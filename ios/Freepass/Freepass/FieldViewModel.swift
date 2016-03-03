@@ -1,5 +1,5 @@
 import Foundation
-import Bond
+import RxSwift
 
 class FieldViewModel {
 	enum FieldType {
@@ -7,30 +7,30 @@ class FieldViewModel {
 		case Derived
 	}
 
-	let field_type: Observable<FieldType?> = Observable(nil)
-	let field_name: Observable<String?> = Observable(nil)
-	let derived_counter: Observable<UInt32?> = Observable(nil)
-	let derived_site_name: Observable<String?> = Observable(nil)
-	let derived_usage: Observable<DerivedUsage?> = Observable(nil)
-	let stored_data: Observable<[UInt8]?> = Observable(nil)
-	let stored_data_string: Observable<String?> = Observable(nil)
-	let stored_usage: Observable<StoredUsage?> = Observable(nil)
+	let dbag = DisposeBag()
+	let field_type: Variable<FieldType?> = Variable(nil)
+	let field_name = Variable("")
+	let derived_counter: Variable<UInt32> = Variable(0)
+	let derived_site_name = Variable("")
+	let derived_usage: Variable<DerivedUsage?> = Variable(nil)
+	let stored_data: Variable<[UInt8]?> = Variable(nil)
+	let stored_data_string = Variable("")
+	let stored_usage: Variable<StoredUsage?> = Variable(nil)
 
 	func init_stored_data_conversion() {
 		var updatingFromSelf = false
-		stored_data.observe {
+		stored_data.asObservable().subscribeNext {
 			if updatingFromSelf { return }
-			guard let b = $0 else {
-				self.stored_data_string.value = nil
-				return
+			let b = $0 ?? []
+			if let s = NSString(bytes: b, length: b.count, encoding: NSUTF8StringEncoding) as? String {
+				self.stored_data_string.value = s
 			}
-			self.stored_data_string.value = NSString(bytes: b, length: b.count, encoding: NSUTF8StringEncoding) as? String
-		}
-		stored_data_string.observe {
+		}.addDisposableTo(dbag)
+		stored_data_string.asObservable().subscribeNext {
 			updatingFromSelf = true
-			self.stored_data.value = $0?.utf8.map { UInt8(bitPattern: Int8($0.value)) }
+			self.stored_data.value = $0.utf8.map { UInt8(bitPattern: Int8($0.value)) }
 			updatingFromSelf = false
-		}
+		}.addDisposableTo(dbag)
 	}
 
 	init(name: String, field: Field) {
@@ -40,7 +40,7 @@ class FieldViewModel {
 		case .Derived(let counter, let site_name, let usage):
 			field_type.value = .Derived
 			derived_counter.value = counter
-			derived_site_name.value = site_name
+			derived_site_name.value = site_name ?? ""
 			derived_usage.value = usage
 		case .Stored(data: let data, usage: let usage):
 			field_type.value = .Stored
@@ -51,9 +51,9 @@ class FieldViewModel {
 
 	func toField() -> (String, Field)? {
 		switch (field_name.value, field_type.value) {
-		case (let name?, .Derived?):
+		case (let name, .Derived?):
 			return (name, .Derived(counter: derived_counter.value ?? 1, site_name: derived_site_name.value, usage: derived_usage.value ?? .Password(template: "Maximum")))
-		case (let name?, .Stored?):
+		case (let name, .Stored?):
 			return (name, .Stored(data: stored_data.value ?? [], usage: stored_usage.value ?? .Password))
 		default: return nil
 		}

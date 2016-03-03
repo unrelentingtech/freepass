@@ -25,6 +25,6 @@ char* freepass_entry_names_iterator_next(string_iter_t*);
 void freepass_free_entry_name(char*);
 void freepass_free_entry_names_iterator(string_iter_t*);
 
-vector_t freepass_vault_get_entry_cbor(const vault_t*, const secstr_t*, const char*);
+vector_t freepass_vault_get_entry_cbor(const vault_t*, const char*);
 void freepass_free_entry_cbor(vector_t);
-vector_t freepass_vault_put_entry_cbor(const vault_t*, const secstr_t*, const char*, uint8_t*, size_t);
+vector_t freepass_vault_put_entry_cbor(const vault_t*, const char*, uint8_t*, size_t);

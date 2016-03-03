@@ -18,20 +18,21 @@ struct Vault {
 		if masterKey == COpaquePointer.init(nilLiteral: ()) {
 			throw VaultError.UnknownError
 		}
+		let outerKey = freepass_gen_outer_key(masterKey!)
+		entriesKey = freepass_gen_entries_key(masterKey!)
 
 		let fm = NSFileManager.defaultManager()
 		if fm.isReadableFileAtPath(path) {
 			filePath = path
-			let outerKey = freepass_gen_outer_key(masterKey!)
-			vaultObj = freepass_open_vault(path, outerKey)
-			freepass_free_outer_key(outerKey)
-			entriesKey = freepass_gen_entries_key(masterKey!)
+			vaultObj = freepass_open_vault(path, entriesKey!, outerKey)
 		} else {
-			vaultObj = freepass_new_vault()
+			vaultObj = freepass_new_vault(entriesKey!, outerKey)
 		}
+		freepass_free_outer_key(outerKey)
 
 		if vaultObj == COpaquePointer.init(nilLiteral: ()) {
 			rusterpassword_free_master_key(masterKey!)
+			freepass_free_entries_key(entriesKey!)
 			throw VaultError.WrongPassword
 		}
 		isOpen = true
@@ -54,7 +55,7 @@ struct Vault {
 	static func getEntry(name: String) -> Entry? {
 		guard let vaultObj = vaultObj else { return nil }
 		guard let entriesKey = entriesKey else { return nil }
-		let cbor = freepass_vault_get_entry_cbor(vaultObj, entriesKey, name)
+		let cbor = freepass_vault_get_entry_cbor(vaultObj, name)
 		defer { freepass_free_entry_cbor(cbor) }
 		let bytes = Array(UnsafeBufferPointer(start: cbor.data, count: cbor.len))
 		guard let result = try! CBORDecoder(input: bytes).decodeItem() else { return nil }

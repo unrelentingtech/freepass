@@ -73,9 +73,12 @@ pub extern fn freepass_open_vault(file_path_c: *const c_char, entries_key_c: *co
     let entries_key = from_c![obj entries_key_c];
     let outer_key = from_c![obj outer_key_c];
     if let Ok(file) = fs::OpenOptions::new().read(true).write(true).open(&file_path) {
-        if let Ok(vault) = DecryptedVault::open(entries_key.clone(), outer_key.clone(), file) {
-            return to_c![obj vault]
+        match DecryptedVault::open(entries_key.clone(), outer_key.clone(), file) {
+            Ok(vault) => return to_c![obj vault],
+            Err(e) => println!("Couldn't open DecryptedVault: {:?}", e),
         }
+    } else {
+        println!("Couldn't open file");
     }
     return ptr::null_mut()
 }

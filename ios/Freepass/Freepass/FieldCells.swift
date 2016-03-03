@@ -1,8 +1,11 @@
 import UIKit
-import Bond
+import RxSwift
+import RxCocoa
 import Cartography
 
+
 class ShowFieldCell: UITableViewCell {
+	var dbag = DisposeBag()
 	lazy var name = UITextField()
 	lazy var content = UITextField()
 
@@ -27,8 +30,8 @@ class ShowFieldCell: UITableViewCell {
 	}
 	
 	func setField(field: FieldViewModel) {
-		self.bnd_bag.dispose()
-		field.field_name.bindTo(name.bnd_text).disposeIn(self.bnd_bag)
+		dbag = DisposeBag()
+		field.field_name.asObservable().bindTo(name.rx_text).addDisposableTo(dbag)
 		updateConstraints()
 	}
 
@@ -64,6 +67,7 @@ class ShowPasswordFieldCell: ShowFieldCell {
 }
 
 class EditFieldCell: UITableViewCell {
+	var dbag = DisposeBag()
 	weak var tableView: UITableView?
 	weak var field: FieldViewModel?
 	lazy var name_field = UITextField()
@@ -98,44 +102,39 @@ class EditFieldCell: UITableViewCell {
 	}
 
 	func setField(field: FieldViewModel, row: NSIndexPath) {
-		self.bnd_bag.dispose()
+		dbag = DisposeBag()
 		self.field = field
 
-		field.field_name.bidirectionalBindTo(name_field.bnd_text).disposeIn(self.bnd_bag)
+		(name_field.rx_text <-> field.field_name).addDisposableTo(dbag)
 
-		// No bidirectional map :-(
-		field.field_type.map { $0 == .Some(.Derived) ? 0 : 1 }.distinct()
-			.bindTo(type_selector.bnd_selectedSegmentIndex).disposeIn(self.bnd_bag)
-		type_selector.bnd_selectedSegmentIndex.distinct()
-			.map { $0 == 0 ? .Some(.Derived) : .Some(.Stored) }
-			.bindTo(field.field_type).disposeIn(self.bnd_bag)
+		type_selector.rx_value.subscribeNext { field.field_type.value = $0 == 0 ? .Some(.Derived) : .Some(.Stored) }.addDisposableTo(dbag)
+		field.field_type.asObservable().map { $0 == .Some(.Derived) ? 0 : 1 }.bindTo(type_selector.rx_value).addDisposableTo(dbag)
 
-		field.derived_site_name.bidirectionalBindTo(derived_site_name_field.bnd_text).disposeIn(self.bnd_bag)
-
-		field.derived_counter.observe { self.derived_counter_stepper.value = Double($0 ?? 1) }.disposeIn(self.bnd_bag)
-		derived_counter_stepper.bnd_controlEvent.filter { $0 == .ValueChanged }
-			.map { _ in UInt32(self.derived_counter_stepper.value) }.distinct()
-			.bindTo(field.derived_counter).disposeIn(self.bnd_bag)
-
-		field.derived_counter.map { "Counter: \($0 ?? 1)" }
-			.bindTo(derived_counter_label.bnd_text).disposeIn(self.bnd_bag)
-
-		field.stored_data_string.bidirectionalBindTo(stored_string_field.bnd_text).disposeIn(self.bnd_bag)
-		field.stored_usage.observe {
-			switch $0 ?? .Text {
-			case .Password: self.stored_string_field.placeholder = "Password"
-			case .Text: self.stored_string_field.placeholder = "Text"
-			}
-		}.disposeIn(self.bnd_bag)
-
-		field.field_type.map { $0 == .Some(.Derived) }.distinct().observe {
+		field.field_type.asObservable().map { $0 == .Some(.Derived) }.distinctUntilChanged().subscribeNext {
 			self.derived_site_name_field.hidden = !$0
 			self.derived_counter_stepper.hidden = !$0
 			self.derived_counter_label.hidden = !$0
 			self.stored_string_field.hidden = $0
 			self.updateConstraints()
 			self.tableView?.reloadRowsAtIndexPaths([row], withRowAnimation: .None)
-		}.disposeIn(self.bnd_bag)
+		}.addDisposableTo(dbag)
+
+		(derived_site_name_field.rx_text <-> field.derived_site_name).addDisposableTo(dbag)
+
+		field.derived_counter.asObservable().subscribeNext { self.derived_counter_stepper.value = Double($0 ?? 1) }.addDisposableTo(dbag)
+		derived_counter_stepper.rx_value.map { UInt32($0) }.bindTo(field.derived_counter).addDisposableTo(dbag)
+		field.derived_counter.asObservable().map { "Counter: \($0 ?? 1)" }
+			.bindTo(derived_counter_label.rx_text).addDisposableTo(dbag)
+
+		(stored_string_field.rx_text <->	 field.stored_data_string).addDisposableTo(dbag)
+
+		field.stored_usage.asObservable().subscribeNext {
+			switch $0 ?? .Text {
+			case .Password: self.stored_string_field.placeholder = "Password"
+			case .Text: self.stored_string_field.placeholder = "Text"
+			}
+		}.addDisposableTo(dbag)
+
 
 		updateConstraints()
 	}

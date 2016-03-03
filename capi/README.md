@@ -48,7 +48,7 @@ $ vi dist-build/android-build.sh # Replace "android-16" with "android-21", remov
 $ vi dist-build/ios.sh # Remove "--enable-minimal"
 $ ANDROID_NDK_HOME="$(brew --prefix android-ndk)" ./dist-build/android-arm.sh
 $ ANDROID_NDK_HOME="$(brew --prefix android-ndk)" ./dist-build/android-armv8-a.sh
-$ ANDROID_NDK_HOME="$(brew --prefix android-ndk)" ./dist-build/ios.sh
+$ ./dist-build/ios.sh
 ```
 
 Finally, build this library:

@@ -1,13 +1,14 @@
 import UIKit
-import Bond
+import RxSwift
 
 class EntryViewController: UITableViewController {
 
 	@IBOutlet weak var editButton: UIBarButtonItem!
 
-	let inEditMode = Observable(false)
+	let dbag = DisposeBag()
+	let inEditMode = Variable(false)
 	var fields : [FieldViewModel] = []
-	let entryName = Observable("")
+	let entryName = Variable("")
 
 	var entry: Entry? {
 		didSet {
@@ -44,8 +45,8 @@ class EntryViewController: UITableViewController {
 		self.tableView.rowHeight = UITableViewAutomaticDimension
 		self.tableView.allowsSelectionDuringEditing = false
 		let cancelButton = UIBarButtonItem(title: "Cancel", style: .Plain, target: self, action: "cancelEdit:")
-		self.entryName.observe { self.title = $0 }.disposeIn(self.bnd_bag)
-		self.inEditMode.observe {
+		self.entryName.asObservable().subscribeNext { self.title = $0 }.addDisposableTo(dbag)
+		self.inEditMode.asObservable().distinctUntilChanged().subscribeNext {
 			self.navigationItem.setHidesBackButton($0, animated: true)
 			self.navigationController?.interactivePopGestureRecognizer?.enabled = !$0
 			self.navigationItem.setLeftBarButtonItem($0 ? cancelButton : nil, animated: true)
@@ -53,7 +54,7 @@ class EntryViewController: UITableViewController {
 			self.tableView.editing = $0
 			self.tableView.estimatedRowHeight = $0 ? 140.0 : 80.0
 			self.tableView.reloadData()
-		}.disposeIn(self.bnd_bag)
+		}.addDisposableTo(dbag)
 		self.tableView.reloadData()
 	}
 

@@ -7,9 +7,9 @@
 [submodule "ios/Freepass/Deps/SwiftCBOR"]
 	path = ios/Freepass/Deps/SwiftCBOR
 	url = https://github.com/valpackett/SwiftCBOR.git
-[submodule "ios/Freepass/Deps/Bond"]
-	path = ios/Freepass/Deps/Bond
-	url = https://github.com/SwiftBond/Bond.git
+[submodule "ios/Freepass/Deps/RxSwift"]
+	path = ios/Freepass/Deps/RxSwift
+	url = https://github.com/ReactiveX/RxSwift.git
 [submodule "ios/Freepass/Deps/HexColor"]
 	path = ios/Freepass/Deps/HexColor
 	url = https://github.com/artman/HexColor.git
