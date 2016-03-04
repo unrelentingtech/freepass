@@ -41,6 +41,20 @@ pub struct DecryptedVault {
     outer_key: SecStr,
 }
 
+impl DecryptedVault {
+    /// Returns the decrypted entry without decoding CBOR.
+    pub fn get_entry_cbor(&self, name: &str) -> Result<(Vec<u8>, EntryMetadata)> {
+        if let Some(ee) = self.data.entries.get(name) {
+            let nonce_wrapped = try!(secbox::Nonce::from_slice(&ee.nonce).ok_or(Error::WrongEntryNonceLength));
+            let entry_key_wrapped = try!(gen_entry_key(&self.entries_key, name, ee.counter));
+            let plainbytes = try!(secbox::open(&ee.ciphertext, &nonce_wrapped, &entry_key_wrapped).map_err(|_| Error::DecryptionError));
+            Ok((plainbytes, ee.metadata.clone()))
+        } else {
+            Err(Error::EntryNotFound)
+        }
+    }
+}
+
 impl Vault for DecryptedVault {
     fn len(&self) -> usize {
         self.data.entries.len()
@@ -51,15 +65,10 @@ impl Vault for DecryptedVault {
     }
 
     fn get_entry(&self, name: &str) -> Result<(Entry, EntryMetadata)> {
-        if let Some(ee) = self.data.entries.get(name) {
-            let nonce_wrapped = try!(secbox::Nonce::from_slice(&ee.nonce).ok_or(Error::WrongEntryNonceLength));
-            let entry_key_wrapped = try!(gen_entry_key(&self.entries_key, name, ee.counter));
-            let plaintext = SecStr::new(try!(secbox::open(&ee.ciphertext, &nonce_wrapped, &entry_key_wrapped).map_err(|_| Error::DecryptionError)));
-            let entry = try!(try!(Decoder::from_bytes(plaintext.unsecure()).decode::<Entry>().next().ok_or(Error::DataError)));
-            Ok((entry, ee.metadata.clone()))
-        } else {
-            Err(Error::EntryNotFound)
-        }
+        let (plainbytes, metadata) = try!(self.get_entry_cbor(name));
+        let plaintext = SecStr::new(plainbytes); // For zeroing out CBOR bytes (on Drop) after decoding it
+        let entry = try!(try!(Decoder::from_bytes(plaintext.unsecure()).decode::<Entry>().next().ok_or(Error::DataError)));
+        Ok((entry, metadata))
     }
 }
 

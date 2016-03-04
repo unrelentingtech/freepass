@@ -54,5 +54,5 @@ mkdir -p "target/universal/$BUILD_MODE"
 $LIPO -create -output "target/universal/$BUILD_MODE/$LIBNAME" \
 	"target/armv7-apple-ios/$BUILD_MODE/$LIBNAME" \
 	"target/aarch64-apple-ios/$BUILD_MODE/$LIBNAME" \
+	"target/x86_64-apple-ios/$BUILD_MODE/$LIBNAME" \
 	# "target/i386-apple-ios/$BUILD_MODE/$LIBNAME" \
-	"target/x86_64-apple-ios/$BUILD_MODE/$LIBNAME"

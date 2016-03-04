@@ -118,10 +118,14 @@ pub unsafe extern fn freepass_free_entry_names_iterator<'a>(iter_c: *mut Box<Ite
 
 #[no_mangle]
 pub extern fn freepass_vault_get_entry_cbor(vault_c: *const DecryptedVault, name_c: *const c_char) -> CVector {
-    let (entry, metadata) = from_c![obj vault_c].get_entry(from_c![cstr name_c]).unwrap();
-    let mut e = Encoder::from_memory();
-    e.encode(&[(entry, metadata)]).unwrap();
-    to_c![vec e.into_bytes()]
+    let (mut entry_cbor, metadata) = from_c![obj vault_c].get_entry_cbor(from_c![cstr name_c]).unwrap();
+    // Optimization: avoid decoding entry just to re-encode it
+    entry_cbor.insert(0, 0x82); // Array of length 2
+    {
+        let mut e = Encoder::from_writer(&mut entry_cbor);
+        e.encode(&[metadata]).unwrap();
+    }
+    to_c![vec entry_cbor]
 }
 
 #[no_mangle]
