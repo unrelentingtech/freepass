@@ -1160,6 +1160,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "Freepass/Freepass-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				VALID_ARCHS = "arm64 armv7";
 			};
 			name = Debug;
 		};
@@ -1187,6 +1188,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = technology.unrelenting.FreepassForiOS;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "Freepass/Freepass-Bridging-Header.h";
+				VALID_ARCHS = "arm64 armv7";
 			};
 			name = Release;
 		};

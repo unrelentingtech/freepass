@@ -26,7 +26,7 @@ class EntryViewController: UITableViewController {
 		self.inEditMode.value = !self.inEditMode.value
 		if (!self.inEditMode.value) {
 			entry!.fields = 	self.fieldModels.flatMap { $0.toField() }
-			print(entry!.fields)
+//			print(entry!.fields)
 			// TODO: save
 		}
 	}
@@ -80,14 +80,6 @@ class EntryViewController: UITableViewController {
 			cell.setField(field)
 			return cell
 		}
-	}
-
-	func beginUpdates() {
-		tableView.beginUpdates()
-	}
-
-	func endUpdates() {
-		tableView.endUpdates()
 	}
 
 }
