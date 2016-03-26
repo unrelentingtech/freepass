@@ -1,4 +1,3 @@
-use result::Error;
 use secstr::SecStr;
 use chrono::{DateTime, UTC};
 use std::collections::btree_map::BTreeMap;

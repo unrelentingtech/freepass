@@ -1,6 +1,5 @@
 use std::{io, str, string, result};
 use cbor;
-use byteorder;
 use keepass;
 
 #[derive(Debug)]
@@ -14,7 +13,6 @@ pub enum Error {
     SeedGenerationError,
     DecryptionError,
     CodecError(cbor::CborError),
-    ByteCodecError(byteorder::Error),
     StringCodecError(string::FromUtf8Error),
     StrCodecError(str::Utf8Error),
     KeepassReadError(keepass::OpenDBError),
@@ -29,12 +27,6 @@ pub enum Error {
 impl From<cbor::CborError> for Error {
     fn from(err: cbor::CborError) -> Error {
         Error::CodecError(err)
-    }
-}
-
-impl From<byteorder::Error> for Error {
-    fn from(err: byteorder::Error) -> Error {
-        Error::ByteCodecError(err)
     }
 }
 
