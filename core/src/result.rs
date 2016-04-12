@@ -1,6 +1,6 @@
 use std::{io, str, string, result};
 use cbor;
-use keepass;
+#[cfg(feature = "keepass")] use keepass;
 
 #[derive(Debug)]
 pub enum Error {
@@ -15,7 +15,7 @@ pub enum Error {
     CodecError(cbor::CborError),
     StringCodecError(string::FromUtf8Error),
     StrCodecError(str::Utf8Error),
-    KeepassReadError(keepass::OpenDBError),
+    #[cfg(feature = "keepass")] KeepassReadError(keepass::OpenDBError),
     OtherError(io::Error),
     DataError,
     EntryNotFound,
@@ -42,6 +42,7 @@ impl From<str::Utf8Error> for Error {
     }
 }
 
+#[cfg(feature = "keepass")]
 impl From<keepass::OpenDBError> for Error {
     fn from(err: keepass::OpenDBError) -> Error {
         Error::KeepassReadError(err)

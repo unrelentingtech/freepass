@@ -11,7 +11,7 @@ extern crate sodiumoxide;
 extern crate rand;
 
 extern crate chrono;
-extern crate keepass;
+#[cfg(feature = "keepass")] extern crate keepass;
 
 
 pub mod util;

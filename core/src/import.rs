@@ -1,7 +1,7 @@
 use std::{io, str};
 use std::collections::btree_map::BTreeMap;
 use secstr::SecStr;
-use keepass::{Database, Node, Value};
+#[cfg(feature = "keepass")] use keepass::{Database, Node, Value};
 use vault::Vault;
 use result::*;
 use data::*;
@@ -34,6 +34,7 @@ impl ImportVault {
 
 // Wow, keepass's format is even less structured than ours (even the title is just a "Title" field)
 // Also the keepass library uses rust-crypto, which means the import will be very slow in a debug build
+#[cfg(feature = "keepass")]
 pub fn kdbx<T: io::Read>(source: &mut T, password: &SecStr) -> Result<ImportVault> {
     let db = try!(Database::open(source, try!(str::from_utf8(password.unsecure()))));
     let mut vault = ImportVault::new();
