@@ -6,26 +6,10 @@
 : ${RUST_PREFIX:="/opt/rust-arm"}
 : ${SODIUM_ROOT:="../libsodium"}
 
-mkdir -p $SODIUM_ROOT/libsodium-ios/lib/pkgconfig
-
-cat <<EOF > $SODIUM_ROOT/libsodium-ios/lib/pkgconfig/libsodium.pc
-prefix=$SODIUM_ROOT/libsodium-ios
-exec_prefix=\${prefix}
-libdir=\${exec_prefix}/lib
-includedir=\${prefix}/include
-
-Name: libsodium
-Version: 1.0.8
-Description: A portable, cross-compilable, installable, packageable fork of NaCl, with a compatible API.
-
-Libs: -L\${libdir} -lsodium
-Cflags: -I\${includedir}
-EOF
-
 export PATH="$RUST_PREFIX/bin:$PATH"
 export DYLD_LIBRARY_PATH="$RUST_PREFIX/lib:$DYLD_LIBRARY_PATH"
-export PKG_CONFIG_ALLOW_CROSS=1
-export PKG_CONFIG_PATH="$SODIUM_ROOT/libsodium-ios/lib/pkgconfig"
+# export PKG_CONFIG_ALLOW_CROSS=1
+export SODIUM_LIB_DIR="$SODIUM_ROOT/libsodium-ios/lib" \
 
 LIBNAME="libfreepass_capi.a"
 CARGO_OPTS="-v"
