@@ -20,9 +20,9 @@ $ sudo mkdir /opt/ndk /opt/ndk64 /opt/ndkx86
 $ sudo chown $(whoami) /opt/ndk /opt/ndk64 /opt/ndkx86
 $ brew install android-ndk
 $ cd $(brew --prefix android-ndk)
-$ build/tools/make-standalone-toolchain.sh --platform=android-21 --toolchain=arm-linux-androideabi-4.9 --install-dir=/opt/ndk
-$ build/tools/make-standalone-toolchain.sh --platform=android-21 --toolchain=aarch64-linux-android-4.9 --install-dir=/opt/ndk64
-$ build/tools/make-standalone-toolchain.sh --platform=android-21 --toolchain=x86-4.9 --install-dir=/opt/ndkx86
+$ build/tools/make-standalone-toolchain.sh --platform=android-16 --toolchain=arm-linux-androideabi-clang3.6 --stl=libc++ --install-dir=/opt/ndk
+$ build/tools/make-standalone-toolchain.sh --platform=android-21 --toolchain=aarch64-linux-android-clang3.6 --stl=libc++ --install-dir=/opt/ndk64
+$ build/tools/make-standalone-toolchain.sh --platform=android-16 --toolchain=x86-clang3.6 --stl=libc++ --install-dir=/opt/ndkx86
 ```
 
 Get the Rust source and build it:
@@ -45,12 +45,11 @@ Get submodules of this repo, make some fixes to libsodium build scripts and buil
 $ git submodule update --init
 $ cd libsodium
 $ ./autogen.sh
-$ vi dist-build/android-build.sh # Replace "android-16" with "android-21", remove "--enable-minimal"
+
 $ vi dist-build/ios.sh # Remove "--enable-minimal"
-$ ANDROID_NDK_HOME="$(brew --prefix android-ndk)" ./dist-build/android-arm.sh
-$ ANDROID_NDK_HOME="$(brew --prefix android-ndk)" ./dist-build/android-armv8-a.sh
-$ ANDROID_NDK_HOME="$(brew --prefix android-ndk)" ./dist-build/android-x86.sh
 $ ./dist-build/ios.sh
+
+$ ../build-libsodium-android.sh
 ```
 
 Finally, build this library:

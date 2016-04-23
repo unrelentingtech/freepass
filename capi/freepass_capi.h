@@ -1,3 +1,7 @@
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdint.h>
 #include "../rusterpassword/capi/rusterpassword_capi.h"
 
@@ -28,3 +32,7 @@ void freepass_free_entry_names_iterator(string_iter_t*);
 vector_t freepass_vault_get_entry_cbor(const vault_t*, const char*);
 void freepass_free_entry_cbor(vector_t);
 vector_t freepass_vault_put_entry_cbor(const vault_t*, const char*, uint8_t*, size_t);
+
+#ifdef __cplusplus
+}
+#endif

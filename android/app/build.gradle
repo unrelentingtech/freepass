@@ -1,0 +1,67 @@
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+
+android {
+    compileSdkVersion 23
+    buildToolsVersion "23.0.3"
+
+    defaultConfig {
+        applicationId "technology.unrelenting.freepass"
+        minSdkVersion 15
+        targetSdkVersion 23
+        versionCode 1
+        versionName "1.0"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    sourceSets {
+        main.java.srcDirs += 'src/main/kotlin'
+        main.jni.srcDirs = []
+        main.jniLibs.srcDirs = ['libs']
+    }
+
+    splits {
+        abi {
+            enable true
+            reset()
+            include 'x86', 'armeabi', 'armeabi-v7a', 'arm64-v8a'
+            universalApk true
+        }
+    }
+
+    applicationVariants.all { variant ->
+        variant.javaCompile.outputs.upToDateWhen { task -> false }
+        variant.javaCompile.doLast {
+            def path = configurations.compile.find { File file -> file.name.startsWith("javacpp") }.absolutePath
+            javaexec {
+                main = "org.bytedeco.javacpp.tools.Builder"
+                classpath path
+                args "-cp", variant.javaCompile.destinationDir, "-d", "src/main/jni", "-nocompile"
+            }
+            exec {
+                commandLine "${android.getNdkDirectory()}/ndk-build",
+                        "NDK_PROJECT_PATH=${file('.').absolutePath}",
+                        "NDK_APPLICATION_MK=${file('./Application.mk').absolutePath}"//, "V=1"
+            }
+        }
+    }
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    testCompile 'junit:junit:4.12'
+    compile "com.android.support:appcompat-v7:$support_version"
+    compile "com.android.support:support-v4:$support_version"
+    compile "com.android.support:design:$support_version"
+    compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    compile "org.jetbrains.anko:anko-sdk15:$anko_version" // sdk19, sdk21, sdk23 are also available
+    compile "org.jetbrains.anko:anko-support-v4:$anko_version"
+    compile "org.jetbrains.anko:anko-appcompat-v7:$anko_version"
+    compile "org.bytedeco:javacpp:1.1"
+}
