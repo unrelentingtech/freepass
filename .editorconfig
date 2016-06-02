@@ -12,5 +12,14 @@ indent_size = 4
 [*.sh]
 indent_style = tab
 
+[*.xml]
+indent_style = tab
+
 [*.swift]
+indent_style = tab
+
+[*.kt]
+indent_style = tab
+
+[*.gradle]
 indent_style = tab
