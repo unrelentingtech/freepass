@@ -15,7 +15,6 @@ class LoginActivity : AppCompatActivity() {
 
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
-		Vault.freepass_init()
 		verticalLayout {
 			padding = dip(30)
 			val name = editText {
@@ -43,13 +42,14 @@ class LoginActivity : AppCompatActivity() {
 					} else {
 						async() {
 							try {
-								Vault.open(ctx.cacheDir, "${Environment.getExternalStorageDirectory().path}/testvault", name.text.toString(), password.text.toString())
+								Vault.open("${Environment.getExternalStorageDirectory().path}/testvault", name.text.toString(), password.text.toString())
 							} catch (e: Exception) {
 								uiThread {
 									ctx.toast("Error: ${e.message}")
 									e.printStackTrace()
 								}
 							}
+							println("${Vault.entryNames()}")
 							uiThread {
 								ctx.toast(if (Vault.isOpen) "Opened" else "Failed")
 							}

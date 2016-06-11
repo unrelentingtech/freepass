@@ -39,13 +39,18 @@ android {
 	}
 
 	applicationVariants.all { variant ->
-		variant.javaCompile.outputs.upToDateWhen { task -> false }
+		variant.javaCompile.outputs.upToDateWhen { task ->
+			file('src/main/jni/jniVault.cpp').lastModified() >
+			file('src/main/kotlin/technology/unrelenting/freepass/Vault.kt').lastModified()
+		}
 		variant.javaCompile.doLast {
-			def path = configurations.compile.find { File file -> file.name.startsWith("javacpp") }.absolutePath
+			def path = configurations.compile.find { File file -> file.name.startsWith('javacpp') }.absolutePath
+			// can't just use destinationDir because support library's R.class and stuff is there, javacpp can't eat it
+			def myClassPath = "${variant.javaCompile.destinationDir}/technology/unrelenting/freepass/Vault.class"
 			javaexec {
 				main = "org.bytedeco.javacpp.tools.Builder"
 				classpath path
-				args "-cp", variant.javaCompile.destinationDir, "-d", "src/main/jni", "-nocompile"
+				args "-cp", myClassPath, "-d", "src/main/jni", "-nocompile"
 			}
 			exec {
 				commandLine "${android.getNdkDirectory()}/ndk-build",
@@ -59,12 +64,14 @@ android {
 dependencies {
 	compile fileTree(include: ['*.jar'], dir: 'libs')
 	testCompile 'junit:junit:4.12'
-	compile "com.android.support:appcompat-v7:$support_version"
 	compile "com.android.support:support-v4:$support_version"
+	compile "com.android.support:appcompat-v7:$support_version"
+	compile "com.android.support:recyclerview-v7:$support_version"
 	compile "com.android.support:design:$support_version"
 	compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 	compile "org.jetbrains.anko:anko-sdk15:$anko_version" // sdk19, sdk21, sdk23 are also available
 	compile "org.jetbrains.anko:anko-support-v4:$anko_version"
 	compile "org.jetbrains.anko:anko-appcompat-v7:$anko_version"
+	compile "org.jetbrains.anko:anko-recyclerview-v7:$anko_version"
 	compile 'org.bytedeco:javacpp:1.1'
 }

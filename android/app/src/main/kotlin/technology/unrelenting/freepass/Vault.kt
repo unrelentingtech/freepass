@@ -1,3 +1,5 @@
+package technology.unrelenting.freepass
+
 import org.bytedeco.javacpp.*
 import org.bytedeco.javacpp.annotation.*
 import java.io.File
@@ -18,7 +20,7 @@ object Vault {
 		freepass_init()
 	}
 
-	fun open(cache_dir: File, path: String, username: String, password: String) {
+	fun open(path: String, username: String, password: String) {
 		if (isOpen) {
 			throw VaultException("Already open")
 		}
@@ -50,6 +52,22 @@ object Vault {
 		isOpen = true
 	}
 
+	fun entryNames(): List<String> {
+		if (vaultObj == null) {
+			return listOf()
+		}
+		val iter = freepass_vault_get_entry_names_iterator(vaultObj!!)
+		var curr: BytePointer? = freepass_entry_names_iterator_next(iter)
+		val result = mutableListOf<String>()
+		while (curr != null && !curr.isNull) {
+			result.add(curr.string)
+			freepass_free_entry_name(curr)
+			curr = freepass_entry_names_iterator_next(iter)
+		}
+		freepass_free_entry_names_iterator(iter)
+		return result.toList()
+	}
+
 	fun close() {
 		if (masterKey != null) {
 			rusterpassword_free_master_key(masterKey!!)
@@ -66,14 +84,24 @@ object Vault {
 		isOpen = false
 	}
 
-	@JvmStatic external fun freepass_init(): Unit
+
 	@JvmStatic external fun rusterpassword_gen_master_key(username: String, password: String): Pointer
 	@JvmStatic external fun rusterpassword_free_master_key(@Cast("secstr_t*") master_key: Pointer): Unit
+
+	@JvmStatic external fun freepass_init(): Unit
+
 	@JvmStatic external fun freepass_gen_outer_key(@Cast("secstr_t*") master_key: Pointer): Pointer
 	@JvmStatic external fun freepass_gen_entries_key(@Cast("secstr_t*") master_key: Pointer): Pointer
 	@JvmStatic external fun freepass_free_outer_key(@Cast("secstr_t*") outer_key: Pointer): Unit
 	@JvmStatic external fun freepass_free_entries_key(@Cast("secstr_t*") entries_key: Pointer): Unit
+
 	@JvmStatic external fun freepass_open_vault(path: String, @Cast("secstr_t*") entries_key: Pointer, @Cast("secstr_t*") outer_key: Pointer): Pointer
 	@JvmStatic external fun freepass_new_vault(@Cast("secstr_t*") entries_key: Pointer, @Cast("secstr_t*") outer_key: Pointer): Pointer
 	@JvmStatic external fun freepass_close_vault(@Cast("vault_t*") vault: Pointer): Unit
+
+	@JvmStatic external fun freepass_vault_get_entry_names_iterator(@Cast("vault_t*") vault: Pointer): Pointer
+	@JvmStatic external @Cast("signed char*") fun freepass_entry_names_iterator_next(@Cast("string_iter_t*") iter: Pointer): BytePointer
+	@JvmStatic external fun freepass_free_entry_name(@Cast("char*") name: BytePointer): Unit
+	@JvmStatic external fun freepass_free_entry_names_iterator(@Cast("string_iter_t*") iter: Pointer): Unit
+
 }
