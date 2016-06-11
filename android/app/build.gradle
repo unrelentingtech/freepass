@@ -33,9 +33,15 @@ android {
 		abi {
 			enable true
 			reset()
-			include 'x86', 'armeabi', 'armeabi-v7a', 'arm64-v8a'
+			//include 'x86', 'armeabi', 'armeabi-v7a', 'arm64-v8a'
+			include 'arm64-v8a'
 			universalApk true
 		}
+	}
+
+	packagingOptions {
+		// Dick.
+		pickFirst 'META-INF/services/com.fasterxml.jackson.core.JsonFactory'
 	}
 
 	applicationVariants.all { variant ->
@@ -45,12 +51,10 @@ android {
 		}
 		variant.javaCompile.doLast {
 			def path = configurations.compile.find { File file -> file.name.startsWith('javacpp') }.absolutePath
-			// can't just use destinationDir because support library's R.class and stuff is there, javacpp can't eat it
-			def myClassPath = "${variant.javaCompile.destinationDir}/technology/unrelenting/freepass/Vault.class"
 			javaexec {
 				main = "org.bytedeco.javacpp.tools.Builder"
 				classpath path
-				args "-cp", myClassPath, "-d", "src/main/jni", "-nocompile"
+				args "-cp", variant.javaCompile.destinationDir, '-d', 'src/main/jni', '-nocompile', 'technology.unrelenting.freepass.Vault'
 			}
 			exec {
 				commandLine "${android.getNdkDirectory()}/ndk-build",
@@ -73,5 +77,10 @@ dependencies {
 	compile "org.jetbrains.anko:anko-support-v4:$anko_version"
 	compile "org.jetbrains.anko:anko-appcompat-v7:$anko_version"
 	compile "org.jetbrains.anko:anko-recyclerview-v7:$anko_version"
+	compile "com.fasterxml.jackson.core:jackson-core:$jackson_version"
+	compile "com.fasterxml.jackson.core:jackson-annotations:$jackson_version"
+	compile "com.fasterxml.jackson.core:jackson-databind:$jackson_version"
+	compile "com.fasterxml.jackson.module:jackson-module-kotlin:$jackson_version"
+	compile "com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:$jackson_version"
 	compile 'org.bytedeco:javacpp:1.1'
 }

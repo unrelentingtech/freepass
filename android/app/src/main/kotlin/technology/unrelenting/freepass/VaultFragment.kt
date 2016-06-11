@@ -42,13 +42,14 @@ class VaultFragment: Fragment() {
 						val textView = textView {
 							id = R.id.entry_name
 							setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f)
+							text = "..........."
 						}.lparams(width = matchParent) {
 							horizontalPadding = dip(16)
 							gravity = Gravity.CENTER_VERTICAL
 						}
 						isClickable = true
 						onClick {
-							println("Sel ${textView.text}")
+							println("Sel ${textView.text} ${Vault.getEntry(textView.text.toString())}")
 						}
 					}
 				}

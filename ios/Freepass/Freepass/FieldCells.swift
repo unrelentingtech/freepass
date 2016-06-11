@@ -127,7 +127,7 @@ class EditFieldCell: UITableViewCell {
 		field.derived_counter.asObservable().map { "Counter: \($0 ?? 1)" }
 			.bindTo(derived_counter_label.rx_text).addDisposableTo(dbag)
 
-		(stored_string_field.rx_text <->	 field.stored_data_string).addDisposableTo(dbag)
+		(stored_string_field.rx_text <-> field.stored_data_string).addDisposableTo(dbag)
 
 		field.stored_usage.asObservable().subscribeNext {
 			switch $0 ?? .Text {

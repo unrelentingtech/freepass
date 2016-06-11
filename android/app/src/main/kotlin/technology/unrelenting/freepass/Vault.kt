@@ -84,7 +84,6 @@ object Vault {
 		isOpen = false
 	}
 
-
 	@JvmStatic external fun rusterpassword_gen_master_key(username: String, password: String): Pointer
 	@JvmStatic external fun rusterpassword_free_master_key(@Cast("secstr_t*") master_key: Pointer): Unit
 
@@ -104,4 +103,16 @@ object Vault {
 	@JvmStatic external fun freepass_free_entry_name(@Cast("char*") name: BytePointer): Unit
 	@JvmStatic external fun freepass_free_entry_names_iterator(@Cast("string_iter_t*") iter: Pointer): Unit
 
+	@JvmStatic @ByVal external fun freepass_vault_get_entry_cbor(@Cast("vault_t*") vault: Pointer, name: String): vector_t
+	@JvmStatic external fun freepass_free_entry_cbor(@ByVal cbor: vector_t)
+	@JvmStatic external fun freepass_vault_put_entry_cbor(@Cast("vault_t*") vault: Pointer, name: String, @Cast("uint8_t*") data: BytePointer, @Cast("size_t") len: Int)
+
+	class vector_t : Pointer {
+		init { Loader.load() }
+		constructor(p: Pointer): super(p) {}
+		external fun allocate()
+		@Cast("uint8_t*") @MemberGetter external fun data(): BytePointer
+		@MemberGetter external fun len(): Int
+		@MemberGetter external fun cap(): Int
+	}
 }
