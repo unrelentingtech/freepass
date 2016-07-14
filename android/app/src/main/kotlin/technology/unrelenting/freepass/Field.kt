@@ -26,6 +26,7 @@ enum class StoredUsage {
 	Unreadable, Text, Password
 }
 
+// XXX: Use data classes when Kotlin 1.1 comes out
 sealed class Field {
 	class Derived(val counter: Int, val site_name: String?, val usage: DerivedUsage) : Field()
 	class Stored(val data: ByteArray, val usage: StoredUsage) : Field()

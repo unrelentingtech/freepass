@@ -3,6 +3,7 @@
 /core/Cargo.lock
 /capi/Cargo.lock
 target/
+ios/Freepass/.idea
 
 build/
 DerivedData

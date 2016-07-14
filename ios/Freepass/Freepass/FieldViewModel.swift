@@ -28,7 +28,7 @@ class FieldViewModel {
 		}.addDisposableTo(dbag)
 		stored_data_string.asObservable().subscribeNext {
 			updatingFromSelf = true
-			self.stored_data.value = $0.utf8.map { UInt8(bitPattern: Int8($0.value)) }
+			self.stored_data.value = $0.utf8.map { $0 }
 			updatingFromSelf = false
 		}.addDisposableTo(dbag)
 	}

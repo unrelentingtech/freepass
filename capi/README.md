@@ -16,20 +16,18 @@ $ android
 Get the Android NDK and [build a standalone toolchain](https://developer.android.com/ndk/guides/standalone_toolchain.html):
 
 ```bash
-$ sudo mkdir /opt/ndk /opt/ndk64 /opt/ndkx86
-$ sudo chown $(whoami) /opt/ndk /opt/ndk64 /opt/ndkx86
+$ sudo chown $(whoami) /opt
 $ brew install android-ndk
 $ cd $(brew --prefix android-ndk)
-$ build/tools/make-standalone-toolchain.sh --platform=android-16 --toolchain=arm-linux-androideabi-clang3.6 --stl=libc++ --install-dir=/opt/ndk
-$ build/tools/make-standalone-toolchain.sh --platform=android-21 --toolchain=aarch64-linux-android-clang3.6 --stl=libc++ --install-dir=/opt/ndk64
-$ build/tools/make-standalone-toolchain.sh --platform=android-16 --toolchain=x86-clang3.6 --stl=libc++ --install-dir=/opt/ndkx86
+$ build/tools/make_standalone_toolchain.py --stl libc++ --api 24 force --arch arm   --install-dir /opt/ndk
+$ build/tools/make_standalone_toolchain.py --stl libc++ --api 24 force --arch arm64 --install-dir /opt/ndk64
+$ build/tools/make_standalone_toolchain.py --stl libc++ --api 24 force --arch x86   --install-dir /opt/ndkx86
 ```
 
 Get the Rust source and build it:
 
 ```bash
-$ sudo mkdir /opt/rust-arm
-$ sudo chown $(whoami) /opt/rust-arm
+$ mkdir /opt/rust-arm
 $ git clone https://github.com/rust-lang/rust.git
 $ cd rust
 $ ./configure --prefix=/opt/rust-arm --target=arm-linux-androideabi,aarch64-linux-android,i686-linux-android,armv7-apple-ios,armv7s-apple-ios,aarch64-apple-ios,i386-apple-ios,x86_64-apple-ios,x86_64-apple-darwin \
@@ -38,6 +36,8 @@ $ ./configure --prefix=/opt/rust-arm --target=arm-linux-androideabi,aarch64-linu
 $ make -j4
 $ make install
 ```
+
+(OR use [rustup](https://github.com/rust-lang-nursery/rustup.rs) `target add` for all these targets)
 
 Get submodules of this repo, make some fixes to libsodium build scripts and build it:
 
@@ -56,6 +56,7 @@ Finally, build this library:
 
 ```bash
 $ export RUST_PREFIX=/opt/rust-arm # ... customize some variables if necessary (see the scripts)
+# (if using `rustup`, something like `export RUST_PREFIX=~/.multirust/toolchains/stable-x86_64-apple-darwin`)
 $ ./build-android.sh
 $ ./build-ios.sh
 ```
