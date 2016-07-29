@@ -54,6 +54,7 @@ pub enum Ed25519Usage {
 pub enum StoredUsage {
     Text,
     Password,
+    Attachments,
 }
 
 #[derive(PartialEq, Clone, Copy, Debug, RustcDecodable, RustcEncodable)]

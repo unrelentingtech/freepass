@@ -4,6 +4,7 @@ use std::fs::OpenOptions;
 use std::collections::btree_map::BTreeMap;
 use rustc_serialize::base64::{ToBase64, STANDARD};
 use rustc_serialize::hex::ToHex;
+use fuse;
 use interactor::*;
 use secstr::SecStr;
 use freepass_core::output::*;
@@ -109,6 +110,15 @@ fn interact_entry(open_file: &mut OpenFile, entry_name: &str, entry: Entry, meta
                         })
                     },
                     _ => panic!("Unsupported key usage"),
+                },
+                Output::Attachments(attachments) => {
+                    interaction!({
+                        "Go back" => {},
+                        "Mount attachments folder" => {
+                            println!("Mounting attachments folder '{}'. Unmount to continue.", entry_name);
+                            fuse::mount(attachments, &"/home/greg/fp", &[]);
+                        }
+                    })
                 }
             }
         });
@@ -223,7 +233,8 @@ fn interact_field_edit(vault: &mut DecryptedVault, mut entry: Entry, field_name:
                 if let Field::Stored { data, .. } = f {
                     let new_usage = interaction!({
                         "Password"            => { StoredUsage::Password },
-                        "Text"                => { StoredUsage::Text }
+                        "Text"                => { StoredUsage::Text },
+                        "Attachments"         => { StoredUsage::Attachments }
                     });
                     Field::Stored { data: data, usage: new_usage }
                 } else { unreachable!(); }

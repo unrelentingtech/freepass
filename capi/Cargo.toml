@@ -13,7 +13,7 @@ repository = "https://github.com/valpackett/freepass"
 name = "freepass_capi"
 
 [dependencies]
-freepass-core = { version = "0", path = "../core" }
+freepass-core = { version = "0", path = "../core", default-features = false, features = [] }
 secstr = { version = "0.2.1", features = ["cbor-serialize", "libsodium-sys"] }
 cbor = "0"
 sodiumoxide = "0"

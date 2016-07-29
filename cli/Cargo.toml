@@ -23,3 +23,4 @@ rustc-serialize = "0"
 cbor = "0"
 ansi_term = "0"
 clap = "2"
+fuse = { git = "https://github.com/zargony/rust-fuse.git" } # XXX: BSD unmount fix haven't been released yet

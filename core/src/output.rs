@@ -1,7 +1,9 @@
 use data::*;
+use attachments::*;
 use util::*;
 use result::{Error, Result};
 use secstr::SecStr;
+use cbor::Decoder;
 use rusterpassword::*;
 use rustc_serialize::base64::{ToBase64, STANDARD};
 use sodiumoxide::crypto::sign::ed25519;
@@ -15,6 +17,7 @@ pub enum Output {
     PrivateText(SecStr),
     OpenText(String),
     PrivateBinary(SecStr),
+    Attachments(Attachments),
     Ed25519Keypair(Ed25519Usage, ed25519::PublicKey, ed25519::SecretKey),
 }
 
@@ -51,7 +54,19 @@ pub fn process_output(entry_name: &str, master_key: &SecStr, field: &Field) -> R
                 StoredUsage::Password =>
                     Ok(Output::PrivateText(SecStr::new(data.unsecure().to_vec()))),
                 StoredUsage::Text =>
-                    Ok(Output::OpenText(try!(String::from_utf8(data.unsecure().to_vec()))))
+                    Ok(Output::OpenText(try!(String::from_utf8(data.unsecure().to_vec())))),
+                StoredUsage::Attachments => {
+                    if data.unsecure().len() < 1 {
+                        Ok(Output::Attachments(Attachments::new()))
+                    } else {
+                        let mut dec = Decoder::from_bytes(data.unsecure());
+                        match dec.decode().next() {
+                            Some(Ok(att)) => Ok(Output::Attachments(att)),
+                            Some(Err(err)) => Err(Error::from(err)),
+                            None => Err(Error::InappropriateFormat),
+                        }
+                    }
+                }
             }
     }
 }

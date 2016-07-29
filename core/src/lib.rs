@@ -13,10 +13,13 @@ extern crate rand;
 extern crate chrono;
 #[cfg(feature = "keepass")] extern crate keepass;
 
+#[cfg(feature = "filesystem")] extern crate time;
+#[cfg(feature = "filesystem")] extern crate fuse;
 
 pub mod util;
 pub mod result;
 pub mod data;
+pub mod attachments;
 pub mod vault;
 pub mod encvault;
 pub mod output;
