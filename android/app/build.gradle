@@ -1,9 +1,10 @@
+import org.apache.tools.ant.taskdefs.condition.Os
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 
 android {
 	compileSdkVersion 24
-	buildToolsVersion "24.0.0"
+	buildToolsVersion "24.0.2"
 
 	defaultConfig {
 		applicationId "technology.unrelenting.freepass"
@@ -33,8 +34,7 @@ android {
 		abi {
 			enable true
 			reset()
-			//include 'x86', 'armeabi', 'armeabi-v7a', 'arm64-v8a'
-			include 'arm64-v8a'
+			include 'x86', 'arm64-v8a', 'armeabi', 'armeabi-v7a'
 			universalApk true
 		}
 	}
@@ -42,22 +42,23 @@ android {
 	packagingOptions {
 		// Dick.
 		pickFirst 'META-INF/services/com.fasterxml.jackson.core.JsonFactory'
+		exclude 'META-INF/LICENSE'
 	}
 
 	applicationVariants.all { variant ->
-		variant.javaCompile.outputs.upToDateWhen { task ->
+		variant.javaCompiler.outputs.upToDateWhen { task ->
 			file('src/main/jni/jniVault.cpp').lastModified() >
 			file('src/main/kotlin/technology/unrelenting/freepass/Vault.kt').lastModified()
 		}
-		variant.javaCompile.doLast {
+		variant.javaCompiler.doLast {
 			def path = configurations.compile.find { File file -> file.name.startsWith('javacpp') }.absolutePath
 			javaexec {
 				main = "org.bytedeco.javacpp.tools.Builder"
 				classpath path
-				args "-cp", variant.javaCompile.destinationDir, '-d', 'src/main/jni', '-nocompile', 'technology.unrelenting.freepass.Vault'
+				args "-cp", variant.javaCompiler.destinationDir, '-d', 'src/main/jni', '-nocompile', 'technology.unrelenting.freepass.Vault'
 			}
 			exec {
-				commandLine "${android.getNdkDirectory()}/ndk-build",
+				commandLine "${android.getNdkDirectory()}/ndk-build${Os.isFamily(Os.FAMILY_WINDOWS) ? '.cmd' : ''}",
 						"NDK_PROJECT_PATH=${file('.').absolutePath}",
 						"NDK_APPLICATION_MK=${file('./Application.mk').absolutePath}"//, "V=1"
 			}

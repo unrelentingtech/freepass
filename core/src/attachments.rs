@@ -1,9 +1,9 @@
 use cbor::{CborBytes};
 use std::collections::btree_map::BTreeMap;
+use time::{now, Timespec};
+use std::path::Path;
 #[cfg(feature = "filesystem")] use std::io::{Cursor, Write};
-#[cfg(feature = "filesystem")] use std::path::Path;
 #[cfg(feature = "filesystem")] use libc::{ENOENT, EIO};
-#[cfg(feature = "filesystem")] use time::{now, Timespec};
 #[cfg(feature = "filesystem")] use fuse::*;
 
 

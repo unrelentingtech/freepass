@@ -14,7 +14,7 @@ name = "freepass_core"
 
 [features]
 default = ["keepass", "filesystem"]
-filesystem = ["fuse", "time"]
+filesystem = ["fuse"]
 
 [dependencies]
 chrono = { version = "0", features = ["rustc-serialize"] }
@@ -24,7 +24,7 @@ sodiumoxide = "0"
 rusterpassword = "0"
 keepass = { version = "0", optional = true }
 fuse = { git = "https://github.com/zargony/rust-fuse.git", optional = true } # XXX: BSD unmount fix haven't been released yet
-time = { version = "0.1", optional = true }
+time = { version = "0.1" }
 libc = "0.2"
 rand = "0"
 cbor = "0"
