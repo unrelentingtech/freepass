@@ -3,13 +3,13 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 
 android {
-	compileSdkVersion 24
-	buildToolsVersion "24.0.2"
+	compileSdkVersion 25
+	buildToolsVersion "25"
 
 	defaultConfig {
 		applicationId "technology.unrelenting.freepass"
 		minSdkVersion 16
-		targetSdkVersion 24
+		targetSdkVersion 25
 		versionCode 1
 		versionName "1.0"
 	}
@@ -55,7 +55,11 @@ android {
 			javaexec {
 				main = "org.bytedeco.javacpp.tools.Builder"
 				classpath path
-				args "-cp", variant.javaCompiler.destinationDir, '-d', 'src/main/jni', '-nocompile', 'technology.unrelenting.freepass.Vault'
+				args '-cp', variant.javaCompiler.destinationDir,
+				     '-cp', variant.javaCompiler.destinationDir.toString()
+				                .replace('intermediates/classes', 'tmp/kotlin-classes')
+				                .replace('intermediates\\classes', 'tmp\\kotlin-classes'),
+				     '-d', 'src/main/jni', '-nocompile', 'technology.unrelenting.freepass.Vault'
 			}
 			exec {
 				commandLine "${android.getNdkDirectory()}/ndk-build${Os.isFamily(Os.FAMILY_WINDOWS) ? '.cmd' : ''}",

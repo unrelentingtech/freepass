@@ -31,26 +31,5 @@ cbor = "0"
 rustc-serialize = "0"
 byteorder = "0"
 
-# WTF: This is terrible https://github.com/rust-lang/cargo/issues/1007
-[target.i686-unknown-linux-gnu.dependencies]
-unix_socket = "0"
-[target.x86_64-unknown-linux-gnu.dependencies]
-unix_socket = "0"
-[target.x86_64-unknown-linux-musl.dependencies]
-unix_socket = "0"
-[target.arm-unknown-linux-gnueabihf.dependencies]
-unix_socket = "0"
-[target.aarch64-unknown-linux-gnu.dependencies]
-unix_socket = "0"
-[target.i686-unknown-freebsd.dependencies]
-unix_socket = "0"
-[target.x86_64-unknown-freebsd.dependencies]
-unix_socket = "0"
-[target.x86_64-unknown-bitrig.dependencies]
-unix_socket = "0"
-[target.x86_64-unknown-openbsd.dependencies]
-unix_socket = "0"
-[target.x86_64-unknown-dragonfly.dependencies]
-unix_socket = "0"
-[target.x86_64-apple-darwin.dependencies]
+[target.'cfg(all(unix, not(target_os = "android"), not(target_os = "ios")))'.dependencies]
 unix_socket = "0"

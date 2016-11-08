@@ -11,6 +11,7 @@ repository = "https://github.com/valpackett/freepass"
 
 [lib]
 name = "freepass_capi"
+crate-type = [ "dylib", "staticlib" ]
 
 [dependencies]
 freepass-core = { version = "0", path = "../core", default-features = false, features = [] }

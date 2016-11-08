@@ -3,23 +3,22 @@
 : ${NDK_STANDALONE:="/opt/ndk"}
 : ${NDK_STANDALONE_ARM64:="/opt/ndk64"}
 : ${NDK_STANDALONE_X86:="/opt/ndkx86"}
-: ${NDK_HOME:="`brew --prefix android-ndk`"}
-: ${CARGO:="`which cargo`"}
 : ${BUILD_MODE:="release"}
 : ${RUST_PREFIX:="/opt/rust-arm"}
 : ${SODIUM_ROOT:="../libsodium"}
 
 export PATH="$RUST_PREFIX/bin:$PATH"
 export DYLD_LIBRARY_PATH="$RUST_PREFIX/lib:$DYLD_LIBRARY_PATH:$LD_LIBRARY_PATH"
-# export PKG_CONFIG_ALLOW_CROSS=1
+export PKG_CONFIG_ALLOW_CROSS=1
 
-CARGO_OPTS="-v"
+: ${CARGO:="`which cargo`"}
+
+CARGO_OPTS="-v -j 4"
 if [[ "$BUILD_MODE" == "release" ]]; then
 	CARGO_OPTS="$CARGO_OPTS --$BUILD_MODE"
 fi
 RUSTC_OPTS="--crate-type=dylib"
 
-echo "Android NDK: $NDK_HOME"
 echo "Android NDK standalone: $NDK_STANDALONE"
 echo "Rust: $RUST_PREFIX"
 echo "Cargo: $CARGO"

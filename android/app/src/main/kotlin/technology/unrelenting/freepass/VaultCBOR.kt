@@ -18,6 +18,7 @@ fun Vault.getEntry(name: String): Entry? {
 		return null
 	}
 	return freepass_vault_get_entry_cbor(vaultObj!!, name).let {
+		if (it.len() < 1) return null
 		val arr = ByteArray(it.len())
 		it.data().get(arr, 0, it.len())
 		val dataval = objMapper.readTree(arr).get(0)

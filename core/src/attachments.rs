@@ -1,7 +1,7 @@
 use cbor::{CborBytes};
 use std::collections::btree_map::BTreeMap;
 use time::{now, Timespec};
-use std::path::Path;
+use std::ffi::OsStr;
 #[cfg(feature = "filesystem")] use std::io::{Cursor, Write};
 #[cfg(feature = "filesystem")] use libc::{ENOENT, EIO};
 #[cfg(feature = "filesystem")] use fuse::*;
@@ -95,7 +95,7 @@ impl Attachments {
         }
     }
 
-    fn create(&mut self, parent: u64, name: &Path, mode: u32, kind: AttachmentType, _flags: u32) -> Option<(u64, &mut Attachment)> {
+    fn create(&mut self, parent: u64, name: &OsStr, mode: u32, kind: AttachmentType, _flags: u32) -> Option<(u64, &mut Attachment)> {
         if let Some(mut n) = self.nodes.remove(&parent) {
             if n.kind != AttachmentType::Directory {
                 return None
@@ -118,7 +118,7 @@ impl Attachments {
 
 #[cfg(feature = "filesystem")]
 impl Filesystem for Attachments {
-     fn lookup(&mut self, _req: &Request, parent: u64, name: &Path, reply: ReplyEntry) {
+     fn lookup(&mut self, _req: &Request, parent: u64, name: &OsStr, reply: ReplyEntry) {
          if let Some(n) = self.nodes.get(&parent) {
              if n.kind != AttachmentType::Directory {
                  reply.error(ENOENT);
@@ -223,7 +223,7 @@ impl Filesystem for Attachments {
          reply.ok();
      }
 
-     fn mknod(&mut self, _req: &Request, parent: u64, name: &Path, mode: u32, _rdev: u32, reply: ReplyEntry) {
+     fn mknod(&mut self, _req: &Request, parent: u64, name: &OsStr, mode: u32, _rdev: u32, reply: ReplyEntry) {
          // TODO: check mode for FIFO, devices etc.
          if let Some((cid, c)) = self.create(parent, name, mode, AttachmentType::File, 0) {
              reply.entry(&TTL, &c.to_attr(cid), 0);
@@ -232,7 +232,7 @@ impl Filesystem for Attachments {
          }
      }
 
-     fn mkdir(&mut self, _req: &Request, parent: u64, name: &Path, mode: u32, reply: ReplyEntry) {
+     fn mkdir(&mut self, _req: &Request, parent: u64, name: &OsStr, mode: u32, reply: ReplyEntry) {
         if let Some((cid, c)) = self.create(parent, name, mode, AttachmentType::Directory, 0) {
             reply.entry(&TTL, &c.to_attr(cid), 0);
         } else {
@@ -240,7 +240,7 @@ impl Filesystem for Attachments {
         }
      }
 
-     fn create(&mut self, _req: &Request, parent: u64, name: &Path, mode: u32, flags: u32, reply: ReplyCreate) {
+     fn create(&mut self, _req: &Request, parent: u64, name: &OsStr, mode: u32, flags: u32, reply: ReplyCreate) {
          if let Some((cid, c)) = self.create(parent, name, mode, AttachmentType::File, flags) {
              reply.created(&TTL, &c.to_attr(cid), 0, 0, flags);
          } else {

@@ -65,7 +65,7 @@ class LoginActivity : AppCompatActivity() {
 	override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
 		super.onRequestPermissionsResult(requestCode, permissions, grantResults)
 		for ((perm, res) in permissions.zip(grantResults.toList())) {
-			if (perm.equals(Manifest.permission.READ_EXTERNAL_STORAGE)) {
+			if (perm == Manifest.permission.READ_EXTERNAL_STORAGE) {
 				storageReadAllowed = res == PackageManager.PERMISSION_GRANTED
 			}
 		}

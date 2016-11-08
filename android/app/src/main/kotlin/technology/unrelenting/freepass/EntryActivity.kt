@@ -1,21 +1,14 @@
 package technology.unrelenting.freepass
 
 import android.os.Bundle
-import android.os.Environment
 import android.support.v7.app.AppCompatActivity
 import org.jetbrains.anko.frameLayout
 
-class VaultActivity: AppCompatActivity() {
-
+class EntryActivity: AppCompatActivity() {
 	val rootId = 1001
 
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
-
-		// XXX TESTING
-		try {
-			Vault.open("${Environment.getExternalStorageDirectory().path}/testvault", "Test", "test")
-		} catch (e: VaultException) {}
 
 		if (!Vault.isOpen) {
 			finish()
@@ -25,7 +18,7 @@ class VaultActivity: AppCompatActivity() {
 
 		if (savedInstanceState == null) {
 			supportFragmentManager.beginTransaction()
-					.add(rootId, VaultFragment())
+					.add(rootId, EntryFragment().let { it.arguments = intent.extras; it })
 					.commit()
 		}
 	}

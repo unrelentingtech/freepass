@@ -17,7 +17,7 @@ object Vault {
 
 	init {
 		//Loader.load() // javacpp's loader tries to compute the full path inside the jar for some reason
-		                // and ends up with .../arm/... instead of .../armeabi-v7a/... or .../arm64-v7a/...
+		                // and ends up with /arm/ instead of /armeabi-v7a/ or /arm64-v7a/
 		System.loadLibrary("jniVault")
 		freepass_init()
 	}
