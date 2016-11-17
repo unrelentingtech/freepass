@@ -104,5 +104,10 @@ dependencies {
 	compile "com.fasterxml.jackson.core:jackson-databind:$jackson_version"
 	compile "com.fasterxml.jackson.module:jackson-module-kotlin:$jackson_version"
 	compile "com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:$jackson_version"
+	compile 'io.reactivex:rxjava:1.2.2'
+	compile 'io.reactivex:rxkotlin:0.60.0'
+	compile 'io.reactivex:rxandroid:1.2.1'
+	compile "com.jakewharton.rxbinding:rxbinding:$rxbinding_version"
+	compile "com.jakewharton.rxbinding:rxbinding-appcompat-v7:$rxbinding_version"
 	compile 'org.bytedeco:javacpp:1.1'
 }
