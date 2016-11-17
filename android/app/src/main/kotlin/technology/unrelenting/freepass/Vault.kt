@@ -109,9 +109,8 @@ object Vault {
 	@JvmStatic external fun freepass_free_entry_cbor(@ByVal cbor: vector_t)
 	@JvmStatic external fun freepass_vault_put_entry_cbor(@Cast("vault_t*") vault: Pointer, name: String, @Cast("uint8_t*") data: BytePointer, @Cast("size_t") len: Int)
 
-	class vector_t : Pointer {
+	class vector_t(p: Pointer) : Pointer(p) {
 		init { Loader.load() }
-		constructor(p: Pointer): super(p) {}
 		external fun allocate()
 		@Cast("uint8_t*") @MemberGetter external fun data(): BytePointer
 		@MemberGetter external fun len(): Int

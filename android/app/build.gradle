@@ -1,17 +1,37 @@
 import org.apache.tools.ant.taskdefs.condition.Os
+
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 
 android {
 	compileSdkVersion 25
-	buildToolsVersion "25"
+	buildToolsVersion '25'
 
 	defaultConfig {
-		applicationId "technology.unrelenting.freepass"
+		applicationId 'technology.unrelenting.freepass'
 		minSdkVersion 16
 		targetSdkVersion 25
 		versionCode 1
-		versionName "1.0"
+		versionName '1.0'
+		ndk {
+			abiFilters 'x86'//, 'arm64-v8a', 'armeabi-v7a'//, 'armeabi'
+		}
+		externalNativeBuild {
+			cmake {
+				arguments '-DANDROID_PLATFORM=android-24', '-DANDROID_STL=stlport_shared', '-DANDROID_CPP_FEATURES=exceptions'
+			}
+        }
+	}
+
+	externalNativeBuild {
+		cmake {
+			path 'CMakeLists.txt'
+		}
+	}
+
+	dexOptions {
+		preDexLibraries true
+		dexInProcess = true
 	}
 
 	buildTypes {
@@ -27,14 +47,13 @@ android {
 	sourceSets {
 		main.java.srcDirs += 'src/main/kotlin'
 		main.jni.srcDirs = []
-		main.jniLibs.srcDirs = ['libs']
 	}
 
 	splits {
 		abi {
 			enable true
 			reset()
-			include 'x86', 'arm64-v8a', 'armeabi', 'armeabi-v7a'
+			include 'x86'//, 'arm64-v8a', 'armeabi-v7a'//, 'armeabi'
 			universalApk true
 		}
 	}
@@ -44,30 +63,28 @@ android {
 		pickFirst 'META-INF/services/com.fasterxml.jackson.core.JsonFactory'
 		exclude 'META-INF/LICENSE'
 	}
+}
 
-	applicationVariants.all { variant ->
-		variant.javaCompiler.outputs.upToDateWhen { task ->
-			file('src/main/jni/jniVault.cpp').lastModified() >
-			file('src/main/kotlin/technology/unrelenting/freepass/Vault.kt').lastModified()
-		}
-		variant.javaCompiler.doLast {
-			def path = configurations.compile.find { File file -> file.name.startsWith('javacpp') }.absolutePath
-			javaexec {
-				main = "org.bytedeco.javacpp.tools.Builder"
-				classpath path
-				args '-cp', variant.javaCompiler.destinationDir,
-				     '-cp', variant.javaCompiler.destinationDir.toString()
-				                .replace('intermediates/classes', 'tmp/kotlin-classes')
-				                .replace('intermediates\\classes', 'tmp\\kotlin-classes'),
-				     '-d', 'src/main/jni', '-nocompile', 'technology.unrelenting.freepass.Vault'
-			}
-			exec {
-				commandLine "${android.getNdkDirectory()}/ndk-build${Os.isFamily(Os.FAMILY_WINDOWS) ? '.cmd' : ''}",
-						"NDK_PROJECT_PATH=${file('.').absolutePath}",
-						"NDK_APPLICATION_MK=${file('./Application.mk').absolutePath}"//, "V=1"
-			}
-		}
-	}
+android.applicationVariants.all { variant ->
+	// Don't move the task to the top level, it needs the `variant`!
+    def javacppTask = task("build${variant.name.capitalize()}Javacpp") {
+        inputs.file('src/main/kotlin/technology/unrelenting/freepass/Vault.kt')
+        outputs.file('src/main/jni/jniVault.cpp')
+        doLast {
+            def path = configurations.compile.find { File file -> file.name.startsWith('javacpp') }.absolutePath
+            javaexec {
+                main = "org.bytedeco.javacpp.tools.Builder"
+                classpath path
+                args '-cp', variant.javaCompiler.destinationDir,
+                        '-cp', variant.javaCompiler.destinationDir.toString()
+                               .replace('intermediates/classes', 'tmp/kotlin-classes')
+                               .replace('intermediates\\classes', 'tmp\\kotlin-classes'),
+                        '-d', 'src/main/jni', '-nocompile', 'technology.unrelenting.freepass.Vault'
+            }
+        }
+    }
+    javacppTask.dependsOn variant.javaCompiler
+    variant.externalNativeBuildTasks[0].dependsOn javacppTask
 }
 
 dependencies {

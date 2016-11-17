@@ -20,6 +20,10 @@ allprojects {
 		jcenter()
 		mavenCentral()
 	}
+	// Allow override for e.g. storing the project on a network drive, but building to an SSD
+	Properties properties = new Properties()
+	properties.load(project.rootProject.file('local.properties').newDataInputStream())
+	buildDir = properties.getProperty('build-dir', 'build')
 }
 
 task clean(type: Delete) {

@@ -4,3 +4,5 @@
 /.idea
 /build
 /captures
+/app/.externalNativeBuild
+/app/tmp
