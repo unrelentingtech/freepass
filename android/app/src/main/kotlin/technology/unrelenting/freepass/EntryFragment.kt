@@ -2,13 +2,14 @@ package technology.unrelenting.freepass
 
 import android.os.Bundle
 import android.support.v4.app.Fragment
+import android.text.InputType
 import android.text.SpannableStringBuilder
 import android.util.Log
 import android.view.*
 import android.widget.BaseAdapter
+import android.widget.RadioButton
 import android.widget.RadioGroup
-import com.jakewharton.rxbinding.widget.RxRadioGroup
-import com.jakewharton.rxbinding.widget.RxTextView
+import com.jakewharton.rxbinding.widget.*
 
 import org.jetbrains.anko.*
 import org.jetbrains.anko.support.v4.UI
@@ -62,30 +63,37 @@ class EntryFragment: Fragment() {
 		var list = fragment.fieldModels
 
 		override fun getView(i: Int, v: View?, parent: ViewGroup?): View? {
-			if (parent == null) { return null }
+			if (parent == null) return null
+			if (v != null) return v
 			val model = getItem(i)
 			return with(parent.context) {
 				relativeLayout {
-					val nameEditId = 1
-					val typeRadioId = 2
-					editText {
-						id = nameEditId
+					val nameEdit = editText {
+						id = 1
 						text = SpannableStringBuilder(model.field_name.value)
-						RxTextView.textChanges(this).subscribe { model.field_name.onNext(it.toString()) }
+						textChanges().subscribe { model.field_name.onNext(it.toString()) }
 					}.lparams { width = matchParent }
 					val typeRadio = radioGroup {
-						id = typeRadioId
+						id = 2
 						orientation = RadioGroup.HORIZONTAL
-						val der = radioButton { text = "Derived" }
-						val stor = radioButton { text = "Stored" }
-						RxRadioGroup.checked(this).call(
-                            if (model.field_type.value == FieldViewModel.FieldType.Derived) der.id else stor.id
-						)
-						RxRadioGroup.checkedChanges(this).subscribe {
+						val der = radioButton { id = 324634; text = "Derived" }
+						val stor = radioButton { id = 895972; text = "Stored" }
+						Log.w("WTF", "WAT")
+						check(if (model.field_type.value == FieldViewModel.FieldType.Derived) der.id else stor.id)
+						checkedChanges().subscribe() {
 							Log.w("Check", it.toString())
 							model.field_type.onNext(if (it == der.id) FieldViewModel.FieldType.Derived else FieldViewModel.FieldType.Stored)
 						}
-					}.lparams { width = matchParent; below(nameEditId) }
+					}.lparams { width = matchParent; below(nameEdit) }
+					val counterLabel = textView {
+						id = 5
+						text = "Counter"
+					}.lparams { below(typeRadio) }
+					val counterEdit = editText {
+						id = 666
+						inputType = InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL
+						filters = arrayOf(NumberLimitsInputFilter(0, 4294967295))
+					}.lparams { below(typeRadio); rightOf(counterLabel) }
 				}
 			}
 		}
