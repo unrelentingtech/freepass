@@ -7,7 +7,7 @@ use result::*;
 use data::*;
 use util;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Default, Clone)]
 pub struct ImportVault {
     entries: BTreeMap<String, (Entry, EntryMetadata)>,
 }
@@ -26,23 +26,17 @@ impl Vault for ImportVault {
     }
 }
 
-impl ImportVault {
-    pub fn new() -> ImportVault {
-        ImportVault { entries: BTreeMap::new() }
-    }
-}
-
 // Wow, keepass's format is even less structured than ours (even the title is just a "Title" field)
 // Also the keepass library uses rust-crypto, which means the import will be very slow in a debug build
 #[cfg(feature = "keepass")]
 pub fn kdbx<T: io::Read>(source: &mut T, password: &SecStr) -> Result<ImportVault> {
     let db = try!(Database::open(source, try!(str::from_utf8(password.unsecure()))));
-    let mut vault = ImportVault::new();
+    let mut vault = ImportVault::default();
     for node in &db.root {
         match node {
             Node::Group(_) => { },
             Node::Entry(kentry) => {
-                let mut entry = Entry::new();
+                let mut entry = Entry::default();
                 for (k, v) in kentry.fields.iter().filter(|x| x.0 != "Title") {
                     let data = match *v {
                         Value::Unprotected(ref s) => SecStr::from(s.to_owned()),
@@ -50,7 +44,7 @@ pub fn kdbx<T: io::Read>(source: &mut T, password: &SecStr) -> Result<ImportVaul
                     };
                     entry.fields.insert(k.to_owned(), Field::Stored { data: data, usage: util::guess_usage_stored(k) });
                 }
-                vault.entries.insert(kentry.get_title().unwrap_or("??? Untitled imported entry").to_owned(), (entry, EntryMetadata::new()));
+                vault.entries.insert(kentry.get_title().unwrap_or("??? Untitled imported entry").to_owned(), (entry, EntryMetadata::default()));
             }
         }
     }

@@ -5,8 +5,10 @@ extern crate colorhash256;
 extern crate interactor;
 extern crate rusterpassword;
 extern crate ansi_term;
-extern crate rustc_serialize;
-extern crate cbor;
+extern crate hex;
+extern crate base64;
+extern crate serde;
+extern crate serde_cbor;
 extern crate freepass_core;
 
 mod util;

@@ -1,9 +1,9 @@
 use std::{env,io,fs};
 use std::io::prelude::*;
 use std::process::{Command, Stdio};
-use cbor;
-use rustc_serialize;
-use rustc_serialize::hex::ToHex;
+use serde_cbor;
+use serde::Serialize;
+use hex::ToHex;
 use colorhash256;
 use interactor;
 use secstr::SecStr;
@@ -100,8 +100,7 @@ pub fn read_yesno(prompt: &str) -> bool {
     }
 }
 
-pub fn debug_output<T: rustc_serialize::Encodable>(data: &T, description: &str) {
-    let mut e = cbor::Encoder::from_memory();
-    e.encode(&[data]).unwrap();
-    println!("--- CBOR debug output (http://cbor.me to decode) of {} ---\n{}\n", description, e.into_bytes().to_hex());
+pub fn debug_output<T: Serialize>(data: &T, description: &str) {
+    println!("--- CBOR debug output (http://cbor.me to decode) of {} ---\n{}\n", description,
+        serde_cbor::to_vec(data).unwrap().to_hex());
 }

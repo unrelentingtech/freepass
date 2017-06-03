@@ -1,9 +1,15 @@
 extern crate libc;
 
-extern crate rustc_serialize;
-extern crate cbor;
+#[macro_use] extern crate serde_derive;
+extern crate serde_bytes;
+extern crate serde_cbor;
+extern crate serde;
+extern crate base64;
 extern crate byteorder;
 #[cfg(all(unix, not(target_os = "android"), not(target_os = "ios")))] extern crate unix_socket;
+// deprecated: reading old files
+extern crate rustc_serialize;
+extern crate cbor;
 
 extern crate secstr;
 extern crate rusterpassword;

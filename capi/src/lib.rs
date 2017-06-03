@@ -1,5 +1,7 @@
+#![allow(no_mangle_generic_items)]
+
 extern crate libc;
-extern crate cbor;
+extern crate serde_cbor;
 extern crate secstr;
 extern crate rusterpassword_capi;
 extern crate freepass_core;
@@ -8,7 +10,6 @@ pub use rusterpassword_capi::*;
 
 use std::{ptr, fs, mem, slice};
 use std::ffi::*;
-use cbor::{Encoder, Decoder};
 use libc::*;
 use secstr::*;
 use freepass_core::data::*;
@@ -119,16 +120,13 @@ pub unsafe extern fn freepass_free_entry_names_iterator<'a>(iter_c: *mut Box<Ite
 #[no_mangle]
 pub extern fn freepass_vault_get_entry_cbor(vault_c: *const DecryptedVault, name_c: *const c_char) -> CVector {
     if let Ok((mut entry_cbor, metadata)) = from_c![obj vault_c].get_entry_cbor(from_c![cstr name_c]) {
-	    // Optimization: avoid decoding entry just to re-encode it
-	    entry_cbor.insert(0, 0x82); // Array of length 2
-	    {
-	        let mut e = Encoder::from_writer(&mut entry_cbor);
-	        e.encode(&[metadata]).unwrap();
-	    }
-	    to_c![vec entry_cbor]
+        // Optimization: avoid decoding entry just to re-encode it
+        entry_cbor.insert(0, 0x82); // Array of length 2
+        serde_cbor::ser::to_writer(&mut entry_cbor, &[metadata]).unwrap();
+        to_c![vec entry_cbor]
     } else {
-	let empty = Vec::new();
-	to_c![vec empty]
+        let empty = Vec::new();
+        to_c![vec empty]
     }
 }
 
@@ -139,6 +137,6 @@ pub unsafe extern fn freepass_free_entry_cbor(cbor_c: CVector) {
 
 #[no_mangle]
 pub extern fn freepass_vault_put_entry_cbor(vault_c: *mut DecryptedVault, name_c: *const c_char, cbor_c: *const u8, cbor_len_c: size_t) {
-    let (entry, mut metadata) = Decoder::from_bytes(from_c![slice cbor_c, cbor_len_c]).decode::<(Entry, EntryMetadata)>().next().unwrap().unwrap();
+    let (entry, mut metadata) = serde_cbor::from_slice::<Vec<(Entry, EntryMetadata)>>(from_c![slice cbor_c, cbor_len_c]).unwrap().pop().unwrap();
     from_c![mut obj vault_c].put_entry(from_c![cstr name_c], &entry, &mut metadata).unwrap()
 }

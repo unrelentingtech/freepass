@@ -1,7 +1,7 @@
-use cbor::{CborBytes};
 use std::collections::btree_map::BTreeMap;
 use time::{now, Timespec};
 use std::ffi::OsStr;
+use serde_bytes;
 #[cfg(feature = "filesystem")] use std::io::{Cursor, Write};
 #[cfg(feature = "filesystem")] use libc::{ENOENT, EIO};
 #[cfg(feature = "filesystem")] use fuse::*;
@@ -10,7 +10,7 @@ use std::ffi::OsStr;
 #[cfg(feature = "filesystem")]
 const TTL: Timespec = Timespec { sec: 1, nsec: 0 }; // 1 second
 
-#[derive(PartialEq, Clone, Debug, RustcDecodable, RustcEncodable)]
+#[derive(PartialEq, Clone, Debug, Serialize, Deserialize)]
 pub enum AttachmentType {
     File,
     Symlink,
@@ -28,7 +28,7 @@ impl AttachmentType {
     }
 }
 
-#[derive(PartialEq, Clone, Debug, RustcDecodable, RustcEncodable)]
+#[derive(PartialEq, Clone, Debug, Serialize, Deserialize)]
 pub struct Attachment {
     pub children: BTreeMap<String, u64>,
     pub parent: u64,
@@ -38,7 +38,8 @@ pub struct Attachment {
     pub uid: u32,
     pub gid: u32,
     pub perm: u16,
-    pub content: CborBytes,
+    #[serde(with = "serde_bytes")]
+    pub content: Vec<u8>,
 }
 
 impl Attachment {
@@ -53,7 +54,7 @@ impl Attachment {
             uid: 0,
             gid: 0,
             perm: 0o777,
-            content: CborBytes(Vec::new()),
+            content: Vec::new(),
         }
     }
 
@@ -77,7 +78,7 @@ impl Attachment {
         }
     }
 }
-#[derive(PartialEq, Clone, Debug, RustcDecodable, RustcEncodable)]
+#[derive(PartialEq, Clone, Debug, Serialize, Deserialize)]
 pub struct Attachments {
     pub nodes: BTreeMap<u64, Attachment>,
     pub root: u64,
@@ -155,8 +156,7 @@ impl Filesystem for Attachments {
                  n.mtime = mtime_v as u64;
              }
              if let Some(size_v) = size {
-                 let CborBytes(ref mut cont_vec) = n.content;
-                 cont_vec.resize(size_v as usize, b'\0');
+                 n.content.resize(size_v as usize, b'\0');
              }
              reply.attr(&TTL, &n.to_attr(ino));
          } else {
@@ -250,15 +250,14 @@ impl Filesystem for Attachments {
 
      fn write(&mut self, _req: &Request, ino: u64, _fh: u64, offset: u64, data: &[u8], flags: u32, reply: ReplyWrite) {
          if let Some(mut n) = self.nodes.remove(&ino) {
-             let CborBytes(cont_vec) = n.content;
-             let mut cursor = Cursor::new(cont_vec);
+             let mut cursor = Cursor::new(n.content);
              cursor.set_position(offset);
              if let Ok(()) = cursor.write_all(data) {
                 reply.written(data.len() as u32);
              } else {
                 reply.error(EIO);
              }
-             n.content = CborBytes(cursor.into_inner());
+             n.content = cursor.into_inner();
              self.nodes.insert(ino, n);
          } else {
              reply.error(ENOENT);

@@ -17,19 +17,28 @@ default = ["keepass", "filesystem"]
 filesystem = ["fuse"]
 
 [dependencies]
-chrono = { version = "0", features = ["rustc-serialize"] }
-secstr = { version = "0.2.1", features = ["cbor-serialize", "libsodium-sys"] }
+chrono = "0.3"
+secstr = { git = "https://github.com/valpackett/secstr.git", rev = "rustc_serialize", features = ["serde", "cbor-serialize", "libsodium-sys"] }
 libsodium-sys = "0"
 sodiumoxide = "0"
 rusterpassword = "0"
-keepass = { version = "0", optional = true }
-fuse = { git = "https://github.com/zargony/rust-fuse.git", optional = true } # XXX: BSD unmount fix haven't been released yet
+keepass = { git = "https://github.com/valpackett/keepass-rs.git", optional = true }
+fuse = { version = "0.3.0", optional = true }
 time = { version = "0.1" }
 libc = "0.2"
 rand = "0"
+serde = "1"
+serde_derive = "1"
+serde_bytes = "0"
+serde_cbor = "0.6"
+base64 = "0"
+byteorder = "1"
+# deprecated: reading old files
 cbor = "0"
 rustc-serialize = "0"
-byteorder = "0"
 
 [target.'cfg(all(unix, not(target_os = "android"), not(target_os = "ios")))'.dependencies]
 unix_socket = "0"
+
+[replace]
+"secstr:0.3.0" = { git = "https://github.com/valpackett/secstr.git", rev = "rustc_serialize", features = ["serde", "cbor-serialize", "libsodium-sys"] }

@@ -3,9 +3,9 @@ use attachments::*;
 use util::*;
 use result::{Error, Result};
 use secstr::SecStr;
-use cbor::Decoder;
+use base64;
+use serde_cbor;
 use rusterpassword::*;
-use rustc_serialize::base64::{ToBase64, STANDARD};
 use sodiumoxide::crypto::sign::ed25519;
 use byteorder::{BigEndian, WriteBytesExt};
 #[cfg(all(unix, not(target_os = "android"), not(target_os = "ios")))] use unix_socket::UnixStream;
@@ -59,12 +59,7 @@ pub fn process_output(entry_name: &str, master_key: &SecStr, field: &Field) -> R
                     if data.unsecure().len() < 1 {
                         Ok(Output::Attachments(Attachments::new()))
                     } else {
-                        let mut dec = Decoder::from_bytes(data.unsecure());
-                        match dec.decode().next() {
-                            Some(Ok(att)) => Ok(Output::Attachments(att)),
-                            Some(Err(err)) => Err(Error::from(err)),
-                            None => Err(Error::InappropriateFormat),
-                        }
+                        Ok(Output::Attachments(try!(serde_cbor::from_slice(data.unsecure()))))
                     }
                 }
             }
@@ -78,7 +73,7 @@ pub fn ssh_public_key_output(keypair: &Output, comment: &str) -> Result<String> 
         raw.extend(b"ssh-ed25519");
         try!(raw.write_u32::<BigEndian>(ed25519::PUBLICKEYBYTES as u32));
         raw.extend(&pubkey_bytes);
-        Ok("ssh-ed25519 ".to_owned() + &raw.to_base64(STANDARD) + " " + comment)
+        Ok("ssh-ed25519 ".to_owned() + &base64::encode(&raw) + " " + comment)
     } else { Err(Error::InappropriateFormat) }
 }
 
@@ -125,7 +120,7 @@ pub fn signify_public_key_output(keypair: &Output, comment: &str) -> Result<Stri
         raw.extend(b"Ed");
         raw.extend(&signify_keynum(&pubkey_bytes));
         raw.extend(&pubkey_bytes);
-        Ok(format!("untrusted comment: {}\n{}\n", comment, &raw.to_base64(STANDARD)))
+        Ok(format!("untrusted comment: {}\n{}\n", comment, &base64::encode(&raw)))
     } else { Err(Error::InappropriateFormat) }
 }
 
@@ -136,7 +131,7 @@ pub fn signify_sign(keypair: &Output, comment: &str, data: &[u8]) -> Result<Stri
         raw.extend(b"Ed");
         raw.extend(&signify_keynum(&pubkey_bytes));
         raw.extend(sig_bytes.iter());
-        Ok(format!("untrusted comment: {}\n{}\n", comment, &raw.to_base64(STANDARD)))
+        Ok(format!("untrusted comment: {}\n{}\n", comment, &base64::encode(&raw)))
     } else { Err(Error::InappropriateFormat) }
 }
 

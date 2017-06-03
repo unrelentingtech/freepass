@@ -1,3 +1,5 @@
+NOTE: if you've been using freepass before June 03, 2017: you need to checkout the `serde-migration` git tag, build the CLI, and `mergein` your vault into a new one using that particular version.
+
 # freepass [![unlicense](https://img.shields.io/badge/un-license-green.svg?style=flat)](http://unlicense.org)
 
 The free password manager for power users.

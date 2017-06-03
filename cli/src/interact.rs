@@ -2,8 +2,8 @@ use std::env;
 use std::io::{Read, Write};
 use std::fs::OpenOptions;
 use std::collections::btree_map::BTreeMap;
-use rustc_serialize::base64::{ToBase64, STANDARD};
-use rustc_serialize::hex::ToHex;
+use base64;
+use hex::ToHex;
 use fuse;
 use interactor::*;
 use secstr::SecStr;
@@ -47,7 +47,7 @@ pub fn interact_entries(open_file: &mut OpenFile, debug: bool) {
             },
             "Add new entry" => {
                 if let Some(entry_name) = util::read_text("Entry name") {
-                    interact_entry_edit(open_file, &entry_name, Entry::new(), EntryMetadata::new());
+                    interact_entry_edit(open_file, &entry_name, Entry::default(), EntryMetadata::default());
                 }
             }
         }, open_file.vault.entry_names(), |name| {
@@ -81,7 +81,7 @@ fn interact_entry(open_file: &mut OpenFile, entry_name: &str, entry: Entry, meta
                 Output::PrivateBinary(s) => {
                     interaction!({
                         "Go back" => {},
-                        "Print as Base64" => { println!("{}", s.unsecure().to_base64(STANDARD)) },
+                        "Print as Base64" => { println!("{}", base64::encode(s.unsecure())) },
                         "Print as hex" => { println!("{}", s.unsecure().to_hex()) }
                     })
                 },
