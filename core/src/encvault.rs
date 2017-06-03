@@ -14,7 +14,6 @@ use result::{Error, Result};
 use vault::{Vault, WritableVault};
 use data::*;
 use util::blake2b;
-use cbor::Decoder;
 
 #[derive(PartialEq, Debug, Serialize, Deserialize)]
 pub struct EncryptedEntry {
@@ -74,10 +73,7 @@ impl Vault for DecryptedVault {
     fn get_entry(&self, name: &str) -> Result<(Entry, EntryMetadata)> {
         let (plainbytes, metadata) = try!(self.get_entry_cbor(name));
         let plaintext = SecStr::new(plainbytes); // For zeroing out CBOR bytes (on Drop) after decoding it
-        let entry = try!(
-            serde_cbor::from_slice(plaintext.unsecure())
-            .or_else(|_| Decoder::from_bytes(plaintext.unsecure()).decode::<Entry>().next().unwrap())
-        );
+        let entry = try!(serde_cbor::from_slice(plaintext.unsecure()));
         Ok((entry, metadata))
     }
 }

@@ -15,13 +15,10 @@ crate-type = [ "dylib", "staticlib" ]
 
 [dependencies]
 freepass-core = { version = "0", path = "../core", default-features = false, features = [] }
-secstr = { git = "https://github.com/valpackett/secstr.git", rev = "rustc_serialize", features = ["serde", "cbor-serialize", "libsodium-sys"] }
+secstr = { version = "0.3", features = ["serde", "libsodium-sys"] }
 serde_cbor = "0.6"
 sodiumoxide = "0"
 rusterpassword = "0"
 rusterpassword-capi = { version = "0", path = "../rusterpassword/capi" }
 colorhash256 = "0"
 libc = "0.2"
-
-[replace]
-"secstr:0.3.0" = { git = "https://github.com/valpackett/secstr.git", rev = "rustc_serialize", features = ["serde", "cbor-serialize", "libsodium-sys"] }

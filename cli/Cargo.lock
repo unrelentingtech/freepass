@@ -11,7 +11,7 @@ dependencies = [
  "hex 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "interactor 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "rusterpassword 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "secstr 0.3.0 (git+https://github.com/valpackett/secstr.git?rev=rustc_serialize)",
+ "secstr 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_cbor 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "sodiumoxide 0.0.15 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -52,22 +52,8 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "byteorder"
-version = "0.5.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-
-[[package]]
-name = "byteorder"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-
-[[package]]
-name = "cbor"
-version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-dependencies = [
- "byteorder 0.5.3 (registry+https://github.com/rust-lang/crates.io-index)",
- "rustc-serialize 0.3.24 (registry+https://github.com/rust-lang/crates.io-index)",
-]
 
 [[package]]
 name = "cfg-if"
@@ -121,17 +107,14 @@ version = "0.0.0"
 dependencies = [
  "base64 0.5.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "byteorder 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "cbor 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "chrono 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "fuse 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "hex 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "keepass 0.1.2 (git+https://github.com/valpackett/keepass-rs.git)",
  "libc 0.2.23 (registry+https://github.com/rust-lang/crates.io-index)",
  "libsodium-sys 0.0.15 (registry+https://github.com/rust-lang/crates.io-index)",
  "rand 0.3.15 (registry+https://github.com/rust-lang/crates.io-index)",
- "rustc-serialize 0.3.24 (registry+https://github.com/rust-lang/crates.io-index)",
  "rusterpassword 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "secstr 0.3.0 (git+https://github.com/valpackett/secstr.git?rev=rustc_serialize)",
+ "secstr 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_bytes 0.10.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_cbor 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -308,20 +291,12 @@ dependencies = [
 [[package]]
 name = "secstr"
 version = "0.3.0"
-source = "git+https://github.com/valpackett/secstr.git?rev=rustc_serialize#9d3b7abc8850461d87d435b1c8f636d7cdc398d1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
- "cbor 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "libc 0.2.23 (registry+https://github.com/rust-lang/crates.io-index)",
  "libsodium-sys 0.0.15 (registry+https://github.com/rust-lang/crates.io-index)",
- "rustc-serialize 0.3.24 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.8 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
-
-[[package]]
-name = "secstr"
-version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-replace = "secstr 0.3.0 (git+https://github.com/valpackett/secstr.git?rev=rustc_serialize)"
 
 [[package]]
 name = "serde"
@@ -485,9 +460,7 @@ dependencies = [
 "checksum base64 0.5.2 (registry+https://github.com/rust-lang/crates.io-index)" = "30e93c03064e7590d0466209155251b90c22e37fab1daf2771582598b5827557"
 "checksum bitflags 0.8.2 (registry+https://github.com/rust-lang/crates.io-index)" = "1370e9fc2a6ae53aea8b7a5110edbd08836ed87c88736dfabccade1c2b44bff4"
 "checksum bitflags 0.9.1 (registry+https://github.com/rust-lang/crates.io-index)" = "4efd02e230a02e18f92fc2735f44597385ed02ad8f831e7c1c1156ee5e1ab3a5"
-"checksum byteorder 0.5.3 (registry+https://github.com/rust-lang/crates.io-index)" = "0fc10e8cc6b2580fda3f36eb6dc5316657f812a3df879a44a66fc9f0fdbc4855"
 "checksum byteorder 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)" = "c40977b0ee6b9885c9013cd41d9feffdd22deb3bb4dc3a71d901cc7a77de18c8"
-"checksum cbor 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)" = "198e016a6322e1292f8c9d9baf6e6e2df5a2f2f05d0110ceff6ee3ca32b06dd5"
 "checksum cfg-if 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)" = "de1e760d7b6535af4241fca8bd8adf68e2e7edacc6b29f5d399050c5e48cf88c"
 "checksum chrono 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)" = "d9123be86fd2a8f627836c235ecdf331fdd067ecf7ac05aa1a68fbcf2429f056"
 "checksum clap 2.24.2 (registry+https://github.com/rust-lang/crates.io-index)" = "6b8f69e518f967224e628896b54e41ff6acfb4dcfefc5076325c36525dac900f"
@@ -514,7 +487,6 @@ dependencies = [
 "checksum rust-crypto 0.2.36 (registry+https://github.com/rust-lang/crates.io-index)" = "f76d05d3993fd5f4af9434e8e436db163a12a9d40e1a58a726f27a01dfd12a2a"
 "checksum rustc-serialize 0.3.24 (registry+https://github.com/rust-lang/crates.io-index)" = "dcf128d1287d2ea9d80910b5f1120d0b8eede3fbf1abe91c40d39ea7d51e6fda"
 "checksum rusterpassword 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)" = "6d362f177a305b8e7399090c19ce0e8c1cad59500ac7cf9ff7484edddd9e0766"
-"checksum secstr 0.3.0 (git+https://github.com/valpackett/secstr.git?rev=rustc_serialize)" = "<none>"
 "checksum secstr 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)" = "df4eff9c1148273c8018c89ec92127293a8e73e89abccd508e6702c9afc64194"
 "checksum serde 1.0.8 (registry+https://github.com/rust-lang/crates.io-index)" = "c2f530d36fb84ec48fb7146936881f026cdbf4892028835fd9398475f82c1bb4"
 "checksum serde_bytes 0.10.0 (registry+https://github.com/rust-lang/crates.io-index)" = "7a73f5ad9bb83e1e407254c7a355f4efdaffe3c1442fc0657ddb8b9b6b225655"

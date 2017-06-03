@@ -22,39 +22,39 @@ impl Default for EntryMetadata {
     }
 }
 
-#[derive(PartialEq, Clone, Default, Debug, Serialize, Deserialize, RustcDecodable)]
+#[derive(PartialEq, Clone, Default, Debug, Serialize, Deserialize)]
 pub struct Entry {
     pub fields: BTreeMap<String, Field>
 }
 
-#[derive(PartialEq, Clone, Debug, Serialize, Deserialize, RustcDecodable)]
+#[derive(PartialEq, Clone, Debug, Serialize, Deserialize)]
 pub enum Field {
     Derived { counter: u32, site_name: Option<String>, usage: DerivedUsage },
     Stored { data: SecStr, usage: StoredUsage }
 }
 
-#[derive(PartialEq, Clone, Copy, Debug, Serialize, Deserialize, RustcDecodable)]
+#[derive(PartialEq, Clone, Copy, Debug, Serialize, Deserialize)]
 pub enum DerivedUsage {
     Password(PasswordTemplate),
     Ed25519Key(Ed25519Usage),
     RawKey,
 }
 
-#[derive(PartialEq, Clone, Copy, Debug, Serialize, Deserialize, RustcDecodable)]
+#[derive(PartialEq, Clone, Copy, Debug, Serialize, Deserialize)]
 pub enum Ed25519Usage {
     SSH,
     Signify,
     SQRL,
 }
 
-#[derive(PartialEq, Clone, Copy, Debug, Serialize, Deserialize, RustcDecodable)]
+#[derive(PartialEq, Clone, Copy, Debug, Serialize, Deserialize)]
 pub enum StoredUsage {
     Text,
     Password,
     Attachments,
 }
 
-#[derive(PartialEq, Clone, Copy, Debug, Serialize, Deserialize, RustcDecodable)]
+#[derive(PartialEq, Clone, Copy, Debug, Serialize, Deserialize)]
 pub enum PasswordTemplate {
     // Same numbers as in the rusterpassword C API
     Maximum = 60,

@@ -1,6 +1,5 @@
 use std::{io, str, string, result};
 use serde_cbor;
-use cbor;
 #[cfg(feature = "keepass")] use keepass;
 
 #[derive(Debug)]
@@ -14,7 +13,6 @@ pub enum Error {
     SeedGenerationError,
     DecryptionError,
     CodecError(serde_cbor::Error),
-    OldCodecError(cbor::CborError),
     StringCodecError(string::FromUtf8Error),
     StrCodecError(str::Utf8Error),
     #[cfg(feature = "keepass")] KeepassReadError(keepass::OpenDBError),
@@ -29,12 +27,6 @@ pub enum Error {
 impl From<serde_cbor::Error> for Error {
     fn from(err: serde_cbor::Error) -> Error {
         Error::CodecError(err)
-    }
-}
-
-impl From<cbor::CborError> for Error {
-    fn from(err: cbor::CborError) -> Error {
-        Error::OldCodecError(err)
     }
 }
 
