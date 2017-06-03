@@ -9,7 +9,7 @@ import android.view.*
 import android.widget.BaseAdapter
 import android.widget.RadioButton
 import android.widget.RadioGroup
-import com.jakewharton.rxbinding.widget.*
+import com.jakewharton.rxbinding2.widget.*
 
 import org.jetbrains.anko.*
 import org.jetbrains.anko.support.v4.UI
@@ -69,28 +69,24 @@ class EntryFragment: Fragment() {
 			return with(parent.context) {
 				relativeLayout {
 					val nameEdit = editText {
-						id = 1
-						text = SpannableStringBuilder(model.field_name.value)
-						textChanges().subscribe { model.field_name.onNext(it.toString()) }
+						text = SpannableStringBuilder(model.field_name.get())
+						textChanges().subscribe { model.field_name.set(it.toString()) }
 					}.lparams { width = matchParent }
 					val typeRadio = radioGroup {
-						id = 2
 						orientation = RadioGroup.HORIZONTAL
-						val der = radioButton { id = 324634; text = "Derived" }
-						val stor = radioButton { id = 895972; text = "Stored" }
+						val der = radioButton {  text = "Derived" }
+						val stor = radioButton {  text = "Stored" }
 						Log.w("WTF", "WAT")
-						check(if (model.field_type.value == FieldViewModel.FieldType.Derived) der.id else stor.id)
+						check(if (model.field_type.get() == FieldViewModel.FieldType.Derived) der.id else stor.id)
 						checkedChanges().subscribe() {
 							Log.w("Check", it.toString())
-							model.field_type.onNext(if (it == der.id) FieldViewModel.FieldType.Derived else FieldViewModel.FieldType.Stored)
+							model.field_type.set(if (it == der.id) FieldViewModel.FieldType.Derived else FieldViewModel.FieldType.Stored)
 						}
 					}.lparams { width = matchParent; below(nameEdit) }
 					val counterLabel = textView {
-						id = 5
 						text = "Counter"
 					}.lparams { below(typeRadio) }
 					val counterEdit = editText {
-						id = 666
 						inputType = InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL
 						filters = arrayOf(NumberLimitsInputFilter(0, 4294967295))
 					}.lparams { below(typeRadio); rightOf(counterLabel) }

@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.6.0)
 
+set(ANDROID_BUILD_MODE debug)
+
 if(ANDROID_ABI STREQUAL x86)
     set(SODIUM_ABI i686)
 elseif(ANDROID_ABI STREQUAL armeabi)
@@ -22,10 +24,10 @@ file(COPY ${CMAKE_SOURCE_DIR}/../../libsodium/libsodium-android-${SODIUM_ABI}/li
 
 add_library(freepass-capi SHARED IMPORTED)
 set_target_properties(freepass-capi PROPERTIES
-                      IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/../../capi/target/android-all/release/${ANDROID_ABI}/libfreepass_capi.so
+                      IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/../../capi/target/android-all/${ANDROID_BUILD_MODE}/${ANDROID_ABI}/libfreepass_capi.so
                       IMPORTED_NO_SONAME true)
 include_directories( ${CMAKE_SOURCE_DIR}/../../capi )
-file(COPY ${CMAKE_SOURCE_DIR}/../../capi/target/android-all/release/${ANDROID_ABI}/libfreepass_capi.so
+file(COPY ${CMAKE_SOURCE_DIR}/../../capi/target/android-all/${ANDROID_BUILD_MODE}/${ANDROID_ABI}/libfreepass_capi.so
      DESTINATION ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
 
 find_library(log-lib log)

@@ -30,7 +30,7 @@ class LoginActivity : AppCompatActivity() {
 			}
 			button("Login") {
 				textSize = 26f
-				onClick {
+				setOnClickListener {
 					val permission = ActivityCompat.checkSelfPermission(ctx, Manifest.permission.READ_EXTERNAL_STORAGE)
 					if (permission == PackageManager.PERMISSION_GRANTED) {
 						storageReadAllowed = true
@@ -40,7 +40,7 @@ class LoginActivity : AppCompatActivity() {
 					if (!storageReadAllowed) {
 						ctx.toast("You must allow reading files!")
 					} else {
-						async() {
+						doAsync {
 							try {
 								Vault.open("${Environment.getExternalStorageDirectory().path}/testvault", name.text.toString(), password.text.toString())
 							} catch (e: Exception) {

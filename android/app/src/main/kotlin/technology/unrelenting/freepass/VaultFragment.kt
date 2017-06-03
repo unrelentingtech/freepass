@@ -65,7 +65,7 @@ class VaultFragment: Fragment() {
 							gravity = Gravity.CENTER_VERTICAL
 						}
 						isClickable = true
-						onClick {
+						setOnClickListener {
 							fragment.openEntry(textView.text.toString())
 						}
 					}
