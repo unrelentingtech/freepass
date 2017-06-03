@@ -14,23 +14,19 @@ pub struct EntryMetadata {
 
 impl Default for EntryMetadata {
     fn default() -> EntryMetadata {
-        EntryMetadata {
-            created_at: UTC::now(),
-            updated_at: UTC::now(),
-            tags: Vec::new(),
-        }
+        EntryMetadata { created_at: UTC::now(), updated_at: UTC::now(), tags: Vec::new() }
     }
 }
 
 #[derive(PartialEq, Clone, Default, Debug, Serialize, Deserialize)]
 pub struct Entry {
-    pub fields: BTreeMap<String, Field>
+    pub fields: BTreeMap<String, Field>,
 }
 
 #[derive(PartialEq, Clone, Debug, Serialize, Deserialize)]
 pub enum Field {
     Derived { counter: u32, site_name: Option<String>, usage: DerivedUsage },
-    Stored { data: SecStr, usage: StoredUsage }
+    Stored { data: SecStr, usage: StoredUsage },
 }
 
 #[derive(PartialEq, Clone, Copy, Debug, Serialize, Deserialize)]
@@ -58,11 +54,11 @@ pub enum StoredUsage {
 pub enum PasswordTemplate {
     // Same numbers as in the rusterpassword C API
     Maximum = 60,
-    Long    = 50,
-    Medium  = 40,
-    Short   = 30,
-    Basic   = 20,
-    Pin     = 10,
+    Long = 50,
+    Medium = 40,
+    Short = 30,
+    Basic = 20,
+    Pin = 10,
 }
 
 /// Decoding that ignores the old DateTime serialization (which was the whole chrono object structure)
@@ -72,12 +68,16 @@ mod serde_date_freepass {
     use serde::{self, Deserialize, Serializer, Deserializer};
     use serde_cbor::Value;
 
-    pub fn serialize<S>(date: &DateTime<UTC>, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
+    pub fn serialize<S>(date: &DateTime<UTC>, serializer: S) -> Result<S::Ok, S::Error>
+        where S: Serializer
+    {
         serializer.serialize_str(&date.to_rfc3339())
     }
 
-    pub fn deserialize<'de, D>(deserializer: D) -> Result<DateTime<UTC>, D::Error> where D: Deserializer<'de> {
-        let v = try!(Value::deserialize(deserializer));
+    pub fn deserialize<'de, D>(deserializer: D) -> Result<DateTime<UTC>, D::Error>
+        where D: Deserializer<'de>
+    {
+        let v = Value::deserialize(deserializer)?;
         match v {
             Value::String(s) => s.parse().map_err(serde::de::Error::custom),
             _ => Ok(UTC::now()),

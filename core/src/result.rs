@@ -1,6 +1,7 @@
 use std::{io, str, string, result};
 use serde_cbor;
-#[cfg(feature = "keepass")] use keepass;
+#[cfg(feature = "keepass")]
+use keepass;
 
 #[derive(Debug)]
 pub enum Error {
@@ -15,7 +16,8 @@ pub enum Error {
     CodecError(serde_cbor::Error),
     StringCodecError(string::FromUtf8Error),
     StrCodecError(str::Utf8Error),
-    #[cfg(feature = "keepass")] KeepassReadError(keepass::OpenDBError),
+    #[cfg(feature = "keepass")]
+    KeepassReadError(keepass::OpenDBError),
     OtherError(io::Error),
     DataError,
     EntryNotFound,

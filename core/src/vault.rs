@@ -4,7 +4,7 @@ use data::{Entry, EntryMetadata};
 
 pub trait Vault {
     fn len(&self) -> usize;
-    fn entry_names<'a>(&'a self) -> Box<Iterator<Item=&'a String> + 'a>;
+    fn entry_names<'a>(&'a self) -> Box<Iterator<Item = &'a String> + 'a>;
     fn get_entry(&self, name: &str) -> Result<(Entry, EntryMetadata)>;
 }
 

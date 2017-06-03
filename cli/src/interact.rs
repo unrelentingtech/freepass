@@ -163,11 +163,18 @@ fn interact_entry_edit(open_file: &mut OpenFile, entry_name: &str, mut entry: En
 }
 
 fn new_derived_field(field_name: &str) -> Field {
-    Field::Derived { counter: 1, site_name: None, usage: guess_usage_derived(field_name) }
+    Field::Derived {
+        counter: 1,
+        site_name: None,
+        usage: guess_usage_derived(field_name),
+    }
 }
 
 fn new_stored_field(field_name: &str) -> Field {
-    Field::Stored { data: SecStr::new(Vec::new()), usage: guess_usage_stored(field_name) }
+    Field::Stored {
+        data: SecStr::new(Vec::new()),
+        usage: guess_usage_stored(field_name),
+    }
 }
 
 fn new_field(field_name: &str) -> Field {
@@ -180,29 +187,40 @@ fn new_field(field_name: &str) -> Field {
 }
 
 fn interact_field_edit(vault: &mut DecryptedVault, mut entry: Entry, field_name: String) -> Entry {
-    let mut field = entry.fields.remove(&field_name).unwrap_or_else(|| new_field(&field_name));
-    let mut field_actions : BTreeMap<String, Box<Fn(Field) -> Field>> = BTreeMap::new();
+    let mut field = entry.fields.remove(&field_name).unwrap_or_else(
+        || new_field(&field_name),
+    );
+    let mut field_actions: BTreeMap<String, Box<Fn(Field) -> Field>> = BTreeMap::new();
     let other_type;
     match field.clone() {
         Field::Derived { counter, site_name, usage } => {
             other_type = "stored";
-            field_actions.insert(format!("Counter: {}", counter), Box::new(|f| {
-                if let Field::Derived { counter, site_name, usage } = f {
-                    let new_counter = util::read_text(&format!("Counter [{}]", counter)).and_then(|c| c.parse::<u32>().ok()).unwrap_or(counter);
+            field_actions.insert(
+                format!("Counter: {}", counter),
+                Box::new(|f| if let Field::Derived { counter, site_name, usage } = f {
+                    let new_counter = util::read_text(&format!("Counter [{}]", counter))
+                        .and_then(|c| c.parse::<u32>().ok())
+                        .unwrap_or(counter);
                     Field::Derived { counter: new_counter, site_name: site_name, usage: usage }
-                } else { unreachable!(); }
-            }));
-            field_actions.insert(match site_name {
-                Some(ref sn) => format!("Site name: {}", sn),
-                None => format!("Site name: <same as entry name>"),
-            }, Box::new(|f| {
-                if let Field::Derived { counter, usage, .. } = f {
+                } else {
+                    unreachable!();
+                }),
+            );
+            field_actions.insert(
+                match site_name {
+                    Some(ref sn) => format!("Site name: {}", sn),
+                    None => format!("Site name: <same as entry name>"),
+                },
+                Box::new(|f| if let Field::Derived { counter, usage, .. } = f {
                     let new_site_name = util::read_text("Site name");
                     Field::Derived { counter: counter, site_name: new_site_name, usage: usage }
-                } else { unreachable!(); }
-            }));
-            field_actions.insert(format!("Usage: {:?}", usage), Box::new(|f| {
-                if let Field::Derived { counter, site_name, .. } = f {
+                } else {
+                    unreachable!();
+                }),
+            );
+            field_actions.insert(
+                format!("Usage: {:?}", usage),
+                Box::new(|f| if let Field::Derived { counter, site_name, .. } = f {
                     let new_usage = interaction!({
                         "Password(Maximum)"   => { DerivedUsage::Password(PasswordTemplate::Maximum) },
                         "Password(Long)"      => { DerivedUsage::Password(PasswordTemplate::Long) },
@@ -216,30 +234,38 @@ fn interact_field_edit(vault: &mut DecryptedVault, mut entry: Entry, field_name:
                         "RawKey"              => { DerivedUsage::RawKey }
                     });
                     Field::Derived { counter: counter, site_name: site_name, usage: new_usage }
-                } else { unreachable!(); }
-            }));
+                } else {
+                    unreachable!();
+                }),
+            );
         },
         Field::Stored { usage, data, .. } => {
             other_type = "derived";
             let txt = String::from_utf8(data.unsecure().to_vec()).unwrap_or("<invalid UTF-8>".to_owned());
-            field_actions.insert(format!("Change text [{}]", txt), Box::new(|f| {
-                if let Field::Stored { usage, data, .. } = f {
+            field_actions.insert(
+                format!("Change text [{}]", txt),
+                Box::new(|f| if let Field::Stored { usage, data, .. } = f {
                     let txt = String::from_utf8(data.unsecure().to_vec()).unwrap_or("<invalid UTF-8>".to_owned());
                     let new_data = util::read_text(&format!("New text [{}]", txt)).unwrap_or(txt);
                     Field::Stored { data: SecStr::from(new_data), usage: usage }
-                } else { unreachable!(); }
-            }));
-            field_actions.insert(format!("Usage: {:?}", usage), Box::new(|f| {
-                if let Field::Stored { data, .. } = f {
+                } else {
+                    unreachable!();
+                }),
+            );
+            field_actions.insert(
+                format!("Usage: {:?}", usage),
+                Box::new(|f| if let Field::Stored { data, .. } = f {
                     let new_usage = interaction!({
                         "Password"            => { StoredUsage::Password },
                         "Text"                => { StoredUsage::Text },
                         "Attachments"         => { StoredUsage::Attachments }
                     });
                     Field::Stored { data: data, usage: new_usage }
-                } else { unreachable!(); }
-            }));
-        }
+                } else {
+                    unreachable!();
+                }),
+            );
+        },
     };
     interaction!({
         "Go back" => {

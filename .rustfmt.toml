@@ -1,0 +1,9 @@
+max_width = 512
+fn_call_width = 128
+struct_lit_width = 64
+struct_variant_width = 96
+array_width = 512
+newline_style = "Native"
+use_try_shorthand = true
+match_block_trailing_comma = true
+fn_call_style = "Block"

@@ -51,9 +51,11 @@ impl DecryptedVault {
     /// Returns the decrypted entry without decoding CBOR.
     pub fn get_entry_cbor(&self, name: &str) -> Result<(Vec<u8>, EntryMetadata)> {
         if let Some(ee) = self.data.entries.get(name) {
-            let nonce_wrapped = try!(secbox::Nonce::from_slice(&ee.nonce).ok_or(Error::WrongEntryNonceLength));
-            let entry_key_wrapped = try!(gen_entry_key(&self.entries_key, name, ee.counter));
-            let plainbytes = try!(secbox::open(&ee.ciphertext, &nonce_wrapped, &entry_key_wrapped).map_err(|_| Error::DecryptionError));
+            let nonce_wrapped = secbox::Nonce::from_slice(&ee.nonce)
+                .ok_or(Error::WrongEntryNonceLength)?;
+            let entry_key_wrapped = gen_entry_key(&self.entries_key, name, ee.counter)?;
+            let plainbytes = secbox::open(&ee.ciphertext, &nonce_wrapped, &entry_key_wrapped)
+                .map_err(|_| Error::DecryptionError)?;
             Ok((plainbytes, ee.metadata.clone()))
         } else {
             Err(Error::EntryNotFound)
@@ -66,30 +68,40 @@ impl Vault for DecryptedVault {
         self.data.entries.len()
     }
 
-    fn entry_names<'a>(&'a self) -> Box<Iterator<Item=&'a String> + 'a> {
+    fn entry_names<'a>(&'a self) -> Box<Iterator<Item = &'a String> + 'a> {
         Box::new(self.data.entries.keys())
     }
 
     fn get_entry(&self, name: &str) -> Result<(Entry, EntryMetadata)> {
-        let (plainbytes, metadata) = try!(self.get_entry_cbor(name));
+        let (plainbytes, metadata) = self.get_entry_cbor(name)?;
         let plaintext = SecStr::new(plainbytes); // For zeroing out CBOR bytes (on Drop) after decoding it
-        let entry = try!(serde_cbor::from_slice(plaintext.unsecure()));
+        let entry = serde_cbor::from_slice(plaintext.unsecure())?;
         Ok((entry, metadata))
     }
 }
 
 impl WritableVault for DecryptedVault {
     fn put_entry(&mut self, name: &str, entry: &Entry, metadata: &mut EntryMetadata) -> Result<()> {
-        let counter = self.data.entries.get(name).map(|ee| ee.counter + 1).unwrap_or(1);
+        let counter = self.data
+            .entries
+            .get(name)
+            .map(|ee| ee.counter + 1)
+            .unwrap_or(1);
         let nonce_wrapped = secbox::gen_nonce();
         let secbox::Nonce(nonce) = nonce_wrapped;
-        let entry_key_wrapped = try!(gen_entry_key(&self.entries_key, name, counter));
-        let plaintext = SecStr::new(try!(serde_cbor::to_vec(&entry)));
+        let entry_key_wrapped = gen_entry_key(&self.entries_key, name, counter)?;
+        let plaintext = SecStr::new(serde_cbor::to_vec(&entry)?);
         let ciphertext = secbox::seal(plaintext.unsecure(), &nonce_wrapped, &entry_key_wrapped);
         metadata.updated_at = UTC::now();
-        self.data.entries.insert(name.to_owned(), EncryptedEntry {
-            nonce: nonce.to_vec(), counter: counter, ciphertext: ciphertext, metadata: metadata.clone()
-        });
+        self.data.entries.insert(
+            name.to_owned(),
+            EncryptedEntry {
+                nonce: nonce.to_vec(),
+                counter: counter,
+                ciphertext: ciphertext,
+                metadata: metadata.clone(),
+            },
+        );
         Ok(())
     }
 
@@ -103,38 +115,46 @@ impl DecryptedVault {
         DecryptedVault {
             data: DecryptedVaultData { padding: b"".to_vec(), entries: BTreeMap::new() },
             entries_key: entries_key,
-            outer_key: outer_key
+            outer_key: outer_key,
         }
     }
 
     pub fn open<T: io::Read>(entries_key: SecStr, outer_key: SecStr, reader: T) -> Result<DecryptedVault> {
-        let wrapper: EncryptedVault = try!(serde_cbor::from_reader(reader));
-        let nonce_wrapped = try!(outerstream::Nonce::from_slice(&wrapper.nonce).ok_or(Error::WrongOuterNonceLength));
-        let outer_key_wrapped = try!(outerstream::Key::from_slice(outer_key.unsecure()).ok_or(Error::WrongOuterKeyLength));
+        let wrapper: EncryptedVault = serde_cbor::from_reader(reader)?;
+        let nonce_wrapped = outerstream::Nonce::from_slice(&wrapper.nonce)
+            .ok_or(Error::WrongOuterNonceLength)?;
+        let outer_key_wrapped = outerstream::Key::from_slice(outer_key.unsecure())
+            .ok_or(Error::WrongOuterKeyLength)?;
         let plaintext = SecStr::new(outerstream::stream_xor(&wrapper.ciphertext, &nonce_wrapped, &outer_key_wrapped));
-        let data = try!(serde_cbor::from_slice(plaintext.unsecure()));
+        let data = serde_cbor::from_slice(plaintext.unsecure())?;
         Ok(DecryptedVault { data: data, entries_key: entries_key, outer_key: outer_key })
     }
 
     pub fn save<T: io::Write>(&mut self, mut writer: T) -> Result<()> {
-        let mut rng = try!(OsRng::new());
-        let padding_size = rng.gen_range(0, 1024*10);
+        let mut rng = OsRng::new()?;
+        let padding_size = rng.gen_range(0, 1024 * 10);
         self.data.padding = vec![0; padding_size];
         rng.fill_bytes(&mut self.data.padding);
         let nonce_wrapped = outerstream::gen_nonce();
         let outerstream::Nonce(nonce) = nonce_wrapped;
-        let outer_key_wrapped = try!(outerstream::Key::from_slice(self.outer_key.unsecure()).ok_or(Error::WrongOuterKeyLength));
-        let plaintext = SecStr::new(try!(serde_cbor::to_vec(&self.data)));
+        let outer_key_wrapped = outerstream::Key::from_slice(self.outer_key.unsecure())
+            .ok_or(Error::WrongOuterKeyLength)?;
+        let plaintext = SecStr::new(serde_cbor::to_vec(&self.data)?);
         let ciphertext = outerstream::stream_xor(plaintext.unsecure(), &nonce_wrapped, &outer_key_wrapped);
         let wrapper = EncryptedVault { version: 0, nonce: nonce.to_vec(), ciphertext: ciphertext };
-        try!(serde_cbor::ser::to_writer(&mut writer, &wrapper));
+        serde_cbor::ser::to_writer(&mut writer, &wrapper)?;
         Ok(())
     }
 }
 
 fn gen_entry_key(entries_key: &SecStr, name: &str, counter: u32) -> Result<secbox::Key> {
-    let entry_key = try!(gen_site_seed(entries_key, name, counter).map_err(|_| Error::SeedGenerationError));
-    Ok(try!(secbox::Key::from_slice(entry_key.unsecure()).ok_or(Error::WrongEntriesKeyLength)))
+    let entry_key = gen_site_seed(entries_key, name, counter).map_err(|_| {
+            Error::SeedGenerationError
+        })?;
+    Ok(
+        secbox::Key::from_slice(entry_key.unsecure())
+            .ok_or(Error::WrongEntriesKeyLength)?,
+    )
 }
 
 pub fn gen_outer_key(master_key: &SecStr) -> SecStr {
@@ -149,18 +169,24 @@ pub fn gen_entries_key(master_key: &SecStr) -> SecStr {
 mod tests {
     use super::*;
     use rusterpassword::*;
-    use secstr::*;
-    use data::*;
-    use vault::*;
 
     fn example_entry() -> Entry {
         let mut twitter = Entry::default();
-        twitter.fields.insert("password".to_owned(), Field::Derived {
-            counter: 4, site_name: Some("twitter.com".to_owned()), usage: DerivedUsage::Password(PasswordTemplate::Maximum)
-        });
-        twitter.fields.insert("old_password".to_owned(), Field::Stored {
-            data: SecStr::from("h0rse"), usage: StoredUsage::Password
-        });
+        twitter.fields.insert(
+            "password".to_owned(),
+            Field::Derived {
+                counter: 4,
+                site_name: Some("twitter.com".to_owned()),
+                usage: DerivedUsage::Password(PasswordTemplate::Maximum),
+            },
+        );
+        twitter.fields.insert(
+            "old_password".to_owned(),
+            Field::Stored {
+                data: SecStr::from("h0rse"),
+                usage: StoredUsage::Password,
+            },
+        );
         twitter
     }
 
@@ -178,9 +204,15 @@ mod tests {
     fn test_roundtrip_vault() {
         let master_key = gen_master_key(SecStr::from("Correct Horse Battery Staple"), "Clarke Griffin").unwrap();
         let mut vault = DecryptedVault::new(gen_entries_key(&master_key), gen_outer_key(&master_key));
-        vault.data.entries.insert("test".to_owned(), EncryptedEntry {
-            nonce: b"fuck".to_vec(), counter: 123, ciphertext: b"hello".to_vec(), metadata: EntryMetadata::default()
-        });
+        vault.data.entries.insert(
+            "test".to_owned(),
+            EncryptedEntry {
+                nonce: b"fuck".to_vec(),
+                counter: 123,
+                ciphertext: b"hello".to_vec(),
+                metadata: EntryMetadata::default(),
+            },
+        );
         let mut storage = Vec::new();
         vault.save(&mut storage).unwrap();
         let loaded_vault = DecryptedVault::open(gen_entries_key(&master_key), gen_outer_key(&master_key), &storage[..]);

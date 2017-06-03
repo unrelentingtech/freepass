@@ -1,4 +1,4 @@
-use std::{fs,io};
+use std::{fs, io};
 use secstr::SecStr;
 use rusterpassword::gen_master_key;
 use freepass_core::encvault::*;
@@ -6,12 +6,15 @@ use freepass_core::encvault::*;
 pub struct OpenFile {
     pub vault: DecryptedVault,
     pub master_key: SecStr,
-    pub file_path: String
+    pub file_path: String,
 }
 
 impl OpenFile {
     pub fn open(file_path: String, user_name: &str, password: SecStr, need_write: bool) -> OpenFile {
-        let file = match fs::OpenOptions::new().read(true).write(need_write).open(&file_path) {
+        let file = match fs::OpenOptions::new()
+                  .read(true)
+                  .write(need_write)
+                  .open(&file_path) {
             Ok(file) => Some(file),
             Err(ref err) if err.kind() == io::ErrorKind::NotFound => None,
             Err(ref err) => panic!("Could not open file {}: {}", &file_path, err),
@@ -29,7 +32,9 @@ impl OpenFile {
 
     pub fn save(self: &mut OpenFile) {
         // Atomic save!
-        self.vault.save(fs::File::create(format!("{}.tmp", &self.file_path)).unwrap()).unwrap();
+        self.vault
+            .save(fs::File::create(format!("{}.tmp", &self.file_path)).unwrap())
+            .unwrap();
         fs::rename(format!("{}.tmp", &self.file_path), &self.file_path).unwrap();
     }
 }
