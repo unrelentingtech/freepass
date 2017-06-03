@@ -2,16 +2,7 @@
 
 The free password manager for power users: C API for the core library.
 
-## Building (for Android and iOS, from OS X)
-
-Get the Android SDK:
-
-```bash
-$ brew install android-sdk
-$ android
-```
-
-(Install all the usual things needed for building apps.)
+## Building (for Android and iOS)
 
 Get the Android NDK and [build a standalone toolchain](https://developer.android.com/ndk/guides/standalone_toolchain.html):
 
@@ -19,27 +10,20 @@ Get the Android NDK and [build a standalone toolchain](https://developer.android
 $ sudo chown $(whoami) /opt
 $ brew install android-ndk
 $ cd $(brew --prefix android-ndk)
-$ build/tools/make_standalone_toolchain.py --stl libc++ --api 24 force --arch arm   --install-dir /opt/ndk
-$ build/tools/make_standalone_toolchain.py --stl libc++ --api 24 force --arch arm64 --install-dir /opt/ndk64
-$ build/tools/make_standalone_toolchain.py --stl libc++ --api 24 force --arch x86   --install-dir /opt/ndkx86
+$ build/tools/make_standalone_toolchain.py --stl libc++ --api 24 --force --arch arm   --install-dir /opt/ndk
+$ build/tools/make_standalone_toolchain.py --stl libc++ --api 24 --force --arch arm64 --install-dir /opt/ndk64
+$ build/tools/make_standalone_toolchain.py --stl libc++ --api 24 --force --arch x86   --install-dir /opt/ndkx86
 ```
 
-Get the Rust source and build it:
+(On FreeBSD, edit `make_standalone_toolchain.py`: `if platform.system() == 'Linux'` -> `if platform.system() == 'Linux' or platform.system() == 'FreeBSD'`)
+
+Add the Rust targets:
 
 ```bash
-$ mkdir /opt/rust-arm
-$ git clone https://github.com/rust-lang/rust.git
-$ cd rust
-$ ./configure --prefix=/opt/rust-arm --target=arm-linux-androideabi,aarch64-linux-android,i686-linux-android,armv7-apple-ios,armv7s-apple-ios,aarch64-apple-ios,i386-apple-ios,x86_64-apple-ios,x86_64-apple-darwin \
-  --disable-valgrind-rpass --disable-docs --disable-optimize-tests --disable-llvm-assertions --enable-fast-make --disable-jemalloc --enable-clang \
-  --arm-linux-androideabi-ndk=/opt/ndk --aarch64-linux-android-ndk=/opt/ndk64 --i686-linux-android-ndk=/opt/ndkx86
-$ make -j4
-$ make install
+$ rustup target add arm-linux-androideabi aarch64-linux-android i686-linux-android
 ```
 
-(OR use [rustup](https://github.com/rust-lang-nursery/rustup.rs) `target add` for all these targets)
-
-Get submodules of this repo, make some fixes to libsodium build scripts and build it:
+Get submodules of this repo, fix the libsodium build scripts if building for iOS, build it:
 
 ```bash
 $ git submodule update --init
