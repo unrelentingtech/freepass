@@ -3,7 +3,7 @@
 : ${NDK_STANDALONE:="/opt/ndk"}
 : ${NDK_STANDALONE_ARM64:="/opt/ndk64"}
 : ${NDK_STANDALONE_X86:="/opt/ndkx86"}
-: ${BUILD_MODE:="release"}
+: ${BUILD_MODE:="debug"}
 : ${RUST_PREFIX:="/opt/rust-arm"}
 : ${SODIUM_ROOT:="../libsodium"}
 
@@ -14,7 +14,7 @@ export PKG_CONFIG_ALLOW_CROSS=1
 : ${CARGO:="`which cargo`"}
 
 CARGO_OPTS="-v -j 4"
-if [[ "$BUILD_MODE" == "release" ]]; then
+if [ "$BUILD_MODE" = "release" ]; then
 	CARGO_OPTS="$CARGO_OPTS --$BUILD_MODE"
 fi
 RUSTC_OPTS="--crate-type=dylib"
