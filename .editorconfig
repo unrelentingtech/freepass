@@ -21,5 +21,8 @@ indent_style = tab
 [*.kt]
 indent_style = tab
 
+[*.kts]
+indent_style = tab
+
 [*.gradle]
 indent_style = tab

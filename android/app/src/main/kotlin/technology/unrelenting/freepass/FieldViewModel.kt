@@ -28,7 +28,7 @@ class FieldViewModel(name: String, field: Field?) {
 		}
 		it
 	}
-	val derived_counter = RxProperty<Int>()
+	val derived_counter = RxProperty<Int>(0)
 	val derived_site_name = RxProperty<String>()
 	val derived_usage = RxProperty<DerivedUsage?>()
 	val stored_data = RxProperty<ByteArray?>()
