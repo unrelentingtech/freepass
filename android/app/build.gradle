@@ -1,5 +1,7 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
+apply plugin: 'kotlin-kapt'
 
 android {
 	compileSdkVersion 25
@@ -7,7 +9,7 @@ android {
 
 	defaultConfig {
 		applicationId 'technology.unrelenting.freepass'
-		minSdkVersion 21
+		minSdkVersion 23
 		targetSdkVersion 25
 		multiDexEnabled true
 		versionCode 1
@@ -31,6 +33,10 @@ android {
 	dexOptions {
 		preDexLibraries true
 		dexInProcess = true
+	}
+
+	dataBinding {
+		enabled = true
 	}
 
 	buildTypes {
@@ -58,8 +64,6 @@ android {
 	}
 
 	packagingOptions {
-		// Dick.
-		pickFirst 'META-INF/services/com.fasterxml.jackson.core.JsonFactory'
 		exclude 'META-INF/LICENSE'
 	}
 }
@@ -88,27 +92,14 @@ android.applicationVariants.all { variant ->
 
 dependencies {
 	compile fileTree(include: ['*.jar'], dir: 'libs')
-	testCompile 'junit:junit:4.12'
-	compile "com.android.support:support-v4:$support_version"
-	compile "com.android.support:appcompat-v7:$support_version"
-	compile "com.android.support:recyclerview-v7:$support_version"
-	compile "com.android.support:design:$support_version"
-	compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-	compile "org.jetbrains.anko:anko-sdk15:$anko_version" // sdk19, sdk21, sdk23 are also available
-	compile "org.jetbrains.anko:anko-support-v4:$anko_version"
-	compile "org.jetbrains.anko:anko-appcompat-v7:$anko_version"
-	compile "org.jetbrains.anko:anko-recyclerview-v7:$anko_version"
-	compile "com.fasterxml.jackson.core:jackson-core:$jackson_version"
-	compile "com.fasterxml.jackson.core:jackson-annotations:$jackson_version"
-	compile "com.fasterxml.jackson.core:jackson-databind:$jackson_version"
-	compile "com.fasterxml.jackson.module:jackson-module-kotlin:$jackson_version"
-	compile "com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:$jackson_version"
-	compile 'io.reactivex.rxjava2:rxjava:2.1.0'
-	compile 'io.reactivex.rxjava2:rxkotlin:2.0.3'
-	compile 'io.reactivex.rxjava2:rxandroid:2.0.1'
-	compile "com.jakewharton.rxbinding2:rxbinding-kotlin:$rxbinding_version"
-	compile "com.jakewharton.rxbinding2:rxbinding-appcompat-v7-kotlin:$rxbinding_version"
+	compile "org.jetbrains.kotlin:kotlin-stdlib:1.1.2-4"
+	compile "com.upokecenter:cbor:2.5"
+	compile "io.reactivex.rxjava2:rxjava:2.1.0"
+	compile "io.reactivex.rxjava2:rxkotlin:2.0.3"
+	//compile "io.reactivex.rxjava2:rxandroid:2.0.1"
+	//compile "com.jakewharton.rxbinding2:rxbinding-kotlin:2.0.0"
 	compile "com.github.k-kagurazaka.rx-property-android:rx-property:3.1.0"
 	compile "com.github.k-kagurazaka.rx-property-android:rx-property-kotlin:3.1.0"
-	compile 'org.bytedeco:javacpp:1.1'
+	compile "org.bytedeco:javacpp:1.1"
+	kapt "com.android.databinding:compiler:2.3.1"
 }

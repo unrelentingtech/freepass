@@ -23,10 +23,7 @@
 		</activity>
 
 		<activity android:name=".EntryActivity"
-			android:parentActivityName=".VaultActivity" >
-			<meta-data
-				android:name="android.support.PARENT_ACTIVITY"
-				android:value=".VaultActivity" />
+			android:parentActivityName=".VaultActivity">
 		</activity>
 
 	</application>

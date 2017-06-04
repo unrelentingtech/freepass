@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android">
+	<data>
+		<variable name="vm" type="technology.unrelenting.freepass.FieldViewModel" />
+		<import type="technology.unrelenting.freepass.FieldViewModel.FieldType" />
+		<import type="android.view.View" />
+	</data>
+
+	<LinearLayout
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:padding="2dp"
+		android:orientation="vertical">
+
+		<EditText
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:layout_weight="1"
+			android:ems="10"
+			android:hint="Name"
+			android:inputType="text"
+			android:text="@={vm.field_name.value}" />
+
+		<RadioGroup
+			android:id="@+id/fld_type_picker"
+			android:layout_width="match_parent"
+			android:layout_height="match_parent"
+			android:layout_weight="1"
+			android:orientation="horizontal"
+			android:checkedButton="@={vm.field_type_radio.value}">
+
+			<RadioButton
+				android:id="@+id/fld_type_derived"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:layout_weight="1"
+				android:text="Derived" />
+
+			<RadioButton
+				android:id="@+id/fld_type_stored"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:layout_weight="1"
+				android:text="Stored" />
+		</RadioGroup>
+
+		<GridLayout
+			android:id="@+id/fld_derived_settings"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:layout_weight="1"
+			android:columnCount="2"
+			android:padding="2dp"
+			android:visibility="@{vm.field_type.value == FieldType.Derived ? View.VISIBLE : View.GONE}">
+
+			<TextView
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:text="Counter" />
+
+			<EditText
+				android:layout_width="0dp"
+				android:layout_height="wrap_content"
+				android:layout_gravity="fill_horizontal"
+				android:ems="10"
+				android:inputType="number"
+                android:text="@={`` + vm.derived_counter.value}" />
+
+			<TextView
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:text="Site name" />
+
+			<EditText
+				android:layout_width="0dp"
+				android:layout_height="wrap_content"
+				android:layout_gravity="fill_horizontal"
+				android:ems="10"
+				android:hint="Leave blank to use field name"
+				android:inputType="text"
+                android:text="@={vm.derived_site_name.value}" />
+
+			<TextView
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:text="Usage" />
+
+			<Spinner
+				android:layout_width="0dp"
+				android:layout_height="wrap_content"
+				android:layout_gravity="fill_horizontal"
+				android:paddingBottom="8dp"
+				android:paddingTop="8dp" />
+
+		</GridLayout>
+
+		<GridLayout
+			android:id="@+id/fld_stored_settings"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:layout_weight="1"
+			android:columnCount="2"
+			android:padding="2dp"
+			android:visibility="@{vm.field_type.value == FieldType.Stored ? View.VISIBLE : View.GONE}">
+
+			<TextView
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:text="Value" />
+
+			<EditText
+				android:layout_width="0dp"
+				android:layout_height="wrap_content"
+				android:layout_gravity="fill_horizontal"
+				android:ems="10"
+				android:inputType="text"
+                android:text="@={vm.stored_data_string.value}" />
+
+			<TextView
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:text="Usage" />
+
+			<Spinner
+				android:layout_width="0dp"
+				android:layout_height="wrap_content"
+				android:layout_gravity="fill_horizontal"
+				android:paddingBottom="8dp"
+				android:paddingTop="8dp" />
+
+		</GridLayout>
+
+	</LinearLayout>
+</layout>

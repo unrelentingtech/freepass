@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	android:orientation="vertical"
+	android:padding="30dip">
+
+	<EditText
+		android:id="@+id/lgn_name"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:hint="Name"
+		android:inputType="text|textNoSuggestions"
+		android:singleLine="true"
+		android:textSize="18sp" />
+
+	<EditText
+		android:id="@+id/lgn_password"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:hint="Password"
+		android:inputType="textNoSuggestions|textWebPassword"
+		android:singleLine="true"
+		android:textSize="18sp" />
+
+	<Button
+		android:id="@+id/lgn_go"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:text="Log in" />
+
+</LinearLayout>

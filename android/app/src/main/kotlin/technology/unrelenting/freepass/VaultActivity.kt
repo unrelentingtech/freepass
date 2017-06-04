@@ -1,14 +1,9 @@
 package technology.unrelenting.freepass
 
+import android.app.Activity
 import android.os.Bundle
-import android.os.Environment
-import android.support.v7.app.AppCompatActivity
-import android.util.Log
-import org.jetbrains.anko.frameLayout
 
-class VaultActivity: AppCompatActivity() {
-
-	val rootId = 1001
+class VaultActivity: Activity() {
 
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
@@ -20,13 +15,7 @@ class VaultActivity: AppCompatActivity() {
 			finish()
 		}
 
-		frameLayout { id = rootId }
-
-		if (savedInstanceState == null) {
-			supportFragmentManager.beginTransaction()
-					.add(rootId, VaultFragment())
-					.commit()
-		}
+		setContentView(R.layout.vault_wrapper)
 	}
 
 }

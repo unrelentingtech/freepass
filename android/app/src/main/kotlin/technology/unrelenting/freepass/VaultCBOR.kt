@@ -1,19 +1,10 @@
 package technology.unrelenting.freepass
 
-// Separate file to prevent JavaCPP from loading Jackson
+// Separate file to prevent JavaCPP from loading CBOR
 
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.dataformat.cbor.CBORFactory
-import com.fasterxml.jackson.module.kotlin.KotlinModule
+import com.upokecenter.cbor.CBORObject
 
-val cborFactory = CBORFactory()
-val objMapper = ObjectMapper(cborFactory)
-		.registerModule(KotlinModule())
-		.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-		.enable(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL)
-
-fun Vault.getEntry(name: String): Entry? {
+fun Vault.getEntry(name: String): CBORObject? {
 	if (vaultObj == null) {
 		return null
 	}
@@ -21,11 +12,14 @@ fun Vault.getEntry(name: String): Entry? {
 		if (it.len() < 1) return null
 		val arr = ByteArray(it.len())
 		it.data().get(arr, 0, it.len())
-		val dataval = objMapper.readTree(arr).get(0)
-		//val metaval = objMapper.readTree(arr).get(1)
-		val data = objMapper.convertValue(dataval, Entry::class.java)
+		val objs = CBORObject.DecodeFromBytes(arr).values.take(2)
+		val dataval = objs[0]
+		//val metaval = objs[1]
 		freepass_free_entry_cbor(it)
-		data
+		dataval
 	}
 }
 
+fun CBORObject.AsNullableString(): String? {
+	return if (isNull) null else AsString()
+}

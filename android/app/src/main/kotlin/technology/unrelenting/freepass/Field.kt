@@ -1,21 +1,29 @@
 package technology.unrelenting.freepass
 
-import com.fasterxml.jackson.annotation.JsonCreator
-import com.fasterxml.jackson.annotation.JsonProperty
+import com.upokecenter.cbor.CBORObject
+import com.upokecenter.cbor.CBORType
 
 sealed class DerivedUsage {
-	class Password(val template: String) : DerivedUsage()
-	class Ed25519Key(val usage: String) : DerivedUsage()
+	data class Password(val template: String) : DerivedUsage()
+	data class Ed25519Key(val usage: String) : DerivedUsage()
 	object RawKey : DerivedUsage()
 	object Unreadable : DerivedUsage()
 
 	companion object {
-		@JsonCreator @JvmStatic fun create(@JsonProperty("variant") variant: String,
-										   @JsonProperty("fields") fields: Array<String>): DerivedUsage {
-			return when (variant) {
-				"Password" -> fields.getOrNull(0)?.let { Password(it) }
-				"Ed25519Key" -> fields.getOrNull(0)?.let { Ed25519Key(it) }
-				"RawKey" -> RawKey
+		fun fromCbor(cborObject: CBORObject): DerivedUsage {
+			return when (cborObject.type) {
+				CBORType.TextString -> when (cborObject.AsString()) {
+					"RawKey" -> RawKey
+					else -> null
+				}
+				CBORType.Array -> {
+					val (variant, argsObj) = cborObject.values.toList()
+					when (variant.AsString()) {
+						"Password" -> Password(argsObj.AsNullableString() ?: "Maximum")
+						"Ed25519Key" -> Ed25519Key(argsObj.AsNullableString() ?: "SSH")
+						else -> null
+					}
+				}
 				else -> null
 			} ?: Unreadable
 		}
@@ -26,26 +34,25 @@ enum class StoredUsage {
 	Unreadable, Text, Password
 }
 
-// XXX: Use data classes when Kotlin 1.1 comes out
 sealed class Field {
-	class Derived(val counter: Int, val site_name: String?, val usage: DerivedUsage) : Field()
-	class Stored(val data: ByteArray, val usage: StoredUsage) : Field()
+	data class Derived(val counter: Int, val site_name: String?, val usage: DerivedUsage) : Field()
+	data class Stored(val data: ByteArray, val usage: StoredUsage) : Field()
 	object Unreadable : Field()
 
 	companion object {
-		@JsonCreator @JvmStatic fun create(@JsonProperty("variant") variant: String,
-										   @JsonProperty("fields") fields: Array<Any>): Field {
-			return when (variant) {
+        fun fromCbor(cborObject: CBORObject): Field {
+			val (variant, argsObj) = cborObject.values.toList()
+			return when (variant.AsString()) {
 				"Derived" -> {
-					val counter = fields.getOrNull(0) as? Int
-					val site_name = fields.getOrNull(1) as? String
-					val usage = objMapper.convertValue(fields.getOrNull(2), DerivedUsage::class.java)
-					if (counter != null && usage != null) Derived(counter, site_name, usage) else null
+					val counter = argsObj.get("counter").AsInt32()
+					val site_name = argsObj.get("site_name").AsNullableString()
+					val usage = DerivedUsage.fromCbor(argsObj.get("usage"))
+					Derived(counter, site_name, usage)
 				}
 				"Stored" -> {
-					val data = fields.getOrNull(0) as? ByteArray
-					val usage = objMapper.convertValue(fields.getOrNull(1), StoredUsage::class.java) ?: StoredUsage.Unreadable
-					if (data != null) Stored(data, usage) else null
+					val data = argsObj.get("data").GetByteString()
+					val usage = StoredUsage.valueOf(argsObj.get("usage").AsString())
+					Stored(data, usage)
 				}
 				else -> null
 			} ?: Unreadable

@@ -1,11 +1,9 @@
 package technology.unrelenting.freepass
 
+import android.app.Activity
 import android.os.Bundle
-import android.support.v7.app.AppCompatActivity
-import org.jetbrains.anko.frameLayout
 
-class EntryActivity: AppCompatActivity() {
-	val rootId = 1001
+class EntryActivity: Activity() {
 
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
@@ -14,11 +12,10 @@ class EntryActivity: AppCompatActivity() {
 			finish()
 		}
 
-		frameLayout { id = rootId }
-
+		setContentView(R.layout.entry_wrapper)
 		if (savedInstanceState == null) {
-			supportFragmentManager.beginTransaction()
-					.add(rootId, EntryFragment().let { it.arguments = intent.extras; it })
+			fragmentManager.beginTransaction()
+					.add(R.id.entry_wrapper_l, EntryFragment().let { it.arguments = intent.extras; it })
 					.commit()
 		}
 	}

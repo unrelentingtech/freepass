@@ -1,18 +1,15 @@
 package technology.unrelenting.freepass
 
+import android.app.Activity
+import android.app.Fragment
+import android.databinding.DataBindingUtil
 import android.os.Bundle
-import android.support.v4.app.Fragment
-import android.text.InputType
-import android.text.SpannableStringBuilder
-import android.util.Log
 import android.view.*
 import android.widget.BaseAdapter
-import android.widget.RadioButton
-import android.widget.RadioGroup
-import com.jakewharton.rxbinding2.widget.*
+//import com.jakewharton.rxbinding2.widget.*
+import kotlinx.android.synthetic.main.entry.*
+import technology.unrelenting.freepass.databinding.FieldBinding
 
-import org.jetbrains.anko.*
-import org.jetbrains.anko.support.v4.UI
 import java.util.*
 
 class EntryFragment: Fragment() {
@@ -24,6 +21,22 @@ class EntryFragment: Fragment() {
 	var entryName = "New entry"
 	var fieldModels = ArrayList<FieldViewModel>()
 	val fieldListAdapter = FieldListAdapter(this)
+
+	override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+		super.onCreateView(inflater, container, savedInstanceState)
+		entryName = arguments.getString(ENTRY_NAME)
+		val entry = Entry.fromCbor(Vault.getEntry(entryName)!!)
+		entry.fields.forEach {
+			fieldModels.add(FieldViewModel(it.key, it.value))
+		}
+		setHasOptionsMenu(true)
+		return inflater?.inflate(R.layout.entry, container, false)
+	}
+
+	override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
+		super.onViewCreated(view, savedInstanceState)
+		fields_list.adapter = fieldListAdapter
+	}
 
 	override fun onCreateOptionsMenu(menu: Menu?, inflater: MenuInflater?) {
 		inflater?.inflate(R.menu.entry, menu)
@@ -39,59 +52,35 @@ class EntryFragment: Fragment() {
 		return false
 	}
 
-	override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-		super.onCreateView(inflater, container, savedInstanceState)
-		entryName = arguments.getString(ENTRY_NAME)
-		val entry = Vault.getEntry(entryName)
-		if (entry != null) {
-			entry.fields.forEach {
-				fieldModels.add(FieldViewModel(it.key, it.value))
-			}
-		}
-
-		setHasOptionsMenu(true)
-		return UI {
-			verticalLayout {
-				listView {
-					adapter = fieldListAdapter
-				}
-			}
-		}.view
-	}
-
 	class FieldListAdapter(val fragment: EntryFragment): BaseAdapter() {
 		var list = fragment.fieldModels
+		var inflater: LayoutInflater? = null
 
 		override fun getView(i: Int, v: View?, parent: ViewGroup?): View? {
 			if (parent == null) return null
-			if (v != null) return v
-			val model = getItem(i)
-			return with(parent.context) {
-				relativeLayout {
-					val nameEdit = editText {
-						text = SpannableStringBuilder(model.field_name.get())
-						textChanges().subscribe { model.field_name.set(it.toString()) }
-					}.lparams { width = matchParent }
-					val typeRadio = radioGroup {
-						orientation = RadioGroup.HORIZONTAL
-						val der = radioButton {  text = "Derived" }
-						val stor = radioButton {  text = "Stored" }
-						Log.w("WTF", "WAT")
-						check(if (model.field_type.get() == FieldViewModel.FieldType.Derived) der.id else stor.id)
-						checkedChanges().subscribe() {
-							Log.w("Check", it.toString())
-							model.field_type.set(if (it == der.id) FieldViewModel.FieldType.Derived else FieldViewModel.FieldType.Stored)
-						}
-					}.lparams { width = matchParent; below(nameEdit) }
-					val counterLabel = textView {
-						text = "Counter"
-					}.lparams { below(typeRadio) }
-					val counterEdit = editText {
-						inputType = InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL
-						filters = arrayOf(NumberLimitsInputFilter(0, 4294967295))
-					}.lparams { below(typeRadio); rightOf(counterLabel) }
-				}
-			}
+            inflater = inflater ?: (parent.context as? Activity)?.layoutInflater
+			val binding = DataBindingUtil.getBinding<FieldBinding>(v)
+				?: DataBindingUtil.inflate(inflater, R.layout.field, parent, false)
+			binding.vm = getItem(i)
+			return binding.root
+//					val typeRadio = radioGroup {
+//						orientation = RadioGroup.HORIZONTAL
+//						val der = radioButton {  text = "Derived" }
+//						val stor = radioButton {  text = "Stored" }
+//						Log.w("WTF", "WAT")
+//						check(if (model.field_type.get() == FieldViewModel.FieldType.Derived) der.id else stor.id)
+//						checkedChanges().subscribe() {
+//							Log.w("Check", it.toString())
+//							model.field_type.set(if (it == der.id) FieldViewModel.FieldType.Derived else FieldViewModel.FieldType.Stored)
+//						}
+//					}.lparams { width = matchParent; below(nameEdit) }
+//					val counterLabel = textView {
+//						text = "Counter"
+//					}.lparams { below(typeRadio) }
+//					val counterEdit = editText {
+//						inputType = InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL
+//						filters = arrayOf(NumberLimitsInputFilter(0, 4294967295))
+//					}.lparams { below(typeRadio); rightOf(counterLabel) }
 		}
 
         override fun getItem(position: Int): FieldViewModel {

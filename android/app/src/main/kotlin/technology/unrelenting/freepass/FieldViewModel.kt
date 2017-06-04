@@ -12,34 +12,43 @@ class FieldViewModel(name: String, field: Field?) {
 		Stored, Derived
 	}
 
+	val field_name = RxProperty(name)
 	val field_type = RxProperty<FieldType?>()
-	val field_name = RxProperty<String>()
+	val field_type_radio = RxProperty(field_type.map {
+		when (it) {
+			FieldType.Stored -> R.id.fld_type_stored
+			else -> R.id.fld_type_derived
+		}
+	}).let {
+		it.subscribe {
+			when (it) {
+				R.id.fld_type_derived -> field_type.set(FieldType.Derived)
+				R.id.fld_type_stored -> field_type.set(FieldType.Stored)
+			}
+		}
+		it
+	}
 	val derived_counter = RxProperty<Int>()
 	val derived_site_name = RxProperty<String>()
 	val derived_usage = RxProperty<DerivedUsage?>()
 	val stored_data = RxProperty<ByteArray?>()
-	val stored_data_string = RxProperty<String>()
+	val stored_data_string = RxProperty<String>(stored_data.map {
+		if (it == null) ""
+		else try {
+			String(it, UTF8)
+		} catch (e: Exception) {
+			""
+		}
+	}).let {
+		it.subscribe {
+			if (it != null && it.isNotEmpty())
+				stored_data.set((it as java.lang.String).getBytes("UTF-8"))
+		}
+		it
+	}
 	val stored_usage = RxProperty<StoredUsage?>()
 
-	fun init_stored_data_conversion() {
-		var updatingFromSelf = false
-		stored_data.subscribe {
-			if (!updatingFromSelf && it != null) {
-				try {
-					stored_data_string.set(String(it, UTF8))
-				} catch (e: Exception) {}
-			}
-		}
-		stored_data_string.subscribe {
-			updatingFromSelf = true
-			stored_data.set(UTF8.encode(it).array())
-			updatingFromSelf = false
-		}
-	}
-
 	init {
-		init_stored_data_conversion()
-		field_name.set(name)
 		if (field is Field.Derived) {
 			field_type.set(FieldType.Derived)
 			derived_counter.set(field.counter)
@@ -52,5 +61,5 @@ class FieldViewModel(name: String, field: Field?) {
 		}
 	}
 
-	constructor(name: String) : this(name, null) { }
+	constructor(name: String) : this(name, null)
 }
