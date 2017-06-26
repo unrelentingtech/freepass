@@ -4,7 +4,7 @@ NOTE: if you've been using freepass before June 03, 2017: you need to checkout t
 
 The free password manager for power users.
 
-![X11 screencast gif](https://packett.cool/pub/screens/freepass-x11.gif)
+![X11 screencast gif](https://unrelentingtech.s3.dualstack.eu-west-1.amazonaws.com/freepass-x11.gif)
 
 ## What's going on?
 
