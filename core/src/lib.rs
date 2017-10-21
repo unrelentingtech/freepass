@@ -13,6 +13,7 @@ extern crate unix_socket;
 extern crate secstr;
 extern crate rusterpassword;
 extern crate sodiumoxide;
+extern crate crypto;
 extern crate rand;
 
 extern crate chrono;

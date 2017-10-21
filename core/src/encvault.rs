@@ -4,7 +4,7 @@ use std::collections::btree_map::BTreeMap;
 use rand::Rng;
 use rand::os::OsRng;
 use sodiumoxide::crypto::secretbox::xsalsa20poly1305 as secbox;
-use sodiumoxide::crypto::stream::aes128ctr as outerstream;
+use crypto::aes;
 use chrono::UTC;
 use serde_cbor;
 use serde_bytes;
@@ -121,27 +121,25 @@ impl DecryptedVault {
 
     pub fn open<T: io::Read>(entries_key: SecStr, outer_key: SecStr, reader: T) -> Result<DecryptedVault> {
         let wrapper: EncryptedVault = serde_cbor::from_reader(reader)?;
-        let nonce_wrapped = outerstream::Nonce::from_slice(&wrapper.nonce)
-            .ok_or(Error::WrongOuterNonceLength)?;
-        let outer_key_wrapped = outerstream::Key::from_slice(outer_key.unsecure())
-            .ok_or(Error::WrongOuterKeyLength)?;
-        let plaintext = SecStr::new(outerstream::stream_xor(&wrapper.ciphertext, &nonce_wrapped, &outer_key_wrapped));
+        let mut plaintext = SecStr::new(vec![0; wrapper.ciphertext.len()]);
+        aes::ctr(aes::KeySize::KeySize128, outer_key.unsecure(), &wrapper.nonce)
+            .process(&wrapper.ciphertext, &mut plaintext.unsecure_mut());
         let data = serde_cbor::from_slice(plaintext.unsecure())?;
         Ok(DecryptedVault { data: data, entries_key: entries_key, outer_key: outer_key })
     }
 
     pub fn save<T: io::Write>(&mut self, mut writer: T) -> Result<()> {
+        let mut plaintext = SecStr::new(serde_cbor::to_vec(&self.data)?);
         let mut rng = OsRng::new()?;
         let padding_size = rng.gen_range(0, 1024 * 10);
         self.data.padding = vec![0; padding_size];
         rng.fill_bytes(&mut self.data.padding);
-        let nonce_wrapped = outerstream::gen_nonce();
-        let outerstream::Nonce(nonce) = nonce_wrapped;
-        let outer_key_wrapped = outerstream::Key::from_slice(self.outer_key.unsecure())
-            .ok_or(Error::WrongOuterKeyLength)?;
-        let plaintext = SecStr::new(serde_cbor::to_vec(&self.data)?);
-        let ciphertext = outerstream::stream_xor(plaintext.unsecure(), &nonce_wrapped, &outer_key_wrapped);
-        let wrapper = EncryptedVault { version: 0, nonce: nonce.to_vec(), ciphertext: ciphertext };
+        let mut iv = vec![0; 16];
+        rng.fill_bytes(&mut iv);
+        let mut ciphertext = vec![0; plaintext.unsecure().len()];
+        aes::ctr(aes::KeySize::KeySize128, self.outer_key.unsecure(), &iv)
+            .process(&plaintext.unsecure_mut(), &mut ciphertext);
+        let wrapper = EncryptedVault { version: 0, nonce: iv, ciphertext: ciphertext };
         serde_cbor::ser::to_writer(&mut writer, &wrapper)?;
         Ok(())
     }
