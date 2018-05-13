@@ -17,6 +17,7 @@ class VaultFragment: Fragment() {
 
 	override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
 		super.onViewCreated(view, savedInstanceState)
+		return
 		val entryNames = Vault.entryNames().toTypedArray()
 		entries_list.adapter = ArrayAdapter<String>(this.context,
 				android.R.layout.simple_list_item_1,

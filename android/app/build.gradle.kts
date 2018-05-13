@@ -1,26 +1,33 @@
-import com.android.build.gradle.AppExtension
+import com.android.build.api.sourcesets.AndroidSourceSet
 import java.io.File
 
-apply {
-	plugin("com.android.application")
-	plugin("kotlin-android")
-	plugin("kotlin-android-extensions")
-	plugin("kotlin-kapt")
+repositories {
+	jcenter()
+	google()
+	mavenCentral()
+	maven("https://jitpack.io")
 }
 
-configure<AppExtension> {
-	buildToolsVersion("25.0.2")
-	compileSdkVersion(25)
+plugins {
+	id("com.android.application")
+	kotlin("android")
+	kotlin("android.extensions")
+	kotlin("kapt")
+}
+
+android {
+	buildToolsVersion("28.0.0 rc2")
+	compileSdkVersion(27)
 
 	defaultConfig {
 		minSdkVersion(23)
-		targetSdkVersion(25)
+		targetSdkVersion(27)
 		applicationId = "technology.unrelenting.freepass"
 		versionCode = 1
 		versionName = "1.0"
 		multiDexEnabled = true
 		ndk {
-			abiFilters("x86")//, "arm64-v8a", "armeabi-v7a"//, "armeabi"
+			//abiFilters("x86")//, "arm64-v8a", "armeabi-v7a"//, "armeabi"
 		}
 		externalNativeBuild {
 			cmake {
@@ -56,8 +63,12 @@ configure<AppExtension> {
 
 	sourceSets {
         getByName("main") {
-            java.srcDirs += File("src/main/kotlin")
-            jni.srcDirs.clear()
+			//jni.srcDirs.clear()
+			withGroovyBuilder {
+				"jniLibs" {
+					"srcDir"("../../capi/target/android-all/debug/")
+				}
+			}
         }
 	}
 
@@ -65,7 +76,7 @@ configure<AppExtension> {
 		abi {
 			isEnable = true
 			reset()
-			include("x86")//, "arm64-v8a", "armeabi-v7a"//, "armeabi"
+			include("x86", "arm64-v8a", "armeabi-v7a")//, "armeabi"
 			isUniversalApk = true
 		}
 	}
@@ -80,7 +91,7 @@ configure<AppExtension> {
 			inputs.file("src/main/kotlin/technology/unrelenting/freepass/Vault.kt")
 			outputs.file("src/main/jni/jniVault.cpp")
 			doLast {
-				val path = configurations.compile
+				val path = configurations.getByName("compile")
 						.find { it.name.startsWith("javacpp") }
 						?.absolutePath
 				javaexec {
@@ -101,15 +112,13 @@ configure<AppExtension> {
 }
 
 dependencies {
-	//compile(kotlinModule("stdlib"))
-	compile("org.jetbrains.kotlin:kotlin-stdlib:1.1.2-4")
-	compile("com.upokecenter:cbor:2.5")
-	compile("io.reactivex.rxjava2:rxjava:2.1.0")
-	compile("io.reactivex.rxjava2:rxkotlin:2.0.3")
-	//compile("io.reactivex.rxjava2:rxandroid:2.0.1")
-	//compile("com.jakewharton.rxbinding2:rxbinding-kotlin:2.0.0")
-	compile("com.github.k-kagurazaka.rx-property-android:rx-property:3.1.0")
-	compile("com.github.k-kagurazaka.rx-property-android:rx-property-kotlin:3.1.0")
-	compile("org.bytedeco:javacpp:1.1")
-	kapt("com.android.databinding:compiler:2.3.1")
+	implementation(kotlin("stdlib", "1.2.41"))
+	implementation("com.upokecenter:cbor:2.5")
+	implementation("io.reactivex.rxjava2:rxjava:2.1.0")
+	implementation("io.reactivex.rxjava2:rxkotlin:2.0.3")
+	//implementation("io.reactivex.rxjava2:rxandroid:2.0.1")
+	//implementation("com.jakewharton.rxbinding2:rxbinding-kotlin:2.0.0")
+	implementation("com.github.k-kagurazaka.rx-property-android:rx-property:3.1.0")
+	implementation("com.github.k-kagurazaka.rx-property-android:rx-property-kotlin:3.1.0")
+	implementation("org.bytedeco:javacpp:1.1")
 }

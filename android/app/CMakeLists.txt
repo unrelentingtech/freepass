@@ -20,7 +20,7 @@ set_target_properties(libsodium PROPERTIES
                       IMPORTED_NO_SONAME true)
 include_directories( ${CMAKE_SOURCE_DIR}/../../libsodium/libsodium-android-${SODIUM_ABI}/include )
 file(COPY ${CMAKE_SOURCE_DIR}/../../libsodium/libsodium-android-${SODIUM_ABI}/lib/libsodium.so
-     DESTINATION ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
+     DESTINATION ${CMAKE_SOURCE_DIR}/src/main/jniLibs/${ANDROID_ABI}/)
 
 add_library(freepass-capi SHARED IMPORTED)
 set_target_properties(freepass-capi PROPERTIES

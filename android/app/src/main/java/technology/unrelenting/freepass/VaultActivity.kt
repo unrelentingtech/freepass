@@ -9,7 +9,7 @@ class VaultActivity: Activity() {
 		super.onCreate(savedInstanceState)
 
 		// XXX TESTING
-        Vault.open("${getExternalFilesDir(null).path}/testvault", "Test", "test")
+        //Vault.open("${getExternalFilesDir(null).path}/testvault", "Test", "test")
 
 		if (!Vault.isOpen) {
 			finish()

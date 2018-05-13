@@ -25,9 +25,12 @@ class EntryFragment: Fragment() {
 	override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 		super.onCreateView(inflater, container, savedInstanceState)
 		entryName = arguments.getString(ENTRY_NAME)
-		val entry = Entry.fromCbor(Vault.getEntry(entryName)!!)
-		entry.fields.forEach {
-			fieldModels.add(FieldViewModel(it.key, it.value))
+		val entryCode = Vault.getEntry(entryName)
+		if (entryCode != null) {
+			val entry = Entry.fromCbor(entryCode!!)
+			entry.fields.forEach {
+				fieldModels.add(FieldViewModel(it.key, it.value))
+			}
 		}
 		setHasOptionsMenu(true)
 		return inflater?.inflate(R.layout.entry, container, false)
@@ -59,8 +62,8 @@ class EntryFragment: Fragment() {
 		override fun getView(i: Int, v: View?, parent: ViewGroup?): View? {
 			if (parent == null) return null
             inflater = inflater ?: (parent.context as? Activity)?.layoutInflater
-			val binding = DataBindingUtil.getBinding<FieldBinding>(v)
-				?: DataBindingUtil.inflate(inflater, R.layout.field, parent, false)
+			val binding = DataBindingUtil.getBinding<FieldBinding>(v!!)
+				?: DataBindingUtil.inflate<FieldBinding>(inflater!!, R.layout.field, parent, false)
 			binding.vm = getItem(i)
 			return binding.root
 //					val typeRadio = radioGroup {
