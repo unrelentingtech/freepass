@@ -3,7 +3,7 @@ use std::io::prelude::*;
 use std::process::{Command, Stdio};
 use serde_cbor;
 use serde::Serialize;
-use hex::ToHex;
+use hex;
 use colorhash256;
 use interactor;
 use secstr::SecStr;
@@ -113,5 +113,5 @@ pub fn read_yesno(prompt: &str) -> bool {
 
 pub fn debug_output<T: Serialize>(data: &T, description: &str) {
     println!("--- CBOR debug output (http://cbor.me to decode) of {} ---\n{}\n", description,
-        serde_cbor::to_vec(data).unwrap().to_hex());
+        hex::encode(serde_cbor::to_vec(data).unwrap()));
 }

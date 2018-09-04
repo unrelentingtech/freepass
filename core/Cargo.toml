@@ -13,7 +13,7 @@ repository = "https://github.com/valpackett/freepass"
 name = "freepass_core"
 
 [features]
-default = ["keepass", "filesystem"]
+default = ["keepass"] #, "filesystem"]
 filesystem = ["fuse"]
 
 [dependencies]

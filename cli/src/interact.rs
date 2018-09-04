@@ -3,8 +3,8 @@ use std::io::{Read, Write};
 use std::fs::OpenOptions;
 use std::collections::btree_map::BTreeMap;
 use base64;
-use hex::ToHex;
-use fuse;
+use hex;
+//use fuse;
 use interactor::*;
 use secstr::SecStr;
 use freepass_core::output::*;
@@ -82,7 +82,7 @@ fn interact_entry(open_file: &mut OpenFile, entry_name: &str, entry: Entry, meta
                     interaction!({
                         "Go back" => {},
                         "Print as Base64" => { println!("{}", base64::encode(s.unsecure())) },
-                        "Print as hex" => { println!("{}", s.unsecure().to_hex()) }
+                        "Print as hex" => { println!("{}", hex::encode(s.unsecure())) }
                     })
                 },
                 Output::Ed25519Keypair(usage, _, _) => match usage {
@@ -115,8 +115,8 @@ fn interact_entry(open_file: &mut OpenFile, entry_name: &str, entry: Entry, meta
                     interaction!({
                         "Go back" => {},
                         "Mount attachments folder" => {
-                            println!("Mounting attachments folder '{}'. Unmount to continue.", entry_name);
-                            fuse::mount(attachments, &"/home/greg/fp", &[]);
+                            println!("[TODO] Mounting attachments folder '{}'. Unmount to continue.", entry_name);
+                            //fuse::mount(attachments, &"/home/greg/fp", &[]);
                         }
                     })
                 }

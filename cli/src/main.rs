@@ -1,5 +1,5 @@
 extern crate clap;
-extern crate fuse;
+//extern crate fuse;
 extern crate secstr;
 extern crate colorhash256;
 extern crate interactor;
