@@ -22,7 +22,7 @@ secstr = { version = "0.3", features = ["serde", "libsodium-sys"] }
 libsodium-sys = "0"
 sodiumoxide = "0"
 rust-crypto = "0.2"
-rusterpassword = "0"
+rusterpassword = { version = "0", path = "../rusterpassword" }
 keepass = { git = "https://github.com/valpackett/keepass-rs.git", optional = true }
 fuse = { version = "0.3.0", optional = true }
 time = { version = "0.1" }
