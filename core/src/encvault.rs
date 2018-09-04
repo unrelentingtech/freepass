@@ -1,7 +1,7 @@
 use std::io;
 use std::boxed::Box;
 use std::collections::btree_map::BTreeMap;
-use rand::Rng;
+use rand::{Rng, RngCore};
 use rand::os::OsRng;
 use sodiumoxide::crypto::secretbox::xsalsa20poly1305 as secbox;
 use crypto::aes;

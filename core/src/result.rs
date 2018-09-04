@@ -1,4 +1,5 @@
 use std::{io, str, string, result};
+use rand;
 use serde_cbor;
 #[cfg(feature = "keepass")]
 use keepass;
@@ -18,6 +19,7 @@ pub enum Error {
     StrCodecError(str::Utf8Error),
     #[cfg(feature = "keepass")]
     KeepassReadError(keepass::OpenDBError),
+    RandError(rand::Error),
     OtherError(io::Error),
     DataError,
     EntryNotFound,
@@ -48,6 +50,12 @@ impl From<str::Utf8Error> for Error {
 impl From<keepass::OpenDBError> for Error {
     fn from(err: keepass::OpenDBError) -> Error {
         Error::KeepassReadError(err)
+    }
+}
+
+impl From<rand::Error> for Error {
+    fn from(err: rand::Error) -> Error {
+        Error::RandError(err)
     }
 }
 
