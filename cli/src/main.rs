@@ -9,6 +9,7 @@ extern crate hex;
 extern crate base64;
 extern crate serde;
 extern crate serde_cbor;
+extern crate csv;
 extern crate freepass_core;
 
 mod util;
@@ -16,10 +17,10 @@ mod openfile;
 mod interact;
 mod mergein;
 
-use std::{env, fs};
+use std::{env, fs, io};
 use clap::{Arg, App, SubCommand};
 use openfile::*;
-use freepass_core::{import, vault};
+use freepass_core::{import, vault::{self, Vault}, output};
 
 fn main() {
     let matches = App::new("freepass")
@@ -46,6 +47,7 @@ fn main() {
             ),
         )
         .subcommand(SubCommand::with_name("interact").about("Launches interactive mode"))
+        .subcommand(SubCommand::with_name("export").about("Exports all records as CSV (Bitwarden compatible fields)"))
         .subcommand(
             SubCommand::with_name("mergein")
                 .about(
@@ -85,7 +87,7 @@ fn main() {
 
     // Ensure we can write! Maybe someone somewhere would want to open the vault in read-only mode...
     // But the frustration of trying to save the vault while only having read permissions would be worse.
-    let mut open_file = OpenFile::open(file_path, &user_name, util::read_password(), true);
+    let mut open_file = OpenFile::open(file_path.clone(), &user_name, util::read_password(), true);
 
     if debug {
         util::debug_output(&open_file.vault.data, "Vault");
@@ -119,6 +121,33 @@ fn main() {
             } else {
                 panic!("No options for mergein")
             }
+        },
+
+        ("export", _) => {
+            let stdout = io::stdout();
+            let mut stdout = stdout.lock();
+            let mut writer = csv::Writer::from_writer(stdout);
+            writer.write_record(&["folder", "favorite", "type", "name", "notes", "fields", "login_uri", "login_username", "login_password", "login_totp"]).unwrap();
+            for name in open_file.vault.entry_names() {
+                let (entry, _meta) = open_file.vault.get_entry(name).expect("Couldn't read selected entry");
+                let username = match entry.fields.get("username").or(entry.fields.get("login")).and_then(|f| output::process_output(name, &open_file.master_key, f).ok()) {
+                    Some(output::Output::OpenText(s)) => s,
+                    _ => "".to_string(),
+                };
+                let password = match entry.fields.get("password").and_then(|f| output::process_output(name, &open_file.master_key, f).ok()) {
+                    Some(output::Output::PrivateText(s)) => String::from_utf8(Vec::from(s.unsecure())).expect("Couldn't decode UTF-8"),
+                    _ => "".to_string(),
+                };
+                let extras = entry.fields.iter().filter(|(k, _)| *k != "username" && *k != "login" && *k != "password").filter_map(|(k, v)| {
+                    match output::process_output(k, &open_file.master_key, v) {
+                        Ok(output::Output::OpenText(s)) => Some(format!("{}: {}", k, s)),
+                        Ok(output::Output::PrivateText(s)) => Some(format!("{}: {}", k, String::from_utf8(Vec::from(s.unsecure())).expect("Couldn't decode UTF-8"))),
+                        _ => None,
+                    }
+                }).collect::<Vec<_>>().join("\n");
+                writer.write_record(&[file_path.to_string(), "".to_string(), "login".to_string(), name.to_string(), "".to_string(), extras, format!("https://{}", name), username, password, "".to_string()]).unwrap();
+            }
+            writer.flush().unwrap();
         },
 
         ("interact", _) | _ => interact::interact_entries(&mut open_file, debug),
