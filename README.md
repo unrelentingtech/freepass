@@ -39,7 +39,7 @@ The free password manager for power users.
   - [rusterpassword](https://github.com/valpackett/rusterpassword): the [Master Password algorithm] implementation
 - Completely free software: public domain / [Unlicense].
 
-[Master Password algorithm]: https://ssl.masterpasswordapp.com/algorithm.html
+[Master Password algorithm]: https://masterpassword.app/masterpassword-algorithm.pdf
 [Ed25519]: http://ed25519.cr.yp.to
 [OpenSSH]: http://www.openssh.com
 [signify]: http://www.tedunangst.com/flak/post/signify
@@ -67,5 +67,5 @@ By participating in this project you agree to follow the [Contributor Code of Co
 
 ## License
 
-This is free and unencumbered software released into the public domain.  
+This is free and unencumbered software released into the public domain.
 For more information, please refer to the `UNLICENSE` file or [unlicense.org](http://unlicense.org).
